@@ -17,3 +17,6 @@ scems-marco = "0.1.0"
 [features]
 mcu-stm = []
 os-cmsis-os = []
+
+[package.metadata.docs.rs]
+features = ["mcu-stm", 'os-cmsis-os']
