@@ -5,5 +5,10 @@
     "rust-analyzer.rustfmt.extraArgs": [
         "+nightly"
     ],
-    "rust-analyzer.cargo.target": "thumbv7em-none-eabihf"
+    "rust-analyzer.cargo.features": [
+        "challen-v2-f429"
+    ],
+    "rust-analyzer.cargo.target": "thumbv7em-none-eabihf",
+    "cmake.sourceDirectory": "platform/challen-v2-f429",
+    "cortex-debug.variableUseNaturalFormat": true
 }

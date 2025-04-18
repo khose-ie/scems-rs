@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "challen-v2-f429",
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "executable": "build/challen-v2-f429.elf",
+            "configFiles": ["platform/challen-v2-f429/challen-v2-f429.cfg"],
+            "svdFile": "platform/challen-v2-f429/STM32F429XX.svd",
+            // "runToEntryPoint": "main",
+            "rtos": "auto",
+            "showDevDebugOutput": "raw",
+            "rttConfig": {
+                "enable": true,
+                "address": "auto",
+                "clearSearch": false,
+                "polling_interval": 20,
+                "rccConsole": "console"
+            }
+        }
+    ]
+}
