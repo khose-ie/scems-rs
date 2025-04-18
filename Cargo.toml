@@ -1,0 +1,11 @@
+[workspace]
+resolver = "2"
+members = ["scems", "scems/marco"]
+
+[profile.dev]
+opt-level = 1
+debug = true
+
+[patch.crates-io]
+scems = { path = "scems" }
+scems-marco = { path = "scems/marco" }

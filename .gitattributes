@@ -1,0 +1,50 @@
+* text=auto eol=lf
+
+# Sources
+*.c     text diff=cpp
+*.cc    text diff=cpp
+*.c++   text diff=cpp
+*.cpi   text diff=cpp
+*.cpp   text diff=cpp
+*.cxx   text diff=cpp
+*.h     text diff=cpp
+*.h++   text diff=cpp
+*.hh    text diff=cpp
+*.hpp   text diff=cpp
+
+# Object files
+*.lo    binary
+*.ko    binary
+*.o     binary
+*.obj   binary
+*.slo   binary
+
+# Precompiled Headers
+*.gch   binary
+*.pch   binary
+
+# Libraries
+*.a     binary
+*.la    binary
+*.lai   binary
+*.lib   binary
+*.lo    binary
+
+# Shared libraries
+*.dll   binary
+*.dylib binary
+*.so    binary
+
+# Executables
+*.app   binary
+*.bin   binary
+*.elf   binary
+*.exe   binary
+*.hex   binary
+*.img   binary
+*.imx   binary
+*.out   binary
+
+# STM32Cube
+*.mxproject text eol=lf
+*.ioc       text eol=lf

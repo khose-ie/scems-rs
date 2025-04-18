@@ -1,0 +1,9 @@
+{
+    "rust-analyzer.linkedProjects": [
+        "Cargo.toml"
+    ],
+    "rust-analyzer.rustfmt.extraArgs": [
+        "+nightly"
+    ],
+    "rust-analyzer.cargo.target": "thumbv7em-none-eabihf"
+}

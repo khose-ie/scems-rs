@@ -1,0 +1,17 @@
+[package]
+name = "scems-marco"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-2.0"
+authors = ["Khose-ie<khose-ie@outlook.com>"]
+description = "Sample Common Embedded Middleware Software - Marco Definitions"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1"
+quote = "1"
+syn = { version = "2", features = ["full"] }
+
+[features]
