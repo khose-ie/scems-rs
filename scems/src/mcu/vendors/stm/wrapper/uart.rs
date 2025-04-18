@@ -1,0 +1,158 @@
+use crate::common::result::IResult;
+use crate::derive::{AsPtr, HandlePtr};
+use crate::mcu::common::uart::{Uart, UartEvent, UartEventPtr};
+use crate::mcu::common::{EventHandle, HandlePtr};
+use crate::mcu::vendors::stm::common::DeviceQueue;
+use crate::mcu::vendors::stm::native::uart::*;
+
+const UART_COUNT: usize = 8;
+static mut UARTS: DeviceQueue<UART, UartDevice, UART_COUNT> = DeviceQueue::new();
+
+#[derive(AsPtr, HandlePtr)]
+pub struct UartDevice
+{
+    handle: *mut UART,
+    event_handle: Option<*mut dyn UartEvent>,
+}
+
+impl UartDevice
+{
+    pub fn new(handle: *mut UART) -> Self
+    {
+        UartDevice { handle, event_handle: None }
+    }
+}
+
+impl EventHandle<dyn UartEventPtr> for UartDevice
+{
+    #[allow(static_mut_refs)]
+    fn set_event_handle(&mut self, event_handle: &dyn UartEventPtr) -> IResult<()>
+    {
+        self.event_handle = Some(event_handle.as_event_ptr());
+        unsafe { UARTS.alloc(self.as_ptr()) }
+    }
+
+    #[allow(static_mut_refs)]
+    fn clean_event_handle(&mut self)
+    {
+        self.event_handle = None;
+        unsafe { UARTS.clean(self.as_ptr()) };
+    }
+}
+
+impl Uart for UartDevice
+{
+    fn transmit(&self, data: &[u8], timeout: u32) -> IResult<()>
+    {
+        unsafe { HAL_UART_Transmit(self.handle, data.as_ptr(), data.len() as u16, timeout).into() }
+    }
+
+    fn receive(&self, data: &mut [u8], timeout: u32) -> IResult<u32>
+    {
+        let mut size: u16 = 0;
+        unsafe { HAL_UARTEx_ReceiveToIdle(self.handle, data.as_ptr(), data.len() as u16, &mut size, timeout).ok()? };
+        Ok(size as u32)
+    }
+
+    fn receive_size(&self, data: &mut [u8], timeout: u32) -> IResult<()>
+    {
+        unsafe { HAL_UART_Receive(self.handle, data.as_ptr(), data.len() as u16, timeout).into() }
+    }
+
+    fn async_transmit(&self, data: &[u8]) -> IResult<()>
+    {
+        unsafe { HAL_UART_Transmit_DMA(self.handle, data.as_ptr(), data.len() as u16).into() }
+    }
+
+    fn async_receive(&self, data: &mut [u8]) -> IResult<()>
+    {
+        unsafe { HAL_UARTEx_ReceiveToIdle_DMA(self.handle, data.as_ptr(), data.len() as u16).into() }
+    }
+
+    fn async_receive_size(&self, data: &mut [u8]) -> IResult<()>
+    {
+        unsafe { HAL_UART_Receive_DMA(self.handle, data.as_ptr(), data.len() as u16).into() }
+    }
+
+    fn abort(&self) -> IResult<()>
+    {
+        unsafe { HAL_UART_Abort(self.handle).into() }
+    }
+}
+
+#[no_mangle]
+#[allow(static_mut_refs)]
+pub unsafe extern "C" fn HAL_UART_TxCpltCallback(uart: *mut UART)
+{
+    if let Some(sample) = UARTS.find(uart).ok()
+    {
+        if let Some(event_handle) = (*sample).event_handle
+        {
+            (*event_handle).on_uart_tx_complete();
+        }
+    }
+}
+
+// #[no_mangle]
+// pub unsafe extern "C" fn HAL_UART_TxHalfCpltCallback(uart: *mut UART) {}
+
+#[no_mangle]
+#[allow(static_mut_refs)]
+pub unsafe extern "C" fn HAL_UART_RxCpltCallback(uart: *mut UART)
+{
+    if let Some(sample) = UARTS.find(uart).ok()
+    {
+        if let Some(event_handle) = (*sample).event_handle
+        {
+            (*event_handle).on_uart_rx_size_complete();
+        }
+    }
+}
+
+// #[no_mangle]
+// pub extern "C" fn HAL_UART_RxHalfCpltCallback(uart: *mut UART) {}
+
+#[no_mangle]
+#[allow(static_mut_refs)]
+pub unsafe extern "C" fn HAL_UART_ErrorCallback(uart: *mut UART)
+{
+    if let Some(sample) = UARTS.find(uart).ok()
+    {
+        if let Some(event_handle) = (*sample).event_handle
+        {
+            (*event_handle).on_uart_error();
+        }
+    }
+}
+
+#[no_mangle]
+#[allow(static_mut_refs)]
+pub unsafe extern "C" fn HAL_UART_AbortCpltCallback(uart: *mut UART)
+{
+    if let Some(sample) = UARTS.find(uart).ok()
+    {
+        if let Some(event_handle) = (*sample).event_handle
+        {
+            (*event_handle).on_uart_abort_complete();
+        }
+    }
+}
+
+// #[no_mangle]
+// pub unsafe extern "C" fn HAL_UART_AbortTransmitCpltCallback(uart: *mut UART) {}
+
+// #[no_mangle]
+// pub unsafe extern "C" fn HAL_UART_AbortReceiveCpltCallback(uart: *mut UART) {}
+
+#[no_mangle]
+#[allow(static_mut_refs)]
+pub unsafe extern "C" fn HAL_UARTEx_RxEventCallback(uart: *mut UART, size: u16)
+{
+    if let Some(sample) = UARTS.find(uart).ok()
+    {
+        if let Some(event_handle) = (*sample).event_handle
+        {
+            (*event_handle).on_uart_rx_complete(size as u32);
+        }
+    }
+}
