@@ -58,7 +58,8 @@ const osThreadAttr_t AppTask_attributes = {
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-
+extern void app_init(void);
+extern void app_main(void);
 /* USER CODE END FunctionPrototypes */
 
 void AppTaskMain(void *argument);
@@ -103,7 +104,9 @@ void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName)
   */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
-
+  #if defined(APP_INIT)
+  app_init();
+  #endif /* APP_INIT */
   /* USER CODE END Init */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -147,6 +150,9 @@ __weak void AppTaskMain(void *argument)
 {
   /* USER CODE BEGIN AppTaskMain */
   (void)argument;
+  #if defined(APP_MAIN)
+  app_main();
+  #endif /* APP_INIT */
   /* USER CODE END AppTaskMain */
 }
 

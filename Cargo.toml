@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["scems", "scems/marco", "scems-addons"]
+members = ["main", "scems", "scems/marco", "scems-addons"]
 
 [profile.dev]
 opt-level = 1

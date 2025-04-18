@@ -1,0 +1,92 @@
+{
+    "version": "2.0.0",
+    "inputs": [
+        {
+            "id": "platformName",
+            "type": "pickString",
+            "description": "Please select a platform.",
+            "options": [
+                "challen-v2-f429"
+            ]
+        }
+    ],
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "Make",
+            "command": "make PLATFORM=${input:platformName}",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build",
+            "detail": "Compiler: arm-none-eabi-gcc"
+        },
+        {
+            "type": "shell",
+            "label": "Make Clean",
+            "command": "make clean",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build",
+            "detail": "Compiler: arm-none-eabi-gcc"
+        },
+        {
+            "type": "shell",
+            "label": "Make DistClean",
+            "command": "make distclean",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build",
+            "detail": "Compiler: arm-none-eabi-gcc"
+        },
+        {
+            "type": "shell",
+            "label": "Download",
+            "command": "openocd",
+            "args": [
+                "-f",
+                "platform/${input:platformName}/${input:platformName}.cfg",
+                "-c",
+                "program build/platform/${input:platformName}/${input:platformName}.elf 0x08000000 verify reset exit"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "dependsOn": "Build",
+            "group": "build",
+            "detail": "Programmer: openocd"
+        },
+        {
+            "type": "shell",
+            "label": "Dump Executable",
+            "command": "arm-none-eabi-objdump -d build/${input:platformName}.elf > build/${input:platformName}.dump.s",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "dependsOn": "Build",
+            "group": "build",
+            "detail": "Programmer: openocd"
+        }
+    ]
+}

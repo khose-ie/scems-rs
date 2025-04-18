@@ -60,6 +60,10 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Add project symbols (macros)
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined symbols
+    $<$<BOOL:${APP_INIT_FILE}>:APP_INIT>
+    $<$<BOOL:${APP_MAIN_FILE}>:APP_INIT>
+    $<$<BOOL:${APP_MAIN_LIB}>:APP_MAIN>
+    $<$<BOOL:${APP_MAIN_LIB}>:APP_MAIN>
 )
 
 # Add linked libraries
@@ -67,4 +71,6 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
     stm32cubemx
 
     # Add user defined libraries
+    ${APP_INIT_LIB}
+    ${APP_MAIN_LIB}
 )
