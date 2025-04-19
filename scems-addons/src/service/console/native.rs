@@ -64,6 +64,7 @@ impl<'a> ConsoleServiceNative<'a>
     {
         let mut cursor = BufWriter::new(self.cache.as_mut());
         let _ = write!(cursor, "{}", _args);
+        cursor.add_end();
         let content = core::str::from_utf8(cursor.as_bytes()).unwrap_or("<invalid utf8>");
 
         self.terminal.write_content(content);
@@ -86,6 +87,19 @@ impl<'a> BufWriter<'a>
     pub fn as_bytes(&self) -> &[u8]
     {
         &self.buf[..self.pos]
+    }
+
+    pub fn add_end(&mut self)
+    {
+        if self.pos >= self.buf.len() - 1
+        {
+            self.pos = self.buf.len() - 2;
+        }
+
+        self.buf[self.pos] = b'\r';
+        self.pos += 1;
+        self.buf[self.pos] = b'\n';
+        self.pos += 1;
     }
 }
 

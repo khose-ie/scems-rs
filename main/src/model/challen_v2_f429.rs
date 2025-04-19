@@ -1,3 +1,4 @@
+use scems::common::log::LogLevel;
 use scems::info;
 use scems::mcu::vendors::uart::UartDevice;
 use scems::mcu::vendors::UART;
@@ -34,8 +35,13 @@ pub unsafe fn app_main()
 
     console_service.assign_serial_terminal(SerialTerminal::new(UartDevice::new(&mut huart1)).unwrap()).unwrap();
     scems::common::log::assign_stream(console_service.as_mut());
+    scems::common::log::set_level(LogLevel::Debug);
 
-    info!("===========> scems <============");
+    info!("     ___  ___ ___ _ __ ___  ___ \r");
+    info!("    / __|/ __/ _ \\ '_ ` _ \\/ __|\r");
+    info!("    \\__ \\ (_|  __/ | | | | \\__ \\\r");
+    info!("    |___/\\___\\___|_| |_| |_|___/\r");
+    info!("");
 }
 
 pub unsafe fn initialize_mem_pools()
