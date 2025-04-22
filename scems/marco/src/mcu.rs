@@ -57,33 +57,3 @@ pub fn derive_handle_ptr(input: TokenStream) -> TokenStream
 
     TokenStream::from(expanded)
 }
-
-pub fn derive_as_event_ptr(input: TokenStream, event: proc_macro2::TokenStream) -> TokenStream
-{
-    let input = parse_macro_input!(input as Item);
-    let item = match input
-    {
-        Item::Struct(item_struct) => item_struct,
-        _ => panic!("EventImplement only supports struct and trait with default implementations."),
-    };
-
-    let name = &item.ident;
-    let generics = &item.generics;
-    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
-
-    let expanded = quote! {
-
-        impl #impl_generics #event for #name #ty_generics #where_clause {}
-
-        impl #impl_generics AsEventPtr<dyn #event> for #name #ty_generics #where_clause
-        {
-            #[inline]
-            fn as_event_ptr(&self) -> *mut dyn #event
-            {
-                self as *const dyn #event as *mut dyn #event
-            }
-        }
-    };
-
-    TokenStream::from(expanded)
-}

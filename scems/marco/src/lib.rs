@@ -33,16 +33,34 @@ pub fn enum_cast_u32(input: TokenStream) -> TokenStream
     derive_enum_cast(input, quote! { u32 })
 }
 
+#[proc_macro_derive(EnumCastUsize)]
+pub fn enum_cast_usize(input: TokenStream) -> TokenStream
+{
+    derive_enum_cast(input, quote! { usize })
+}
+
+#[proc_macro_derive(EnumCastI8)]
+pub fn enum_cast_i8(input: TokenStream) -> TokenStream
+{
+    derive_enum_cast(input, quote! { i8 })
+}
+
+#[proc_macro_derive(EnumCastI16)]
+pub fn enum_cast_i16(input: TokenStream) -> TokenStream
+{
+    derive_enum_cast(input, quote! { i16 })
+}
+
 #[proc_macro_derive(EnumCastI32)]
 pub fn enum_cast_i32(input: TokenStream) -> TokenStream
 {
     derive_enum_cast(input, quote! { i32 })
 }
 
-#[proc_macro_derive(EnumCastUsize)]
-pub fn enum_cast_usize(input: TokenStream) -> TokenStream
+#[proc_macro_derive(EnumCastIsize)]
+pub fn enum_cast_isize(input: TokenStream) -> TokenStream
 {
-    derive_enum_cast(input, quote! { usize })
+    derive_enum_cast(input, quote! { isize })
 }
 
 #[proc_macro_derive(AsPtr)]
@@ -55,16 +73,4 @@ pub fn as_ptr(input: TokenStream) -> TokenStream
 pub fn handle_ptr(input: TokenStream) -> TokenStream
 {
     derive_handle_ptr(input)
-}
-
-#[proc_macro_derive(AsIoEventPtr)]
-pub fn as_io_event_ptr(input: TokenStream) -> TokenStream
-{
-    derive_as_event_ptr(input, quote! { IoEvent })
-}
-
-#[proc_macro_derive(AsUartEventPtr)]
-pub fn as_uart_event_ptr(input: TokenStream) -> TokenStream
-{
-    derive_as_event_ptr(input, quote! { UartEvent })
 }
