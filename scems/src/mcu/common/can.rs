@@ -1,10 +1,10 @@
 use crate::common::result::IResult;
 
-use super::{AsEventPtr, EventHandle};
+use super::EventLaunch;
 
 pub trait Can
 where
-    Self: EventHandle<dyn CanEventPtr>,
+    Self: EventLaunch<dyn CanEventAgent>,
 {
     fn activate(&self) -> IResult<()>;
     fn deactivate(&self) -> IResult<()>;
@@ -21,10 +21,10 @@ pub trait CanEvent
     fn on_can_error(&mut self) {}
 }
 
-pub trait CanEventPtr
-where
-    Self: CanEvent + AsEventPtr<dyn CanEvent>,
+pub trait CanEventAgent
 {
+    fn on_can_message_receive(&self) {}
+    fn on_can_error(&self) {}
 }
 
 #[derive(Default)]

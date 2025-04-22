@@ -1,7 +1,9 @@
+use core::mem::transmute;
+
 use crate::common::result::{IError, IResult};
 use crate::derive::{AsPtr, HandlePtr};
-use crate::mcu::common::can::{Can, CanEvent, CanEventPtr, CanMessage};
-use crate::mcu::common::{EventHandle, HandlePtr};
+use crate::mcu::common::can::{Can, CanEventAgent, CanMessage};
+use crate::mcu::common::{EventLaunch, HandlePtr};
 use crate::mcu::vendors::stm::common::DeviceQueue;
 use crate::mcu::vendors::stm::native::can::*;
 use crate::mcu::vendors::stm::native::common::{HAL_Status, *};
@@ -13,7 +15,7 @@ static mut CANS: DeviceQueue<CAN, CanDevice, CAN_COUNT> = DeviceQueue::new();
 pub struct CanDevice
 {
     handle: *mut CAN,
-    event_handle: Option<*mut dyn CanEvent>,
+    event_handle: Option<*const dyn CanEventAgent>,
     fifo: u32,
     async_cache: Option<*mut CanMessage>,
 }
@@ -26,17 +28,25 @@ impl CanDevice
     }
 }
 
-impl EventHandle<dyn CanEventPtr> for CanDevice
+impl Drop for CanDevice
+{
+    fn drop(&mut self)
+    {
+        self.clean_event_agent();
+    }
+}
+
+impl EventLaunch<dyn CanEventAgent> for CanDevice
 {
     #[allow(static_mut_refs)]
-    fn set_event_handle(&mut self, event_handle: &dyn CanEventPtr) -> IResult<()>
+    fn set_event_agent(&mut self, event_handle: &dyn CanEventAgent) -> IResult<()>
     {
-        self.event_handle = Some(event_handle.as_event_ptr());
+        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn CanEventAgent) });
         unsafe { CANS.alloc(self.as_ptr()) }
     }
 
     #[allow(static_mut_refs)]
-    fn clean_event_handle(&mut self)
+    fn clean_event_agent(&mut self)
     {
         self.event_handle = None;
         unsafe { CANS.clean(self.as_ptr()) };

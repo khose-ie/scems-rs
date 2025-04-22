@@ -4,12 +4,12 @@
 
 use crate::derive::EnumCastU32;
 
-use super::{AsEventPtr, EventHandle};
+use super::EventLaunch;
 
 /// Trait providing operations of an GPIO pin.
 pub trait Io
 where
-    Self: EventHandle<dyn IoEventPtr>,
+    Self: EventLaunch<dyn IoEventAgent>,
 {
     type Pin;
 
@@ -28,10 +28,9 @@ pub trait IoEvent
     fn on_io_state_change(&mut self) {}
 }
 
-pub trait IoEventPtr
-where
-    Self: IoEvent + AsEventPtr<dyn IoEvent>,
+pub trait IoEventAgent
 {
+    fn on_io_state_change(&self) {}
 }
 
 /// Level state of a GPIO.

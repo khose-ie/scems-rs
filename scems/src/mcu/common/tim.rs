@@ -1,10 +1,10 @@
 use crate::common::result::IResult;
 
-use super::{AsEventPtr, EventHandle};
+use super::EventLaunch;
 
 pub trait TimBase
 where
-    Self: EventHandle<dyn TimBaseEventPtr>,
+    Self: EventLaunch<dyn TimBaseEventAgent>,
 {
     fn activate(&self) -> IResult<()>;
     fn deactivate(&self);
@@ -20,15 +20,14 @@ pub trait TimBaseEvent
     fn on_tim_base_elapse(&mut self) {}
 }
 
-pub trait TimBaseEventPtr
-where
-    Self: TimBaseEvent + AsEventPtr<dyn TimBaseEvent>,
+pub trait TimBaseEventAgent
 {
+    fn on_tim_base_elapse(&self) {}
 }
 
 pub trait TimPwm
 where
-    Self: EventHandle<dyn TimPwmEventPtr>,
+    Self: EventLaunch<dyn TimPwmEventAgent>,
 {
     fn activate(&self) -> IResult<()>;
     fn deactivate(&self);
@@ -44,8 +43,7 @@ pub trait TimPwmEvent
     fn on_tim_pwm_finish(&mut self) {}
 }
 
-pub trait TimPwmEventPtr
-where
-    Self: TimPwmEvent + AsEventPtr<dyn TimPwmEvent>,
+pub trait TimPwmEventAgent
 {
+    fn on_tim_pwm_finish(&self) {}
 }

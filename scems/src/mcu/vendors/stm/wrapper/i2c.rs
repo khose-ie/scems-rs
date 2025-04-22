@@ -1,13 +1,12 @@
-use core::mem::ManuallyDrop;
+use core::mem::{transmute, ManuallyDrop};
 
 use crate::common::result::IResult;
 use crate::derive::{AsPtr, HandlePtr};
-use crate::mcu::common::i2c::{I2cMaster, I2cMasterEvent, I2cMasterEventPtr};
-use crate::mcu::common::i2c::{I2cMem, I2cMemEvent, I2cMemEventPtr, I2cMemWide};
-use crate::mcu::common::i2c::{I2cSlave, I2cSlaveEvent, I2cSlaveEventPtr};
-use crate::mcu::common::{EventHandle, HandlePtr};
+use crate::mcu::common::i2c::{I2cMaster, I2cMasterEventAgent};
+use crate::mcu::common::i2c::{I2cMem, I2cMemEventAgent, I2cMemWide};
+use crate::mcu::common::i2c::{I2cSlave, I2cSlaveEventAgent};
+use crate::mcu::common::{EventLaunch, HandlePtr};
 use crate::mcu::vendors::stm::common::DeviceQueue;
-use crate::mcu::vendors::stm::native::i2c::I2C;
 use crate::mcu::vendors::stm::native::i2c::*;
 
 const I2C_COUNT: usize = 8;
@@ -34,7 +33,7 @@ impl HandlePtr<I2C> for I2cDevice
 pub struct I2cMemDevice
 {
     handle: *mut I2C,
-    event_handle: Option<*mut dyn I2cMemEvent>,
+    event_handle: Option<*const dyn I2cMemEventAgent>,
 }
 
 impl I2cMemDevice
@@ -50,17 +49,25 @@ impl I2cMemDevice
     }
 }
 
-impl EventHandle<dyn I2cMemEventPtr> for I2cMemDevice
+impl Drop for I2cMemDevice
+{
+    fn drop(&mut self)
+    {
+        self.clean_event_agent();
+    }
+}
+
+impl EventLaunch<dyn I2cMemEventAgent> for I2cMemDevice
 {
     #[allow(static_mut_refs)]
-    fn set_event_handle(&mut self, event_handle: &dyn I2cMemEventPtr) -> IResult<()>
+    fn set_event_agent(&mut self, event_handle: &dyn I2cMemEventAgent) -> IResult<()>
     {
-        self.event_handle = Some(event_handle.as_event_ptr());
+        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn I2cMemEventAgent) });
         unsafe { I2CS.alloc(self.as_i2c_ptr()) }
     }
 
     #[allow(static_mut_refs)]
-    fn clean_event_handle(&mut self)
+    fn clean_event_agent(&mut self)
     {
         self.event_handle = None;
         unsafe { I2CS.clean(self.as_i2c_ptr()) };
@@ -102,7 +109,7 @@ impl I2cMem for I2cMemDevice
 pub struct I2cMasterDevice
 {
     handle: *mut I2C,
-    event_handle: Option<*mut dyn I2cMasterEvent>,
+    event_handle: Option<*const dyn I2cMasterEventAgent>,
 }
 
 impl I2cMasterDevice
@@ -118,17 +125,25 @@ impl I2cMasterDevice
     }
 }
 
-impl EventHandle<dyn I2cMasterEventPtr> for I2cMasterDevice
+impl Drop for I2cMasterDevice
+{
+    fn drop(&mut self)
+    {
+        self.clean_event_agent();
+    }
+}
+
+impl EventLaunch<dyn I2cMasterEventAgent> for I2cMasterDevice
 {
     #[allow(static_mut_refs)]
-    fn set_event_handle(&mut self, event_handle: &dyn I2cMasterEventPtr) -> IResult<()>
+    fn set_event_agent(&mut self, event_handle: &dyn I2cMasterEventAgent) -> IResult<()>
     {
-        self.event_handle = Some(event_handle.as_event_ptr());
+        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn I2cMasterEventAgent) });
         unsafe { I2CS.alloc(self.as_i2c_ptr()) }
     }
 
     #[allow(static_mut_refs)]
-    fn clean_event_handle(&mut self)
+    fn clean_event_agent(&mut self)
     {
         self.event_handle = None;
         unsafe { I2CS.clean(self.as_i2c_ptr()) };
@@ -162,7 +177,7 @@ impl I2cMaster for I2cMasterDevice
 pub struct I2cSlaveDevice
 {
     handle: *mut I2C,
-    event_handle: Option<*mut dyn I2cSlaveEvent>,
+    event_handle: Option<*const dyn I2cSlaveEventAgent>,
 }
 
 impl I2cSlaveDevice
@@ -178,17 +193,25 @@ impl I2cSlaveDevice
     }
 }
 
-impl EventHandle<dyn I2cSlaveEventPtr> for I2cSlaveDevice
+impl Drop for I2cSlaveDevice
+{
+    fn drop(&mut self)
+    {
+        self.clean_event_agent();
+    }
+}
+
+impl EventLaunch<dyn I2cSlaveEventAgent> for I2cSlaveDevice
 {
     #[allow(static_mut_refs)]
-    fn set_event_handle(&mut self, event_handle: &dyn I2cSlaveEventPtr) -> IResult<()>
+    fn set_event_agent(&mut self, event_handle: &dyn I2cSlaveEventAgent) -> IResult<()>
     {
-        self.event_handle = Some(event_handle.as_event_ptr());
+        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn I2cSlaveEventAgent) });
         unsafe { I2CS.alloc(self.as_i2c_ptr()) }
     }
 
     #[allow(static_mut_refs)]
-    fn clean_event_handle(&mut self)
+    fn clean_event_agent(&mut self)
     {
         self.event_handle = None;
         unsafe { I2CS.clean(self.as_i2c_ptr()) };

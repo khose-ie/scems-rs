@@ -1,7 +1,9 @@
+use core::mem::transmute;
+
 use crate::common::result::IResult;
 use crate::derive::{AsPtr, HandlePtr};
-use crate::mcu::common::uart::{Uart, UartEvent, UartEventPtr};
-use crate::mcu::common::{EventHandle, HandlePtr};
+use crate::mcu::common::uart::{Uart, UartEventAgent};
+use crate::mcu::common::{EventLaunch, HandlePtr};
 use crate::mcu::vendors::stm::common::DeviceQueue;
 use crate::mcu::vendors::stm::native::uart::*;
 
@@ -12,7 +14,7 @@ static mut UARTS: DeviceQueue<UART, UartDevice, UART_COUNT> = DeviceQueue::new()
 pub struct UartDevice
 {
     handle: *mut UART,
-    event_handle: Option<*mut dyn UartEvent>,
+    event_handle: Option<*const dyn UartEventAgent>,
 }
 
 impl UartDevice
@@ -23,17 +25,25 @@ impl UartDevice
     }
 }
 
-impl EventHandle<dyn UartEventPtr> for UartDevice
+impl Drop for UartDevice
+{
+    fn drop(&mut self)
+    {
+        self.clean_event_agent();
+    }
+}
+
+impl EventLaunch<dyn UartEventAgent> for UartDevice
 {
     #[allow(static_mut_refs)]
-    fn set_event_handle(&mut self, event_handle: &dyn UartEventPtr) -> IResult<()>
+    fn set_event_agent(&mut self, event_handle: &dyn UartEventAgent) -> IResult<()>
     {
-        self.event_handle = Some(event_handle.as_event_ptr());
+        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn UartEventAgent) });
         unsafe { UARTS.alloc(self.as_ptr()) }
     }
 
     #[allow(static_mut_refs)]
-    fn clean_event_handle(&mut self)
+    fn clean_event_agent(&mut self)
     {
         self.event_handle = None;
         unsafe { UARTS.clean(self.as_ptr()) };

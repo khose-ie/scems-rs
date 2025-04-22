@@ -1,10 +1,10 @@
 use crate::common::result::IResult;
 
-use super::{AsEventPtr, EventHandle};
+use super::EventLaunch;
 
 pub trait Adc
 where
-    Self: EventHandle<dyn AdcEventPtr>,
+    Self: EventLaunch<dyn AdcEventAgent>,
 {
     fn convert_once(&self) -> IResult<u32>;
     fn async_convert_once(&self) -> IResult<()>;
@@ -19,8 +19,9 @@ pub trait AdcEvent
     fn on_adc_error(&mut self) {}
 }
 
-pub trait AdcEventPtr
-where
-    Self: AdcEvent + AsEventPtr<dyn AdcEvent>,
+pub trait AdcEventAgent
 {
+    fn on_adc_convert_once_complete(&self, _value: u32) {}
+    fn on_adc_level_out_of_window(&self) {}
+    fn on_adc_error(&self) {}
 }

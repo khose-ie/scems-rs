@@ -1,7 +1,9 @@
+use core::mem::transmute;
+
 use crate::common::result::IResult;
 use crate::derive::{AsPtr, HandlePtr};
-use crate::mcu::common::spi::{Spi, SpiEvent, SpiEventPtr};
-use crate::mcu::common::{EventHandle, HandlePtr};
+use crate::mcu::common::spi::{Spi, SpiEventAgent};
+use crate::mcu::common::{EventLaunch, HandlePtr};
 use crate::mcu::vendors::stm::common::DeviceQueue;
 use crate::mcu::vendors::stm::native::spi::*;
 
@@ -12,7 +14,7 @@ static mut SPIS: DeviceQueue<SPI, SpiDevice, SPI_COUNT> = DeviceQueue::new();
 pub struct SpiDevice
 {
     handle: *mut SPI,
-    event_handle: Option<*mut dyn SpiEvent>,
+    event_handle: Option<*const dyn SpiEventAgent>,
 }
 
 impl SpiDevice
@@ -23,17 +25,25 @@ impl SpiDevice
     }
 }
 
-impl EventHandle<dyn SpiEventPtr> for SpiDevice
+impl Drop for SpiDevice
+{
+    fn drop(&mut self)
+    {
+        self.clean_event_agent();
+    }
+}
+
+impl EventLaunch<dyn SpiEventAgent> for SpiDevice
 {
     #[allow(static_mut_refs)]
-    fn set_event_handle(&mut self, event_handle: &dyn SpiEventPtr) -> IResult<()>
+    fn set_event_agent(&mut self, event_handle: &dyn SpiEventAgent) -> IResult<()>
     {
-        self.event_handle = Some(event_handle.as_event_ptr());
+        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn SpiEventAgent) });
         unsafe { SPIS.alloc(self.as_ptr()) }
     }
 
     #[allow(static_mut_refs)]
-    fn clean_event_handle(&mut self)
+    fn clean_event_agent(&mut self)
     {
         self.event_handle = None;
         unsafe { SPIS.clean(self.as_ptr()) };

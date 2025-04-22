@@ -1,8 +1,9 @@
+use core::mem::transmute;
+
 use crate::common::result::IResult;
-use crate::derive::AsIoEventPtr;
 use crate::derive::{EnumCastU16, EnumCount};
-use crate::mcu::common::io::{Io, IoEvent, IoEventPtr, IoState};
-use crate::mcu::common::{AsEventPtr, EventHandle};
+use crate::mcu::common::io::{Io, IoEventAgent, IoState};
+use crate::mcu::common::EventLaunch;
 use crate::mcu::vendors::stm::native::io::*;
 
 #[repr(u16)]
@@ -27,11 +28,11 @@ pub enum IoPin
     P15 = 0x8000,
 }
 
-#[derive(AsIoEventPtr)]
-pub struct IoEventDefault;
+pub struct IoEventAgentDefault;
+impl IoEventAgent for IoEventAgentDefault {}
 
-static DEF_EVENT_HANDLE: IoEventDefault = IoEventDefault;
-static mut EVENT_HANDLES: [Option<*mut dyn IoEvent>; IoPin::count()] = [None; IoPin::count()];
+static DEF_EVENT_AGENTE: IoEventAgentDefault = IoEventAgentDefault;
+static mut EVENT_AGENTS: [Option<*const dyn IoEventAgent>; IoPin::count()] = [None; IoPin::count()];
 
 pub struct IoDevice
 {
@@ -47,19 +48,29 @@ impl IoDevice
     }
 }
 
-impl EventHandle<dyn IoEventPtr> for IoDevice
+impl Drop for IoDevice
 {
-    fn set_event_handle(&mut self, event_handle: &dyn IoEventPtr) -> IResult<()>
+    fn drop(&mut self)
+    {
+        self.clean_event_agent();
+    }
+}
+
+impl EventLaunch<dyn IoEventAgent> for IoDevice
+{
+    fn set_event_agent(&mut self, event_handle: &dyn IoEventAgent) -> IResult<()>
     {
         let pin: u16 = self.pin.into();
-        unsafe { EVENT_HANDLES[pin.trailing_zeros() as usize] = Some(event_handle.as_event_ptr()) };
+        unsafe {
+            EVENT_AGENTS[pin.trailing_zeros() as usize] = Some(transmute(event_handle as *const dyn IoEventAgent))
+        };
         Ok(())
     }
 
-    fn clean_event_handle(&mut self)
+    fn clean_event_agent(&mut self)
     {
         let pin: u16 = self.pin.into();
-        unsafe { EVENT_HANDLES[pin.trailing_zeros() as usize] = None };
+        unsafe { EVENT_AGENTS[pin.trailing_zeros() as usize] = None };
     }
 }
 
@@ -86,20 +97,23 @@ impl Io for IoDevice
 #[no_mangle]
 pub unsafe extern "C" fn HAL_GPIO_EXTI_Callback(pin: u16)
 {
-    let event_handle = &mut *EVENT_HANDLES[pin.trailing_zeros() as usize].unwrap_or(DEF_EVENT_HANDLE.as_event_ptr());
-    event_handle.on_io_state_change();
+    let event_handle =
+        EVENT_AGENTS[pin.trailing_zeros() as usize].unwrap_or(transmute(&DEF_EVENT_AGENTE as *const dyn IoEventAgent));
+    (*event_handle).on_io_state_change();
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn HAL_GPIO_EXTI_Rising_Callback(pin: u16)
 {
-    let event_handle = &mut *EVENT_HANDLES[pin.trailing_zeros() as usize].unwrap_or(DEF_EVENT_HANDLE.as_event_ptr());
-    event_handle.on_io_state_change();
+    let event_handle =
+        EVENT_AGENTS[pin.trailing_zeros() as usize].unwrap_or(transmute(&DEF_EVENT_AGENTE as *const dyn IoEventAgent));
+    (*event_handle).on_io_state_change();
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn HAL_GPIO_EXTI_Falling_Callback(pin: u16)
 {
-    let event_handle = &mut *EVENT_HANDLES[pin.trailing_zeros() as usize].unwrap_or(DEF_EVENT_HANDLE.as_event_ptr());
-    event_handle.on_io_state_change();
+    let event_handle =
+        EVENT_AGENTS[pin.trailing_zeros() as usize].unwrap_or(transmute(&DEF_EVENT_AGENTE as *const dyn IoEventAgent));
+    (*event_handle).on_io_state_change();
 }

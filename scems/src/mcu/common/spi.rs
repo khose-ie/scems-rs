@@ -1,10 +1,10 @@
 use crate::common::result::IResult;
 
-use super::{AsEventPtr, EventHandle};
+use super::EventLaunch;
 
 pub trait Spi
 where
-    Self: EventHandle<dyn SpiEventPtr>,
+    Self: EventLaunch<dyn SpiEventAgent>,
 {
     fn transmit(&self, data: &[u8], timeout: u32) -> IResult<()>;
     fn receive(&self, data: &mut [u8], timeout: u32) -> IResult<()>;
@@ -26,8 +26,11 @@ pub trait SpiEvent
     fn on_spi_error(&mut self) {}
 }
 
-pub trait SpiEventPtr
-where
-    Self: SpiEvent + AsEventPtr<dyn SpiEvent>,
+pub trait SpiEventAgent
 {
+    fn on_spi_tx_complete(&self) {}
+    fn on_spi_rx_complete(&self) {}
+    fn on_spi_tx_rx_complete(&self) {}
+    fn on_spi_abort_complete(&self) {}
+    fn on_spi_error(&self) {}
 }

@@ -31,20 +31,15 @@ pub trait Mcu
     type WatchDog: wd::WatchDog;
 }
 
-pub trait EventHandle<T: ?Sized>
+pub trait EventLaunch<T: ?Sized>
 {
-    fn set_event_handle(&mut self, event_handle: &T) -> IResult<()>;
-    fn clean_event_handle(&mut self);
+    fn set_event_agent(&mut self, event_handle: &T) -> IResult<()>;
+    fn clean_event_agent(&mut self);
 }
 
 pub trait AsHandlePtr<T: ?Sized>
 {
     fn as_handle_ptr(&self) -> *mut T;
-}
-
-pub trait AsEventPtr<T: ?Sized>
-{
-    fn as_event_ptr(&self) -> *mut T;
 }
 
 pub trait HandlePtr<T: ?Sized>

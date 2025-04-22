@@ -1,34 +1,40 @@
 use core::ffi::c_void;
+use core::mem::transmute;
 use core::ptr::null;
 
 use crate::common::cast::CastOpt;
 use crate::common::result::IError;
 use crate::common::result::IResult;
-use crate::os::common::timer::{ITimer, TimerEvent, TimerMode};
+use crate::os::common::timer::TimerEventAgent;
+use crate::os::common::timer::{ITimer, TimerMode};
 use crate::os::vendors::cmsis_os::cmsis::*;
 
 pub struct Timer
 {
     handle: osEventFlagsId_t,
     mode: TimerMode,
-    event_handle_agent: EventHandleAgent,
+    event_agent_handle: TimerEventAgentHandle,
 }
 
 impl Timer
 {
-    pub const fn new(mode: TimerMode, event_handle: &dyn TimerEvent) -> Self
+    pub const fn new(mode: TimerMode, event_agent: &dyn TimerEventAgent) -> Self
     {
-        Timer { handle: null(), mode, event_handle_agent: EventHandleAgent::from(event_handle) }
+        Timer {
+            handle: null(),
+            mode,
+            event_agent_handle: TimerEventAgentHandle::from(unsafe { transmute(event_agent) }),
+        }
     }
 
     #[allow(static_mut_refs)]
-    pub fn func(argument: *mut c_void)
+    pub unsafe fn func(argument: *mut c_void)
     {
-        if let Some(event_handle_agent) = unsafe { (argument as *mut EventHandleAgent).as_mut() }
+        if let Some(event_agent) = (argument as *mut TimerEventAgentHandle).as_mut()
         {
-            if let Some(event_handle) = unsafe { event_handle_agent.event_handle.as_mut() }
+            if let Some(event_agent) = event_agent.event_agent()
             {
-                event_handle.on_time_over();
+                (*event_agent).on_time_over();
             }
         }
     }
@@ -52,7 +58,7 @@ impl ITimer for Timer
         if let None = self.handle.cast_opt()
         {
             self.handle =
-                unsafe { osTimerNew(Timer::func, self.mode.into(), self.event_handle_agent.as_void_ptr(), null()) };
+                unsafe { osTimerNew(Timer::func, self.mode.into(), self.event_agent_handle.as_void_ptr(), null()) };
         }
 
         let x = self.handle.cast_opt().ok_or(IError::InstanceCreate)?;
@@ -75,20 +81,32 @@ impl ITimer for Timer
     }
 }
 
-struct EventHandleAgent
+struct TimerEventAgentHandle
 {
-    event_handle: *mut dyn TimerEvent,
+    event_agent: *mut dyn TimerEventAgent,
 }
 
-impl EventHandleAgent
+impl TimerEventAgentHandle
 {
-    pub const fn from(event_handle: &dyn TimerEvent) -> Self
+    pub const fn from(event_agent: &dyn TimerEventAgent) -> Self
     {
-        Self { event_handle: event_handle as *const dyn TimerEvent as *mut dyn TimerEvent }
+        Self { event_agent: unsafe { transmute(event_agent) } }
+    }
+
+    pub const fn event_agent(&self) -> Option<*const dyn TimerEventAgent>
+    {
+        if self.event_agent.is_null()
+        {
+            None
+        }
+        else
+        {
+            Some(self.event_agent)
+        }
     }
 
     pub const fn as_void_ptr(&self) -> *mut c_void
     {
-        self as *const EventHandleAgent as *mut c_void
+        self as *const TimerEventAgentHandle as *mut c_void
     }
 }

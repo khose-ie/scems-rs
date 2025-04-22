@@ -1,10 +1,10 @@
 use crate::common::result::IResult;
 
-use super::{AsEventPtr, EventHandle};
+use super::EventLaunch;
 
 pub trait Uart
 where
-    Self: EventHandle<dyn UartEventPtr>,
+    Self: EventLaunch<dyn UartEventAgent>,
 {
     fn transmit(&self, data: &[u8], timeout: u32) -> IResult<()>;
     fn receive(&self, data: &mut [u8], timeout: u32) -> IResult<u32>;
@@ -24,8 +24,11 @@ pub trait UartEvent
     fn on_uart_error(&mut self) {}
 }
 
-pub trait UartEventPtr
-where
-    Self: UartEvent + AsEventPtr<dyn UartEvent>,
+pub trait UartEventAgent
 {
+    fn on_uart_tx_complete(&self) {}
+    fn on_uart_rx_complete(&self, _size: u32) {}
+    fn on_uart_rx_size_complete(&self) {}
+    fn on_uart_abort_complete(&self) {}
+    fn on_uart_error(&self) {}
 }

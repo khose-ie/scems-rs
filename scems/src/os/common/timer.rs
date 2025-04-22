@@ -1,6 +1,7 @@
 use crate::common::result::IResult;
 
-pub trait ITimer {
+pub trait ITimer
+{
     fn start(&mut self, times: u32) -> IResult<()>;
     fn stop(&mut self);
     fn actived(&self) -> bool;
@@ -16,4 +17,9 @@ pub enum TimerMode
 pub trait TimerEvent
 {
     fn on_time_over(&mut self) {}
+}
+
+pub trait TimerEventAgent
+{
+    fn on_time_over(&self) {}
 }

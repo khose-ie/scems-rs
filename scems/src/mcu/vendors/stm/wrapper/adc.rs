@@ -1,7 +1,9 @@
+use core::mem::transmute;
+
 use crate::common::result::IResult;
 use crate::derive::{AsPtr, HandlePtr};
-use crate::mcu::common::adc::{Adc, AdcEvent, AdcEventPtr};
-use crate::mcu::common::{EventHandle, HandlePtr};
+use crate::mcu::common::adc::{Adc, AdcEventAgent};
+use crate::mcu::common::{EventLaunch, HandlePtr};
 use crate::mcu::vendors::stm::common::DeviceQueue;
 use crate::mcu::vendors::stm::native::adc::*;
 
@@ -14,7 +16,7 @@ static mut ADCS: DeviceQueue<ADC, AdcDevice, ADC_COUNT> = DeviceQueue::new();
 pub struct AdcDevice
 {
     handle: *mut ADC,
-    event_handle: Option<*mut dyn AdcEvent>,
+    event_handle: Option<*const dyn AdcEventAgent>,
 }
 
 impl AdcDevice
@@ -25,20 +27,31 @@ impl AdcDevice
     }
 }
 
-impl EventHandle<dyn AdcEventPtr> for AdcDevice
+impl Drop for AdcDevice
+{
+    fn drop(&mut self)
+    {
+        self.clean_event_agent();
+    }
+}
+
+impl EventLaunch<dyn AdcEventAgent> for AdcDevice
 {
     #[allow(static_mut_refs)]
-    fn set_event_handle(&mut self, event_handle: &dyn AdcEventPtr) -> IResult<()>
+    fn set_event_agent(&mut self, event_handle: &dyn AdcEventAgent) -> IResult<()>
     {
-        self.event_handle = Some(event_handle.as_event_ptr());
+        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn AdcEventAgent) });
         unsafe { ADCS.alloc(self.as_ptr()) }
     }
 
     #[allow(static_mut_refs)]
-    fn clean_event_handle(&mut self)
+    fn clean_event_agent(&mut self)
     {
-        self.event_handle = None;
-        unsafe { ADCS.clean(self.as_ptr()) };
+        if let Some(_) = self.event_handle
+        {
+            unsafe { ADCS.clean(self.as_ptr()) };
+            self.event_handle = None;
+        }
     }
 }
 
