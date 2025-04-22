@@ -69,6 +69,16 @@ impl<'a> ConsoleServiceNative<'a>
 
         self.terminal.write_content(content);
     }
+
+    pub fn async_write_content(&mut self, _args: Arguments)
+    {
+        let mut cursor = BufWriter::new(self.cache.as_mut());
+        let _ = write!(cursor, "{}", _args);
+        cursor.add_end();
+        let content = core::str::from_utf8(cursor.as_bytes()).unwrap_or("<invalid utf8>");
+
+        self.terminal.async_write_content(content);
+    }
 }
 
 pub struct BufWriter<'a>

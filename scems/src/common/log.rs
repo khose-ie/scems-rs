@@ -12,7 +12,7 @@ pub enum LogLevel
 pub trait LogStream
 {
     fn write_content(&self, _args: Arguments) {}
-    fn as_log_stream(&self) -> &dyn LogStream;
+    fn async_write_content(&self, _args: Arguments) {}
 }
 
 static mut WRITER: LogWriter = LogWriter::new();

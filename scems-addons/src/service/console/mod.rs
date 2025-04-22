@@ -26,6 +26,7 @@ pub trait ConsoleTerminal
 {
     fn tick<'a>(&mut self, dispatches: &dyn ConsoleCommandDispatches);
     fn write_content(&self, _content: &str);
+    fn async_write_content(&self, _content: &str);
 }
 
 pub trait ConsoleCommandStore<'a>
@@ -107,8 +108,8 @@ impl<'a> LogStream for ConsoleService<'a>
         self.native.lock(|native| native.write_content(_args));
     }
 
-    fn as_log_stream(&self) -> &dyn LogStream
+    fn async_write_content(&self, _args: Arguments)
     {
-        self
+        self.native.lock(|native| native.async_write_content(_args));
     }
 }

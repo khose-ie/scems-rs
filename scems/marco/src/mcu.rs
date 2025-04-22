@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, DeriveInput, Field, Fields, Item, Type};
+use syn::{parse_macro_input, DeriveInput, Field, Fields, Type};
 
 pub fn derive_handle_ptr(input: TokenStream) -> TokenStream
 {
