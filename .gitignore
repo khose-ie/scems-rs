@@ -141,8 +141,16 @@ DebugConfig/
 Listings/
 Objects/
 
+#
 # RUST target files
+#
 target/
+
+#
+# Common library files of STMicroelectronic
+#
+platform/**/Drivers
+platform/**/Middlewares
 
 #
 # Doxygen generated document files
@@ -150,7 +158,7 @@ target/
 docs/doxygen
 
 #
-# macOS shuts
+# macOS shits
 #
 .DS_Store
 
