@@ -4,13 +4,12 @@ mod model;
 
 use core::panic::PanicInfo;
 
+#[inline]
 #[no_mangle]
-#[rustfmt::skip]
 #[allow(static_mut_refs)]
 pub unsafe extern "C" fn app_main()
 {
     model::app_main();
-    loop {}
 }
 
 #[rustfmt::skip]

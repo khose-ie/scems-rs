@@ -53,8 +53,6 @@ ifeq ($(PROFILE),release)
   CMAKE_BUILD_TYPE = Release
 endif
 
-APP_INIT_FILE ?= $(BASE)/$(PLATFORM_PATH)/$(PLATFORM).initialize.c
-
 all: platform_with_app
 
 # Build the RUST based app code and generate a static library.
@@ -69,7 +67,7 @@ clean-app:
 # Build the C based platform code and generate the embedded image.
 platform:
 	@$(ECHO) "----------------------------- Compile Platform -----------------------------"
-	$(CMAKE) -S $(PLATFORM_PATH) -B $(CMAKE_BUILD) --preset $(CMAKE_BUILD_TYPE) -DAPP_INIT_FILE=$(APP_INIT_FILE)
+	$(CMAKE) -S $(PLATFORM_PATH) -B $(CMAKE_BUILD) --preset $(CMAKE_BUILD_TYPE)
 	@$(CMAKE) --build $(CMAKE_BUILD)
 
 # Build the C based platform with RUST based app code and generate the embedded image.
@@ -77,7 +75,7 @@ platform_with_app: app
 	@$(ECHO) ""
 
 	@$(ECHO) "----------------------------- Compile Platform -----------------------------"
-	@$(CMAKE) -S $(PLATFORM_PATH) -B $(CMAKE_BUILD) --preset $(CMAKE_BUILD_TYPE) -DAPP_INIT_FILE=$(APP_INIT_FILE) -DAPP_MAIN_LIB=$(RUST_LIB_PATH)
+	@$(CMAKE) -S $(PLATFORM_PATH) -B $(CMAKE_BUILD) --preset $(CMAKE_BUILD_TYPE) -DAPP=$(RUST_LIB_PATH)
 	@$(CMAKE) --build $(CMAKE_BUILD)
 
 # Clena the platform generated target.

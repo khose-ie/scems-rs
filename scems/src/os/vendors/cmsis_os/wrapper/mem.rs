@@ -33,10 +33,13 @@ impl MemPool
 
     pub(crate) fn initialize(&mut self, handle: osMemoryPoolId_t, block_size: u32)
     {
-        if let Some(handle) = handle.cast_opt()
+        if block_size > 0
         {
-            self.handle = handle;
-            self.block_size = block_size;
+            if let Some(handle) = handle.cast_opt()
+            {
+                self.handle = handle;
+                self.block_size = block_size;
+            }
         }
     }
 

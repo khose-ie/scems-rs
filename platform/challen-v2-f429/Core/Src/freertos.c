@@ -25,7 +25,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "tim.h"
+#include "challen-v2-f429.main.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,8 +45,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-__attribute__((section(".ccmram"))) uint8_t ucHeap[configTOTAL_HEAP_SIZE];
-// uint8_t ucHeap[configTOTAL_HEAP_SIZE];
+
 /* USER CODE END Variables */
 /* Definitions for AppTask */
 osThreadId_t AppTaskHandle;
@@ -58,8 +57,7 @@ const osThreadAttr_t AppTask_attributes = {
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-extern void app_init(void);
-extern void app_main(void);
+
 /* USER CODE END FunctionPrototypes */
 
 void AppTaskMain(void *argument);
@@ -75,12 +73,12 @@ void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName);
 /* Functions needed when configGENERATE_RUN_TIME_STATS is on */
 __weak void configureTimerForRunTimeStats(void)
 {
-  HAL_TIM_Base_Start(&RTOS_CHECK_TIM);
+
 }
 
 __weak unsigned long getRunTimeCounterValue(void)
 {
-return __HAL_TIM_GET_COUNTER(&RTOS_CHECK_TIM);
+return 0;
 }
 /* USER CODE END 1 */
 
@@ -104,9 +102,7 @@ void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName)
   */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
-  #if defined(APP_INIT)
-  app_init();
-  #endif /* APP_INIT */
+  AppMain();
   /* USER CODE END Init */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -149,10 +145,11 @@ void MX_FREERTOS_Init(void) {
 __weak void AppTaskMain(void *argument)
 {
   /* USER CODE BEGIN AppTaskMain */
-  (void)argument;
-  #if defined(APP_MAIN)
-  app_main();
-  #endif /* APP_INIT */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
   /* USER CODE END AppTaskMain */
 }
 
