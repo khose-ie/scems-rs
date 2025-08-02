@@ -82,7 +82,7 @@ impl<'a> ConsoleCommandDispatches for ConsoleServiceDispatches<'a>
             }
         }
 
-        let execution = execution.ok_or(ErrValue::NotFound)?;
+        let execution = execution.ok_or(ErrValue::InstanceNotFound)?;
         Ok(execution.execute_console_command(params, response)?)
     }
 }

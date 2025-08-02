@@ -119,7 +119,7 @@ where
             }
         }
 
-        let Some(x) = sample_value.cast_opt() else { return Err(ErrValue::NotFound); };
+        let Some(x) = sample_value.cast_opt() else { return Err(ErrValue::InstanceNotFound); };
         Ok(x)
     }
 }

@@ -57,7 +57,7 @@ impl MemPool
             }
         }
 
-        Ok(choose.ok_or(ErrValue::NotFound)?)
+        Ok(choose.ok_or(ErrValue::InstanceNotFound)?)
     }
 
     pub(crate) unsafe fn malloc(size: u32) -> RetValue<(*mut c_void, u32)>
@@ -418,7 +418,7 @@ where
             }
         }
 
-        Err(ErrValue::NotFound)
+        Err(ErrValue::InstanceNotFound)
     }
 
     fn expend(&mut self) -> RetValue<()>
