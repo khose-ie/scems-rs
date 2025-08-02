@@ -1,3 +1,5 @@
+//! The wrapper struct packed interfaces of STM32 HAL libraries to operate the UART peripheral.
+
 use core::mem::transmute;
 
 use crate::common::result::RetValue;
@@ -10,6 +12,15 @@ use crate::mcu::vendor::stm::native::uart::*;
 const UART_COUNT: usize = 8;
 static mut UARTS: DeviceQueue<UART_HandleTypeDef, UartDevice, UART_COUNT> = DeviceQueue::new();
 
+/// The top encapsulation which be used to operate the STM32 UART peripheral.
+/// 
+/// This struct implements the trait [crate::mcu::common::uart::Uart], it will call STM32 HAL 
+/// functions to meet the specification of interface of the trait.
+/// 
+/// Please attention, create this struct will not initialize the peripheral, the initialization 
+/// should be done in a low-level code, and in the startup time of MCU.
+/// For a initialized peripheral, you can create a this struct with it as the handle, and use 
+/// this struct to operate it.
 #[derive(AsPtr, HandlePtr)]
 pub struct UartDevice
 {

@@ -1,4 +1,4 @@
-//! The STM32 HAL definitions of ADC.
+//! The RUST translation of data struct and function declerations of ADC in STM32 HAL libraries.
 
 #![allow(dead_code)]
 #![allow(non_camel_case_types)]

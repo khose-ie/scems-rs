@@ -1,3 +1,5 @@
+//! The RUST translation of data struct and function declerations of UART in STM32 HAL libraries.
+
 #![allow(dead_code)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]

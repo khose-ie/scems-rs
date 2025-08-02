@@ -1,4 +1,4 @@
-//! The traits for the Analog-Digital Converter (ADC).
+//! Provide a common trait to operate the Analog-Digital Converter (ADC).
 
 use super::EventLaunch;
 use crate::common::result::RetValue;
@@ -34,7 +34,7 @@ where
     /// value and put the value to the slice you input.
     /// The ADC will not use the space over the scope of your slice, it will rotate the space.
     /// The coversion will always continued aftet you call this function, and the value in `data` 
-    /// space will be updated until you stop it, see [`async_terminate_conversion`].
+    /// space will be updated until you stop it, see [`Adc::async_terminate_conversion`].
     fn async_convert_continuous(&self, data: &mut [u32]) -> RetValue<()>;
 
     /// To stop the continuous conversion of an ADC.
@@ -52,7 +52,7 @@ where
 /// 
 /// Actually, these callback functions will be called in the interrupt vector handle which 
 /// triggered by ADC peripheral.
-/// Please attention, don't use any wait and hang actions in these functions, because it will 
+/// Please attention, don't use any waiting and hang actions in these functions, because it will 
 /// block the system interrupts.
 /// 
 /// All functions of this trait have an empty default implementation, it meanus that you can only 
@@ -61,7 +61,7 @@ pub trait AdcEventAgent
 {
     /// Will be called when the once conversion action has been completed.
     /// 
-    /// This function will be called after you call [`async_convert_once`], and the converted 
+    /// This function will be called after you call [`Adc::async_convert_once`], and the converted 
     /// value will be transported via the parameter `_value`.
     fn on_adc_convert_once_complete(&self, _value: u32) {}
 
@@ -69,6 +69,6 @@ pub trait AdcEventAgent
     /// you set in the initialization code, this function will be called.
     fn on_adc_level_out_of_window(&self) {}
 
-    /// Will be called when the ADC peripheral have some errors.
+    /// Will be called when the ADC peripheral has some errors.
     fn on_adc_error(&self) {}
 }
