@@ -1,6 +1,8 @@
 use crate::mcu::common::wd::WatchDog;
 use crate::mcu::vendor::stm::native::iwdg::*;
 
+pub use crate::mcu::vendor::stm::native::iwdg::IWDG_HandleTypeDef;
+
 pub struct WatchDogDevice
 {
     handle: *mut IWDG_HandleTypeDef,

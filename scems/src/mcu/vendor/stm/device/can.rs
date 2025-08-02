@@ -4,9 +4,11 @@ use crate::common::result::{ErrValue, RetValue};
 use crate::derive::{AsPtr, HandlePtr};
 use crate::mcu::common::can::{Can, CanEventAgent, CanMessage};
 use crate::mcu::common::{EventLaunch, HandlePtr};
-use crate::mcu::vendor::stm::common::DeviceQueue;
+use crate::mcu::vendor::stm::device_queue::DeviceQueue;
 use crate::mcu::vendor::stm::native::can::*;
 use crate::mcu::vendor::stm::native::*;
+
+pub use crate::mcu::vendor::stm::native::can::CAN_HandleTypeDef;
 
 const CAN_COUNT: usize = 8;
 static mut CANS: DeviceQueue<CAN_HandleTypeDef, CanDevice, CAN_COUNT> = DeviceQueue::new();

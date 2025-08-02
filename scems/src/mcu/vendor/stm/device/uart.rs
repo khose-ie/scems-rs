@@ -6,20 +6,22 @@ use crate::common::result::RetValue;
 use crate::derive::{AsPtr, HandlePtr};
 use crate::mcu::common::uart::{Uart, UartEventAgent};
 use crate::mcu::common::{EventLaunch, HandlePtr};
-use crate::mcu::vendor::stm::common::DeviceQueue;
+use crate::mcu::vendor::stm::device_queue::DeviceQueue;
 use crate::mcu::vendor::stm::native::uart::*;
+
+pub use crate::mcu::vendor::stm::native::uart::UART_HandleTypeDef;
 
 const UART_COUNT: usize = 8;
 static mut UARTS: DeviceQueue<UART_HandleTypeDef, UartDevice, UART_COUNT> = DeviceQueue::new();
 
 /// The top encapsulation which be used to operate the STM32 UART peripheral.
-/// 
-/// This struct implements the trait [crate::mcu::common::uart::Uart], it will call STM32 HAL 
+///
+/// This struct implements the trait [crate::mcu::common::uart::Uart], it will call STM32 HAL
 /// functions to meet the specification of interface of the trait.
-/// 
-/// Please attention, create this struct will not initialize the peripheral, the initialization 
+///
+/// Please attention, create this struct will not initialize the peripheral, the initialization
 /// should be done in a low-level code, and in the startup time of MCU.
-/// For a initialized peripheral, you can create a this struct with it as the handle, and use 
+/// For a initialized peripheral, you can create a this struct with it as the handle, and use
 /// this struct to operate it.
 #[derive(AsPtr, HandlePtr)]
 pub struct UartDevice
@@ -49,7 +51,7 @@ impl EventLaunch<dyn UartEventAgent> for UartDevice
     #[allow(static_mut_refs)]
     fn set_event_agent(&mut self, event_handle: &dyn UartEventAgent) -> RetValue<()>
     {
-        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn UartEventAgent) });
+        self.event_handle = unsafe { Some(transmute(event_handle as *const dyn UartEventAgent)) };
         unsafe { UARTS.alloc(self.as_ptr()) }
     }
 

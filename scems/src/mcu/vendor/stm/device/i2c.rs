@@ -6,8 +6,10 @@ use crate::mcu::common::i2c::{I2cMaster, I2cMasterEventAgent};
 use crate::mcu::common::i2c::{I2cMem, I2cMemEventAgent, I2cMemWide};
 use crate::mcu::common::i2c::{I2cSlave, I2cSlaveEventAgent};
 use crate::mcu::common::{EventLaunch, HandlePtr};
-use crate::mcu::vendor::stm::common::DeviceQueue;
+use crate::mcu::vendor::stm::device_queue::DeviceQueue;
 use crate::mcu::vendor::stm::native::i2c::*;
+
+pub use crate::mcu::vendor::stm::native::i2c::I2C_HandleTypeDef;
 
 const I2C_COUNT: usize = 8;
 static mut I2CS: DeviceQueue<I2C_HandleTypeDef, I2cDevice, I2C_COUNT> = DeviceQueue::new();

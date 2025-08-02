@@ -6,6 +6,8 @@ use crate::mcu::common::io::{Io, IoEventAgent, IoState};
 use crate::mcu::common::EventLaunch;
 use crate::mcu::vendor::stm::native::io::*;
 
+pub use crate::mcu::vendor::stm::native::io::GPIO_TypeDef;
+
 #[repr(u16)]
 #[derive(Clone, Copy, EnumCount, EnumCastU16)]
 pub enum IoPin

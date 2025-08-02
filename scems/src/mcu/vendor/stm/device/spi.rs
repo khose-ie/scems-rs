@@ -4,8 +4,10 @@ use crate::common::result::RetValue;
 use crate::derive::{AsPtr, HandlePtr};
 use crate::mcu::common::spi::{Spi, SpiEventAgent};
 use crate::mcu::common::{EventLaunch, HandlePtr};
-use crate::mcu::vendor::stm::common::DeviceQueue;
+use crate::mcu::vendor::stm::device_queue::DeviceQueue;
 use crate::mcu::vendor::stm::native::spi::*;
+
+pub use crate::mcu::vendor::stm::native::spi::SPI_HandleTypeDef;
 
 const SPI_COUNT: usize = 8;
 static mut SPIS: DeviceQueue<SPI_HandleTypeDef, SpiDevice, SPI_COUNT> = DeviceQueue::new();

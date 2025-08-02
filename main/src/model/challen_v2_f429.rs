@@ -1,7 +1,6 @@
 use scems::common::log::LogLevel;
 use scems::info;
-use scems::mcu::vendor::uart::UartDevice;
-use scems::mcu::vendor::UART_HandleTypeDef;
+use scems::mcu::vendor::uart::{UART_HandleTypeDef, UartDevice};
 use scems::os::vendors::cmsis::osMemoryPoolId_t;
 use scems::os::vendors::mem::{assign_mem_pool, MemPool};
 use scems::os::vendors::task::TaskSample;

@@ -4,8 +4,10 @@ use crate::common::result::RetValue;
 use crate::derive::{AsPtr, HandlePtr};
 use crate::mcu::common::adc::{Adc, AdcEventAgent};
 use crate::mcu::common::{EventLaunch, HandlePtr};
-use crate::mcu::vendor::stm::common::DeviceQueue;
+use crate::mcu::vendor::stm::device_queue::DeviceQueue;
 use crate::mcu::vendor::stm::native::adc::*;
+
+pub use crate::mcu::vendor::stm::native::adc::ADC_HandleTypeDef;
 
 const ADC_DEF_TIMEOUT: u32 = 1000;
 
