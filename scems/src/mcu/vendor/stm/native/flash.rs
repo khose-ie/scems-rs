@@ -2,7 +2,7 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
-use super::common::HAL_StatusTypeDef;
+use super::HAL_StatusTypeDef;
 
 pub const FLASH_TYPEPROGRAM_BYTE: u32 = 0x00000000;
 pub const FLASH_TYPEPROGRAM_HALFWORD: u32 = 0x00000001;
@@ -22,7 +22,7 @@ pub const OB_WRPSTATE_ENABLE: u32 = 0x00000001;
 
 #[repr(C)]
 #[derive(Default)]
-pub struct FLASH_EraseInit
+pub struct FLASH_EraseInitTypeDef
 {
     pub TypeErase: u32,
     pub Banks: u32,
@@ -32,7 +32,7 @@ pub struct FLASH_EraseInit
 }
 
 #[repr(C)]
-pub struct FLASH_OBProgramInit
+pub struct FLASH_OBProgramInitTypeDef
 {
     OptionType: u32,
     WRPState: u32,
@@ -53,8 +53,8 @@ extern "C" {
     pub fn HAL_FLASH_OB_Unlock() -> HAL_StatusTypeDef;
     pub fn HAL_FLASH_OB_Lock() -> HAL_StatusTypeDef;
     pub fn HAL_FLASH_OB_Launch() -> HAL_StatusTypeDef;
-    pub fn HAL_FLASHEx_Erase(pEraseInit: *mut FLASH_EraseInit, SectorError: *mut u32) -> HAL_StatusTypeDef;
-    pub fn HAL_FLASHEx_Erase_IT(pEraseInit: *mut FLASH_EraseInit) -> HAL_StatusTypeDef;
-    pub fn HAL_FLASHEx_OBProgram(pOBInit: *mut FLASH_OBProgramInit) -> HAL_StatusTypeDef;
-    pub fn HAL_FLASHEx_OBGetConfig(pOBInit: *mut FLASH_OBProgramInit);
+    pub fn HAL_FLASHEx_Erase(pEraseInit: *mut FLASH_EraseInitTypeDef, SectorError: *mut u32) -> HAL_StatusTypeDef;
+    pub fn HAL_FLASHEx_Erase_IT(pEraseInit: *mut FLASH_EraseInitTypeDef) -> HAL_StatusTypeDef;
+    pub fn HAL_FLASHEx_OBProgram(pOBInit: *mut FLASH_OBProgramInitTypeDef) -> HAL_StatusTypeDef;
+    pub fn HAL_FLASHEx_OBGetConfig(pOBInit: *mut FLASH_OBProgramInitTypeDef);
 }

@@ -28,7 +28,7 @@ impl Flash for OnChipFlashDevice
     fn erase_sector(&self, sector: u32) -> RetValue<()>
     {
         let mut error: u32 = 0;
-        let mut erase_init: FLASH_EraseInit = Default::default();
+        let mut erase_init: FLASH_EraseInitTypeDef = Default::default();
 
         erase_init.TypeErase = FLASH_TYPEERASE_SECTORS;
         erase_init.Banks = 0;

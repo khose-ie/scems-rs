@@ -16,7 +16,7 @@ pub enum ErrValue
     Param = 1,
 
     /// The bus is still busy and can't do the request operation.
-    BusBusy = 2,
+    Busy = 2,
 
     /// Some operations over the specfic waitting time, or official max time.
     Overtime = 3,

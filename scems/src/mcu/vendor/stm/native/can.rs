@@ -4,22 +4,22 @@
 
 use crate::mcu::common::can::CanMessageHead;
 
-use super::common::{FunctionalState, HAL_StatusTypeDef};
+use super::{FunctionalState, HAL_StatusTypeDef};
 
 #[repr(C)]
-pub struct CAN
+pub struct CAN_HandleTypeDef
 {
-    pub Instance: *mut CAN_Base,
-    pub Init: CAN_Init,
-    pub State: HAL_CAN_State,
+    pub Instance: *mut CAN_TypeDef,
+    pub Init: CAN_InitTypeDef,
+    pub State: HAL_CAN_StateTypeDef,
     pub ErrorCode: u32,
 }
 
 #[repr(C)]
-pub struct CAN_Base {}
+pub struct CAN_TypeDef {}
 
 #[repr(C)]
-pub struct CAN_Init
+pub struct CAN_InitTypeDef
 {
     pub Prescaler: u32,
     pub Mode: u32,
@@ -35,7 +35,7 @@ pub struct CAN_Init
 }
 
 #[repr(C)]
-pub enum HAL_CAN_State
+pub enum HAL_CAN_StateTypeDef
 {
     HAL_CAN_STATE_RESET = 0x00,
     HAL_CAN_STATE_READY = 0x01,
@@ -46,7 +46,7 @@ pub enum HAL_CAN_State
 }
 
 #[repr(C)]
-pub struct CAN_TxHeader
+pub struct CAN_TxHeaderTypeDef
 {
     pub StdId: u32,
     pub ExtId: u32,
@@ -56,11 +56,11 @@ pub struct CAN_TxHeader
     pub TransmitGlobalTime: FunctionalState,
 }
 
-impl From<&CanMessageHead> for CAN_TxHeader
+impl From<&CanMessageHead> for CAN_TxHeaderTypeDef
 {
     fn from(value: &CanMessageHead) -> Self
     {
-        CAN_TxHeader {
+        CAN_TxHeaderTypeDef {
             StdId: value.STD_ID,
             ExtId: value.EXT_ID,
             IDE: value.IDE,
@@ -73,7 +73,7 @@ impl From<&CanMessageHead> for CAN_TxHeader
 
 #[repr(C)]
 #[derive(Default)]
-pub struct CAN_RxHeader
+pub struct CAN_RxHeaderTypeDef
 {
     pub StdId: u32,
     pub ExtId: u32,
@@ -87,16 +87,16 @@ pub struct CAN_RxHeader
 #[rustfmt::skip]
 #[allow(improper_ctypes)]
 unsafe extern "C" {
-    pub fn HAL_CAN_Start(can: *mut CAN) -> HAL_StatusTypeDef;
-    pub fn HAL_CAN_Stop(can: *mut CAN) -> HAL_StatusTypeDef;
-    pub fn HAL_CAN_RequestSleep(can: *mut CAN) -> HAL_StatusTypeDef;
-    pub fn HAL_CAN_WakeUp(can: *mut CAN) -> HAL_StatusTypeDef;
-    pub fn HAL_CAN_IsSleepActive(can: *mut CAN) -> u32;
-    pub fn HAL_CAN_AddTxMessage(can: *mut CAN, pHeader: *const CAN_TxHeader, aData: &[u8], pTxMailbox: *mut u32) -> HAL_StatusTypeDef;
-    pub fn HAL_CAN_AbortTxRequest(can: *mut CAN, TxMailboxes: u32) -> HAL_StatusTypeDef;
-    pub fn HAL_CAN_GetTxMailboxesFreeLevel(can: *mut CAN) -> u32;
-    pub fn HAL_CAN_IsTxMessagePending(can: *mut CAN, TxMailboxes: u32) -> u32;
-    pub fn HAL_CAN_GetTxTimestamp(can: *mut CAN, TxMailbox: u32) -> u32;
-    pub fn HAL_CAN_GetRxMessage(can: *mut CAN, RxFifo: u32, pHeader: *mut CAN_RxHeader, aData: &mut [u8]) -> HAL_StatusTypeDef;
-    pub fn HAL_CAN_GetRxFifoFillLevel(can: *mut CAN, RxFifo: u32) -> u32;
+    pub fn HAL_CAN_Start(can: *mut CAN_HandleTypeDef) -> HAL_StatusTypeDef;
+    pub fn HAL_CAN_Stop(can: *mut CAN_HandleTypeDef) -> HAL_StatusTypeDef;
+    pub fn HAL_CAN_RequestSleep(can: *mut CAN_HandleTypeDef) -> HAL_StatusTypeDef;
+    pub fn HAL_CAN_WakeUp(can: *mut CAN_HandleTypeDef) -> HAL_StatusTypeDef;
+    pub fn HAL_CAN_IsSleepActive(can: *mut CAN_HandleTypeDef) -> u32;
+    pub fn HAL_CAN_AddTxMessage(can: *mut CAN_HandleTypeDef, pHeader: *const CAN_TxHeaderTypeDef, aData: &[u8], pTxMailbox: *mut u32) -> HAL_StatusTypeDef;
+    pub fn HAL_CAN_AbortTxRequest(can: *mut CAN_HandleTypeDef, TxMailboxes: u32) -> HAL_StatusTypeDef;
+    pub fn HAL_CAN_GetTxMailboxesFreeLevel(can: *mut CAN_HandleTypeDef) -> u32;
+    pub fn HAL_CAN_IsTxMessagePending(can: *mut CAN_HandleTypeDef, TxMailboxes: u32) -> u32;
+    pub fn HAL_CAN_GetTxTimestamp(can: *mut CAN_HandleTypeDef, TxMailbox: u32) -> u32;
+    pub fn HAL_CAN_GetRxMessage(can: *mut CAN_HandleTypeDef, RxFifo: u32, pHeader: *mut CAN_RxHeaderTypeDef, aData: &mut [u8]) -> HAL_StatusTypeDef;
+    pub fn HAL_CAN_GetRxFifoFillLevel(can: *mut CAN_HandleTypeDef, RxFifo: u32) -> u32;
 }

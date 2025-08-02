@@ -1,19 +1,19 @@
-// ！ The definations for MCU peripheral GPIO.
+// ！ The definations for MCU peripheral GPIO_TypeDef.
 // ！
-// ！ The definations in this module provide a common interface to operate a GPIO pin.
+// ！ The definations in this module provide a common interface to operate a GPIO_TypeDef pin.
 
 use crate::derive::EnumCastU32;
 
 use super::EventLaunch;
 
-/// Trait providing operations of an GPIO pin.
+/// Trait providing operations of an GPIO_TypeDef pin.
 pub trait Io
 where
     Self: EventLaunch<dyn IoEventAgent>,
 {
     type Pin;
 
-    /// Get the GPIO pin level state.
+    /// Get the GPIO_TypeDef pin level state.
     fn state(&self) -> IoState;
 
     /// Let pin output high or low level, only effective in output mode.
@@ -33,7 +33,7 @@ pub trait IoEventAgent
     fn on_io_state_change(&self) {}
 }
 
-/// Level state of a GPIO.
+/// Level state of a GPIO_TypeDef.
 #[repr(u32)]
 #[derive(PartialEq, Eq, Clone, Copy, EnumCastU32)]
 pub enum IoState

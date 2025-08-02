@@ -4,15 +4,15 @@
 
 use core::ffi::c_void;
 
-use super::common::HAL_LockTypeDef;
+use super::HAL_LockTypeDef;
 
 #[repr(C)]
-pub struct DMA
+pub struct DMA_HandleTypeDef
 {
-    pub Instance: *mut DMA_Stream,
-    pub Init: DMA_Init,
+    pub Instance: *mut DMA_Stream_TypeDef,
+    pub Init: DMA_InitTypeDef,
     pub Lock: HAL_LockTypeDef,
-    pub State: HAL_DMA_State,
+    pub State: HAL_DMA_StateTypeDef,
     pub Parent: *mut c_void,
     pub XferCpltCallback: *mut c_void,
     pub XferHalfCpltCallback: *mut c_void,
@@ -26,7 +26,7 @@ pub struct DMA
 }
 
 #[repr(C)]
-pub struct DMA_Init
+pub struct DMA_InitTypeDef
 {
     pub Channel: u32,
     pub Direction: u32,
@@ -43,10 +43,10 @@ pub struct DMA_Init
 }
 
 #[repr(C)]
-pub struct DMA_Stream {}
+pub struct DMA_Stream_TypeDef {}
 
 #[repr(C)]
-pub enum HAL_DMA_State
+pub enum HAL_DMA_StateTypeDef
 {
     HAL_DMA_STATE_RESET = 0x00,
     HAL_DMA_STATE_READY = 0x01,

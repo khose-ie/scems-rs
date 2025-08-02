@@ -8,18 +8,18 @@ use crate::mcu::vendor::stm::common::DeviceQueue;
 use crate::mcu::vendor::stm::native::uart::*;
 
 const UART_COUNT: usize = 8;
-static mut UARTS: DeviceQueue<UART, UartDevice, UART_COUNT> = DeviceQueue::new();
+static mut UARTS: DeviceQueue<UART_HandleTypeDef, UartDevice, UART_COUNT> = DeviceQueue::new();
 
 #[derive(AsPtr, HandlePtr)]
 pub struct UartDevice
 {
-    handle: *mut UART,
+    handle: *mut UART_HandleTypeDef,
     event_handle: Option<*const dyn UartEventAgent>,
 }
 
 impl UartDevice
 {
-    pub fn new(handle: *mut UART) -> Self
+    pub fn new(handle: *mut UART_HandleTypeDef) -> Self
     {
         UartDevice { handle, event_handle: None }
     }
@@ -92,7 +92,7 @@ impl Uart for UartDevice
 
 #[no_mangle]
 #[allow(static_mut_refs)]
-pub unsafe extern "C" fn HAL_UART_TxCpltCallback(uart: *mut UART)
+pub unsafe extern "C" fn HAL_UART_TxCpltCallback(uart: *mut UART_HandleTypeDef)
 {
     if let Some(sample) = UARTS.find(uart).ok()
     {
@@ -104,11 +104,11 @@ pub unsafe extern "C" fn HAL_UART_TxCpltCallback(uart: *mut UART)
 }
 
 // #[no_mangle]
-// pub unsafe extern "C" fn HAL_UART_TxHalfCpltCallback(uart: *mut UART) {}
+// pub unsafe extern "C" fn HAL_UART_TxHalfCpltCallback(uart: *mut UART_HandleTypeDef) {}
 
 #[no_mangle]
 #[allow(static_mut_refs)]
-pub unsafe extern "C" fn HAL_UART_RxCpltCallback(uart: *mut UART)
+pub unsafe extern "C" fn HAL_UART_RxCpltCallback(uart: *mut UART_HandleTypeDef)
 {
     if let Some(sample) = UARTS.find(uart).ok()
     {
@@ -120,11 +120,11 @@ pub unsafe extern "C" fn HAL_UART_RxCpltCallback(uart: *mut UART)
 }
 
 // #[no_mangle]
-// pub extern "C" fn HAL_UART_RxHalfCpltCallback(uart: *mut UART) {}
+// pub extern "C" fn HAL_UART_RxHalfCpltCallback(uart: *mut UART_HandleTypeDef) {}
 
 #[no_mangle]
 #[allow(static_mut_refs)]
-pub unsafe extern "C" fn HAL_UART_ErrorCallback(uart: *mut UART)
+pub unsafe extern "C" fn HAL_UART_ErrorCallback(uart: *mut UART_HandleTypeDef)
 {
     if let Some(sample) = UARTS.find(uart).ok()
     {
@@ -137,7 +137,7 @@ pub unsafe extern "C" fn HAL_UART_ErrorCallback(uart: *mut UART)
 
 #[no_mangle]
 #[allow(static_mut_refs)]
-pub unsafe extern "C" fn HAL_UART_AbortCpltCallback(uart: *mut UART)
+pub unsafe extern "C" fn HAL_UART_AbortCpltCallback(uart: *mut UART_HandleTypeDef)
 {
     if let Some(sample) = UARTS.find(uart).ok()
     {
@@ -149,14 +149,14 @@ pub unsafe extern "C" fn HAL_UART_AbortCpltCallback(uart: *mut UART)
 }
 
 // #[no_mangle]
-// pub unsafe extern "C" fn HAL_UART_AbortTransmitCpltCallback(uart: *mut UART) {}
+// pub unsafe extern "C" fn HAL_UART_AbortTransmitCpltCallback(uart: *mut UART_HandleTypeDef) {}
 
 // #[no_mangle]
-// pub unsafe extern "C" fn HAL_UART_AbortReceiveCpltCallback(uart: *mut UART) {}
+// pub unsafe extern "C" fn HAL_UART_AbortReceiveCpltCallback(uart: *mut UART_HandleTypeDef) {}
 
 #[no_mangle]
 #[allow(static_mut_refs)]
-pub unsafe extern "C" fn HAL_UARTEx_RxEventCallback(uart: *mut UART, size: u16)
+pub unsafe extern "C" fn HAL_UARTEx_RxEventCallback(uart: *mut UART_HandleTypeDef, size: u16)
 {
     if let Some(sample) = UARTS.find(uart).ok()
     {

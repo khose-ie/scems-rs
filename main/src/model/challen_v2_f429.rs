@@ -1,7 +1,7 @@
 use scems::common::log::LogLevel;
 use scems::info;
 use scems::mcu::vendor::uart::UartDevice;
-use scems::mcu::vendor::UART;
+use scems::mcu::vendor::UART_HandleTypeDef;
 use scems::os::vendors::cmsis::osMemoryPoolId_t;
 use scems::os::vendors::mem::{assign_mem_pool, MemPool};
 use scems::os::vendors::task::TaskSample;
@@ -10,7 +10,7 @@ use scems_addons::service::console::{Console, ConsoleService};
 
 #[allow(improper_ctypes)]
 extern "C" {
-    static mut huart1: UART;
+    static mut huart1: UART_HandleTypeDef;
     static mem_pool0: osMemoryPoolId_t;
     static mem_pool0_block_size: u32;
     static mem_pool1: osMemoryPoolId_t;

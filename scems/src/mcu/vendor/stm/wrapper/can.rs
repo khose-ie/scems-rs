@@ -6,15 +6,15 @@ use crate::mcu::common::can::{Can, CanEventAgent, CanMessage};
 use crate::mcu::common::{EventLaunch, HandlePtr};
 use crate::mcu::vendor::stm::common::DeviceQueue;
 use crate::mcu::vendor::stm::native::can::*;
-use crate::mcu::vendor::stm::native::common::{HAL_StatusTypeDef, *};
+use crate::mcu::vendor::stm::native::*;
 
 const CAN_COUNT: usize = 8;
-static mut CANS: DeviceQueue<CAN, CanDevice, CAN_COUNT> = DeviceQueue::new();
+static mut CANS: DeviceQueue<CAN_HandleTypeDef, CanDevice, CAN_COUNT> = DeviceQueue::new();
 
 #[derive(AsPtr, HandlePtr)]
 pub struct CanDevice
 {
-    handle: *mut CAN,
+    handle: *mut CAN_HandleTypeDef,
     event_handle: Option<*const dyn CanEventAgent>,
     fifo: u32,
     async_cache: Option<*mut CanMessage>,
@@ -22,7 +22,7 @@ pub struct CanDevice
 
 impl CanDevice
 {
-    pub fn new(handle: *mut CAN, fifo: u32) -> Self
+    pub fn new(handle: *mut CAN_HandleTypeDef, fifo: u32) -> Self
     {
         CanDevice { handle, event_handle: None, fifo, async_cache: None }
     }
@@ -72,7 +72,7 @@ impl Can for CanDevice
         let mut duration: u32;
         let mut mail_box: u32 = 0;
 
-        let tx_head = CAN_TxHeader::from(&can_message.head);
+        let tx_head = CAN_TxHeaderTypeDef::from(&can_message.head);
 
         let tick = unsafe { HAL_GetTick() };
 
@@ -95,7 +95,7 @@ impl Can for CanDevice
 
         if !matches!(status, HAL_StatusTypeDef::HAL_OK)
         {
-            return Err(ErrValue::BusBusy);
+            return Err(ErrValue::Busy);
         }
 
         let tick = unsafe { HAL_GetTick() };
@@ -120,7 +120,7 @@ impl Can for CanDevice
         if can_status != 0
         {
             unsafe { HAL_CAN_AbortTxRequest(self.handle, mail_box) };
-            return Err(ErrValue::BusBusy);
+            return Err(ErrValue::Busy);
         }
 
         Ok(())
@@ -130,7 +130,7 @@ impl Can for CanDevice
     {
         let mut status;
         let mut duration: u32;
-        let mut rx_head: CAN_RxHeader = Default::default();
+        let mut rx_head: CAN_RxHeaderTypeDef = Default::default();
 
         let tick = unsafe { HAL_GetTick() };
 
@@ -154,7 +154,7 @@ impl Can for CanDevice
 
         if !matches!(status, HAL_StatusTypeDef::HAL_OK)
         {
-            return Err(ErrValue::BusBusy);
+            return Err(ErrValue::Busy);
         }
 
         can_message.head.STD_ID = rx_head.StdId;
@@ -165,7 +165,7 @@ impl Can for CanDevice
     fn async_transmit(&self, can_message: &CanMessage) -> RetValue<()>
     {
         let mut mail_box: u32 = 0;
-        let tx_head = CAN_TxHeader::from(&can_message.head);
+        let tx_head = CAN_TxHeaderTypeDef::from(&can_message.head);
         unsafe { HAL_CAN_AddTxMessage(self.handle, &tx_head, &can_message.data.content, &mut mail_box).into() }
     }
 
@@ -177,31 +177,31 @@ impl Can for CanDevice
 
 // #[no_mangle]
 // #[allow(static_mut_refs)]
-// pub unsafe extern "C" fn HAL_CAN_TxMailbox0CompleteCallback(can: *mut CAN) {}
+// pub unsafe extern "C" fn HAL_CAN_TxMailbox0CompleteCallback(can: *mut CAN_HandleTypeDef) {}
 
 // #[no_mangle]
 // #[allow(static_mut_refs)]
-// pub unsafe extern "C" fn HAL_CAN_TxMailbox1CompleteCallback(can: *mut CAN) {}
+// pub unsafe extern "C" fn HAL_CAN_TxMailbox1CompleteCallback(can: *mut CAN_HandleTypeDef) {}
 
 // #[no_mangle]
 // #[allow(static_mut_refs)]
-// pub unsafe extern "C" fn HAL_CAN_TxMailbox2CompleteCallback(can: *mut CAN) {}
+// pub unsafe extern "C" fn HAL_CAN_TxMailbox2CompleteCallback(can: *mut CAN_HandleTypeDef) {}
 
 // #[no_mangle]
 // #[allow(static_mut_refs)]
-// pub unsafe extern "C" fn HAL_CAN_TxMailbox0AbortCallback(can: *mut CAN) {}
+// pub unsafe extern "C" fn HAL_CAN_TxMailbox0AbortCallback(can: *mut CAN_HandleTypeDef) {}
 
 // #[no_mangle]
 // #[allow(static_mut_refs)]
-// pub unsafe extern "C" fn HAL_CAN_TxMailbox1AbortCallback(can: *mut CAN) {}
+// pub unsafe extern "C" fn HAL_CAN_TxMailbox1AbortCallback(can: *mut CAN_HandleTypeDef) {}
 
 // #[no_mangle]
 // #[allow(static_mut_refs)]
-// pub unsafe extern "C" fn HAL_CAN_TxMailbox2AbortCallback(can: *mut CAN) {}
+// pub unsafe extern "C" fn HAL_CAN_TxMailbox2AbortCallback(can: *mut CAN_HandleTypeDef) {}
 
 #[no_mangle]
 #[allow(static_mut_refs)]
-pub unsafe extern "C" fn HAL_CAN_RxFifo0MsgPendingCallback(can: *mut CAN)
+pub unsafe extern "C" fn HAL_CAN_RxFifo0MsgPendingCallback(can: *mut CAN_HandleTypeDef)
 {
     let mut value = Err(ErrValue::NotAvailable);
 
@@ -226,30 +226,30 @@ pub unsafe extern "C" fn HAL_CAN_RxFifo0MsgPendingCallback(can: *mut CAN)
 
 // #[no_mangle]
 // #[allow(static_mut_refs)]
-// pub unsafe extern "C" fn HAL_CAN_RxFifo0FullCallback(can: *mut CAN) {}
+// pub unsafe extern "C" fn HAL_CAN_RxFifo0FullCallback(can: *mut CAN_HandleTypeDef) {}
 
 #[no_mangle]
 #[allow(static_mut_refs)]
-pub unsafe extern "C" fn HAL_CAN_RxFifo1MsgPendingCallback(can: *mut CAN)
+pub unsafe extern "C" fn HAL_CAN_RxFifo1MsgPendingCallback(can: *mut CAN_HandleTypeDef)
 {
     HAL_CAN_RxFifo0MsgPendingCallback(can);
 }
 
 // #[no_mangle]
 // #[allow(static_mut_refs)]
-// pub unsafe extern "C" fn HAL_CAN_RxFifo1FullCallback(can: *mut CAN) {}
+// pub unsafe extern "C" fn HAL_CAN_RxFifo1FullCallback(can: *mut CAN_HandleTypeDef) {}
 
 // #[no_mangle]
 // #[allow(static_mut_refs)]
-// pub unsafe extern "C" fn HAL_CAN_SleepCallback(can: *mut CAN) {}
+// pub unsafe extern "C" fn HAL_CAN_SleepCallback(can: *mut CAN_HandleTypeDef) {}
 
 // #[no_mangle]
 // #[allow(static_mut_refs)]
-// pub unsafe extern "C" fn HAL_CAN_WakeUpFromRxMsgCallback(can: *mut CAN) {}
+// pub unsafe extern "C" fn HAL_CAN_WakeUpFromRxMsgCallback(can: *mut CAN_HandleTypeDef) {}
 
 #[no_mangle]
 #[allow(static_mut_refs)]
-pub unsafe extern "C" fn HAL_CAN_ErrorCallback(can: *mut CAN)
+pub unsafe extern "C" fn HAL_CAN_ErrorCallback(can: *mut CAN_HandleTypeDef)
 {
     if let Some(sample) = CANS.find(can).ok()
     {

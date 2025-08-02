@@ -3,12 +3,12 @@ use crate::mcu::vendor::stm::native::iwdg::*;
 
 pub struct WatchDogDevice
 {
-    handle: *mut IWDG,
+    handle: *mut IWDG_HandleTypeDef,
 }
 
 impl WatchDogDevice
 {
-    pub fn new(handle: *mut IWDG) -> Self
+    pub fn new(handle: *mut IWDG_HandleTypeDef) -> Self
     {
         WatchDogDevice { handle }
     }

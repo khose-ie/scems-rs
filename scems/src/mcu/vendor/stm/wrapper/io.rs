@@ -36,13 +36,13 @@ static mut EVENT_AGENTS: [Option<*const dyn IoEventAgent>; IoPin::count()] = [No
 
 pub struct IoDevice
 {
-    handle: *mut GPIO,
+    handle: *mut GPIO_TypeDef,
     pin: IoPin,
 }
 
 impl IoDevice
 {
-    pub const fn new(handle: *mut GPIO, pin: IoPin) -> Self
+    pub const fn new(handle: *mut GPIO_TypeDef, pin: IoPin) -> Self
     {
         IoDevice { handle, pin }
     }
@@ -80,12 +80,22 @@ impl Io for IoDevice
 
     fn state(&self) -> IoState
     {
-        IoState::from(unsafe { HAL_GPIO_ReadPin(self.handle, self.pin.into()) })
+        match unsafe { HAL_GPIO_ReadPin(self.handle, self.pin.into()) }
+        {
+            GPIO_PinState::GPIO_PIN_RESET => IoState::Reset,
+            GPIO_PinState::GPIO_PIN_SET => IoState::Set,
+        }
     }
 
     fn set_state(&self, state: IoState)
     {
-        unsafe { HAL_GPIO_WritePin(self.handle, self.pin.into(), state.into()) };
+        let native_state: GPIO_PinState = match state
+        {
+            IoState::Reset => GPIO_PinState::GPIO_PIN_RESET,
+            IoState::Set => GPIO_PinState::GPIO_PIN_SET,
+        };
+
+        unsafe { HAL_GPIO_WritePin(self.handle, self.pin.into(), native_state) };
     }
 
     fn toggle(&self)

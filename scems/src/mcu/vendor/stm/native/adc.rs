@@ -4,8 +4,8 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
-use super::common::{FunctionalState, HAL_LockTypeDef, HAL_StatusTypeDef};
-use super::dma::DMA;
+use super::{FunctionalState, HAL_LockTypeDef, HAL_StatusTypeDef};
+use super::dma::DMA_HandleTypeDef;
 
 #[repr(C)]
 pub struct ADC_HandleTypeDef
@@ -13,7 +13,7 @@ pub struct ADC_HandleTypeDef
     pub Instance: *mut ADC_TypeDef,
     pub Init: ADC_InitTypeDef,
     pub NbrOfCurrentConversionRank: u32,
-    pub DMA_Handle: *mut DMA,
+    pub DMA_Handle: *mut DMA_HandleTypeDef,
     pub Lock: HAL_LockTypeDef,
     pub State: u32,
     pub ErrorCode: u32,

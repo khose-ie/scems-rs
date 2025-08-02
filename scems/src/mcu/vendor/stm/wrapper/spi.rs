@@ -8,18 +8,18 @@ use crate::mcu::vendor::stm::common::DeviceQueue;
 use crate::mcu::vendor::stm::native::spi::*;
 
 const SPI_COUNT: usize = 8;
-static mut SPIS: DeviceQueue<SPI, SpiDevice, SPI_COUNT> = DeviceQueue::new();
+static mut SPIS: DeviceQueue<SPI_HandleTypeDef, SpiDevice, SPI_COUNT> = DeviceQueue::new();
 
 #[derive(AsPtr, HandlePtr)]
 pub struct SpiDevice
 {
-    handle: *mut SPI,
+    handle: *mut SPI_HandleTypeDef,
     event_handle: Option<*const dyn SpiEventAgent>,
 }
 
 impl SpiDevice
 {
-    pub fn new(handle: *mut SPI) -> Self
+    pub fn new(handle: *mut SPI_HandleTypeDef) -> Self
     {
         SpiDevice { handle, event_handle: None }
     }
@@ -95,7 +95,7 @@ impl Spi for SpiDevice
 
 #[no_mangle]
 #[allow(static_mut_refs)]
-pub unsafe extern "C" fn HAL_SPI_TxCpltCallback(spi: *mut SPI)
+pub unsafe extern "C" fn HAL_SPI_TxCpltCallback(spi: *mut SPI_HandleTypeDef)
 {
     if let Some(sample) = SPIS.find(spi).ok()
     {
@@ -108,7 +108,7 @@ pub unsafe extern "C" fn HAL_SPI_TxCpltCallback(spi: *mut SPI)
 
 #[no_mangle]
 #[allow(static_mut_refs)]
-pub unsafe extern "C" fn HAL_SPI_RxCpltCallback(spi: *mut SPI)
+pub unsafe extern "C" fn HAL_SPI_RxCpltCallback(spi: *mut SPI_HandleTypeDef)
 {
     if let Some(sample) = SPIS.find(spi).ok()
     {
@@ -121,7 +121,7 @@ pub unsafe extern "C" fn HAL_SPI_RxCpltCallback(spi: *mut SPI)
 
 #[no_mangle]
 #[allow(static_mut_refs)]
-pub unsafe extern "C" fn HAL_SPI_TxRxCpltCallback(spi: *mut SPI)
+pub unsafe extern "C" fn HAL_SPI_TxRxCpltCallback(spi: *mut SPI_HandleTypeDef)
 {
     if let Some(sample) = SPIS.find(spi).ok()
     {
@@ -134,19 +134,19 @@ pub unsafe extern "C" fn HAL_SPI_TxRxCpltCallback(spi: *mut SPI)
 
 // #[no_mangle]
 // #[allow(static_mut_refs)]
-// pub unsafe extern "C" fn HAL_SPI_TxHalfCpltCallback(spi: *mut SPI) {}
+// pub unsafe extern "C" fn HAL_SPI_TxHalfCpltCallback(spi: *mut SPI_HandleTypeDef) {}
 
 // #[no_mangle]
 // #[allow(static_mut_refs)]
-// pub unsafe extern "C" fn HAL_SPI_RxHalfCpltCallback(spi: *mut SPI) {}
+// pub unsafe extern "C" fn HAL_SPI_RxHalfCpltCallback(spi: *mut SPI_HandleTypeDef) {}
 
 // #[no_mangle]
 // #[allow(static_mut_refs)]
-// pub unsafe extern "C" fn HAL_SPI_TxRxHalfCpltCallback(spi: *mut SPI) {}
+// pub unsafe extern "C" fn HAL_SPI_TxRxHalfCpltCallback(spi: *mut SPI_HandleTypeDef) {}
 
 #[no_mangle]
 #[allow(static_mut_refs)]
-pub unsafe extern "C" fn HAL_SPI_ErrorCallback(spi: *mut SPI)
+pub unsafe extern "C" fn HAL_SPI_ErrorCallback(spi: *mut SPI_HandleTypeDef)
 {
     if let Some(sample) = SPIS.find(spi).ok()
     {
@@ -159,7 +159,7 @@ pub unsafe extern "C" fn HAL_SPI_ErrorCallback(spi: *mut SPI)
 
 #[no_mangle]
 #[allow(static_mut_refs)]
-pub unsafe extern "C" fn HAL_SPI_AbortCpltCallback(spi: *mut SPI)
+pub unsafe extern "C" fn HAL_SPI_AbortCpltCallback(spi: *mut SPI_HandleTypeDef)
 {
     if let Some(sample) = SPIS.find(spi).ok()
     {

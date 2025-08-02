@@ -31,6 +31,10 @@ pub trait Mcu
     type WatchDog: wd::WatchDog;
 }
 
+/// `EventLaunch` is a trait that the peripheral trait who implements this trait means that it can 
+/// be set an event agent, and the peripheral will call function to send the event.
+/// 
+/// 
 pub trait EventLaunch<T: ?Sized>
 {
     fn set_event_agent(&mut self, event_handle: &T) -> RetValue<()>;
