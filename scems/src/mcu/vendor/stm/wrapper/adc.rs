@@ -4,24 +4,24 @@ use crate::common::result::RetValue;
 use crate::derive::{AsPtr, HandlePtr};
 use crate::mcu::common::adc::{Adc, AdcEventAgent};
 use crate::mcu::common::{EventLaunch, HandlePtr};
-use crate::mcu::vendors::stm::common::DeviceQueue;
-use crate::mcu::vendors::stm::native::adc::*;
+use crate::mcu::vendor::stm::common::DeviceQueue;
+use crate::mcu::vendor::stm::native::adc::*;
 
 const ADC_DEF_TIMEOUT: u32 = 1000;
 
 const ADC_COUNT: usize = 8;
-static mut ADCS: DeviceQueue<ADC, AdcDevice, ADC_COUNT> = DeviceQueue::new();
+static mut ADCS: DeviceQueue<ADC_HandleTypeDef, AdcDevice, ADC_COUNT> = DeviceQueue::new();
 
 #[derive(AsPtr, HandlePtr)]
 pub struct AdcDevice
 {
-    handle: *mut ADC,
+    handle: *mut ADC_HandleTypeDef,
     event_handle: Option<*const dyn AdcEventAgent>,
 }
 
 impl AdcDevice
 {
-    pub fn new(handle: *mut ADC) -> Self
+    pub fn new(handle: *mut ADC_HandleTypeDef) -> Self
     {
         AdcDevice { handle, event_handle: None }
     }
@@ -71,12 +71,12 @@ impl Adc for AdcDevice
         unsafe { HAL_ADC_Start_IT(self.handle).into() }
     }
 
-    fn async_convert_continuous_start(&self, data: &mut [u32]) -> RetValue<()>
+    fn async_convert_continuous(&self, data: &mut [u32]) -> RetValue<()>
     {
         unsafe { HAL_ADC_Start_DMA(self.handle, data.as_mut_ptr(), data.len() as u32).into() }
     }
 
-    fn async_convert_continuous_stop(&self) -> RetValue<()>
+    fn async_terminate_conversion(&self) -> RetValue<()>
     {
         unsafe { HAL_ADC_Stop_DMA(self.handle).into() }
     }
@@ -84,7 +84,7 @@ impl Adc for AdcDevice
 
 #[no_mangle]
 #[allow(static_mut_refs)]
-pub unsafe extern "C" fn HAL_ADC_ConvCpltCallback(adc: *mut ADC)
+pub unsafe extern "C" fn HAL_ADC_ConvCpltCallback(adc: *mut ADC_HandleTypeDef)
 {
     if let Some(sample) = ADCS.find(adc).ok()
     {
@@ -97,11 +97,11 @@ pub unsafe extern "C" fn HAL_ADC_ConvCpltCallback(adc: *mut ADC)
 
 // #[no_mangle]
 // #[allow(static_mut_refs)]
-// pub unsafe extern "C" fn HAL_ADC_ConvHalfCpltCallback(adc: *mut ADC) {}
+// pub unsafe extern "C" fn HAL_ADC_ConvHalfCpltCallback(adc: *mut ADC_HandleTypeDef) {}
 
 #[no_mangle]
 #[allow(static_mut_refs)]
-pub unsafe extern "C" fn HAL_ADC_LevelOutOfWindowCallback(adc: *mut ADC)
+pub unsafe extern "C" fn HAL_ADC_LevelOutOfWindowCallback(adc: *mut ADC_HandleTypeDef)
 {
     if let Some(sample) = ADCS.find(adc).ok()
     {
@@ -114,7 +114,7 @@ pub unsafe extern "C" fn HAL_ADC_LevelOutOfWindowCallback(adc: *mut ADC)
 
 #[no_mangle]
 #[allow(static_mut_refs)]
-pub unsafe extern "C" fn HAL_ADC_ErrorCallback(adc: *mut ADC)
+pub unsafe extern "C" fn HAL_ADC_ErrorCallback(adc: *mut ADC_HandleTypeDef)
 {
     if let Some(sample) = ADCS.find(adc).ok()
     {

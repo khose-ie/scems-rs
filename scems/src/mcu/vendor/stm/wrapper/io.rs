@@ -4,7 +4,7 @@ use crate::common::result::RetValue;
 use crate::derive::{EnumCastU16, EnumCount};
 use crate::mcu::common::io::{Io, IoEventAgent, IoState};
 use crate::mcu::common::EventLaunch;
-use crate::mcu::vendors::stm::native::io::*;
+use crate::mcu::vendor::stm::native::io::*;
 
 #[repr(u16)]
 #[derive(Clone, Copy, EnumCount, EnumCastU16)]

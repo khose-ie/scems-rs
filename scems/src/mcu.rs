@@ -1,2 +1,2 @@
 pub mod common;
-pub mod vendors;
+pub mod vendor;

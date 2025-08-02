@@ -1,6 +1,6 @@
 use crate::common::result::RetValue;
 use crate::mcu::common::flash::Flash;
-use crate::mcu::vendors::stm::native::flash::*;
+use crate::mcu::vendor::stm::native::flash::*;
 
 pub struct OnChipFlashDevice {}
 

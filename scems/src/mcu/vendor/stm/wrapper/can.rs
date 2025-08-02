@@ -4,9 +4,9 @@ use crate::common::result::{ErrValue, RetValue};
 use crate::derive::{AsPtr, HandlePtr};
 use crate::mcu::common::can::{Can, CanEventAgent, CanMessage};
 use crate::mcu::common::{EventLaunch, HandlePtr};
-use crate::mcu::vendors::stm::common::DeviceQueue;
-use crate::mcu::vendors::stm::native::can::*;
-use crate::mcu::vendors::stm::native::common::{HAL_Status, *};
+use crate::mcu::vendor::stm::common::DeviceQueue;
+use crate::mcu::vendor::stm::native::can::*;
+use crate::mcu::vendor::stm::native::common::{HAL_StatusTypeDef, *};
 
 const CAN_COUNT: usize = 8;
 static mut CANS: DeviceQueue<CAN, CanDevice, CAN_COUNT> = DeviceQueue::new();
@@ -80,7 +80,7 @@ impl Can for CanDevice
         {
             status = unsafe { HAL_CAN_AddTxMessage(self.handle, &tx_head, &can_message.data.content, &mut mail_box) };
 
-            if matches!(status, HAL_Status::HAL_OK)
+            if matches!(status, HAL_StatusTypeDef::HAL_OK)
             {
                 break;
             }
@@ -93,7 +93,7 @@ impl Can for CanDevice
             }
         }
 
-        if !matches!(status, HAL_Status::HAL_OK)
+        if !matches!(status, HAL_StatusTypeDef::HAL_OK)
         {
             return Err(ErrValue::BusBusy);
         }
@@ -139,7 +139,7 @@ impl Can for CanDevice
             status =
                 unsafe { HAL_CAN_GetRxMessage(self.handle, self.fifo, &mut rx_head, &mut can_message.data.content) };
 
-            if matches!(status, HAL_Status::HAL_OK)
+            if matches!(status, HAL_StatusTypeDef::HAL_OK)
             {
                 break;
             }
@@ -152,7 +152,7 @@ impl Can for CanDevice
             }
         }
 
-        if !matches!(status, HAL_Status::HAL_OK)
+        if !matches!(status, HAL_StatusTypeDef::HAL_OK)
         {
             return Err(ErrValue::BusBusy);
         }

@@ -2,7 +2,7 @@ use core::cell::RefCell;
 
 use scems::common::result::RetValue;
 use scems::mcu::common::uart::{Uart, UartEventAgent};
-use scems::mcu::vendors::uart::UartDevice;
+use scems::mcu::vendor::uart::UartDevice;
 use scems::os::common::events::IEvents;
 use scems::os::common::mem::IMemCache;
 use scems::os::vendors::events::Events;

@@ -4,7 +4,7 @@
 
 use core::ffi::c_void;
 
-use super::common::{HAL_Lock, HAL_Status};
+use super::common::{HAL_LockTypeDef, HAL_StatusTypeDef};
 use super::dma::DMA;
 
 #[repr(C)]
@@ -22,7 +22,7 @@ pub struct SPI
     pub TxISR: *const c_void,
     pub hdmatx: *mut DMA,
     pub hdmarx: *mut DMA,
-    pub Lock: HAL_Lock,
+    pub Lock: HAL_LockTypeDef,
     pub State: HAL_SPI_State,
     pub ErrorCode: u32,
 }
@@ -62,15 +62,15 @@ pub enum HAL_SPI_State
 #[rustfmt::skip]
 #[allow(improper_ctypes)]
 extern "C" {
-    pub fn HAL_SPI_Transmit(hspi: *mut SPI, pData: *const u8, Size: u16, Timeout: u32) -> HAL_Status;
-    pub fn HAL_SPI_Receive(hspi: *mut SPI, pData: *const u8, Size: u16, Timeout: u32) -> HAL_Status;
-    pub fn HAL_SPI_TransmitReceive(hspi: *mut SPI, pTxData: *const u8, pRxData: *const u8, Size: u16, Timeout: u32) -> HAL_Status;
-    pub fn HAL_SPI_Transmit_IT(hspi: *mut SPI, pData: *const u8, Size: u16) -> HAL_Status;
-    pub fn HAL_SPI_Receive_IT(hspi: *mut SPI, pData: *const u8, Size: u16) -> HAL_Status;
-    pub fn HAL_SPI_TransmitReceive_IT(hspi: *mut SPI, pTxData: *const u8, pRxData: *const u8, Size: u16) -> HAL_Status;
-    pub fn HAL_SPI_Transmit_DMA(hspi: *mut SPI, pData: *const u8, Size: u16) -> HAL_Status;
-    pub fn HAL_SPI_Receive_DMA(hspi: *mut SPI, pData: *const u8, Size: u16) -> HAL_Status;
-    pub fn HAL_SPI_TransmitReceive_DMA(hspi: *mut SPI, pTxData: *const u8, pRxData: *const u8, Size: u16) -> HAL_Status;
-    pub fn HAL_SPI_Abort(hspi: *mut SPI) -> HAL_Status;
-    pub fn HAL_SPI_Abort_IT(hspi: *mut SPI) -> HAL_Status;
+    pub fn HAL_SPI_Transmit(hspi: *mut SPI, pData: *const u8, Size: u16, Timeout: u32) -> HAL_StatusTypeDef;
+    pub fn HAL_SPI_Receive(hspi: *mut SPI, pData: *const u8, Size: u16, Timeout: u32) -> HAL_StatusTypeDef;
+    pub fn HAL_SPI_TransmitReceive(hspi: *mut SPI, pTxData: *const u8, pRxData: *const u8, Size: u16, Timeout: u32) -> HAL_StatusTypeDef;
+    pub fn HAL_SPI_Transmit_IT(hspi: *mut SPI, pData: *const u8, Size: u16) -> HAL_StatusTypeDef;
+    pub fn HAL_SPI_Receive_IT(hspi: *mut SPI, pData: *const u8, Size: u16) -> HAL_StatusTypeDef;
+    pub fn HAL_SPI_TransmitReceive_IT(hspi: *mut SPI, pTxData: *const u8, pRxData: *const u8, Size: u16) -> HAL_StatusTypeDef;
+    pub fn HAL_SPI_Transmit_DMA(hspi: *mut SPI, pData: *const u8, Size: u16) -> HAL_StatusTypeDef;
+    pub fn HAL_SPI_Receive_DMA(hspi: *mut SPI, pData: *const u8, Size: u16) -> HAL_StatusTypeDef;
+    pub fn HAL_SPI_TransmitReceive_DMA(hspi: *mut SPI, pTxData: *const u8, pRxData: *const u8, Size: u16) -> HAL_StatusTypeDef;
+    pub fn HAL_SPI_Abort(hspi: *mut SPI) -> HAL_StatusTypeDef;
+    pub fn HAL_SPI_Abort_IT(hspi: *mut SPI) -> HAL_StatusTypeDef;
 }

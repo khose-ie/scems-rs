@@ -1,5 +1,5 @@
 use crate::mcu::common::wd::WatchDog;
-use crate::mcu::vendors::stm::native::iwdg::*;
+use crate::mcu::vendor::stm::native::iwdg::*;
 
 pub struct WatchDogDevice
 {

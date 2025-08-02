@@ -5,10 +5,10 @@
 use crate::common::result::{ErrValue, RetValue};
 
 #[repr(C)]
-pub enum HAL_Lock
+pub enum HAL_LockTypeDef
 {
     HAL_UNLOCKED = 0x00,
-    HAL_LOCKED = 0x01,
+    HAL_LockTypeDefED = 0x01,
 }
 
 #[repr(C)]
@@ -20,7 +20,7 @@ pub enum FunctionalState
 
 #[repr(C)]
 #[derive(Debug)]
-pub enum HAL_Status
+pub enum HAL_StatusTypeDef
 {
     HAL_OK = 0,
     HAL_ERROR = 1,
@@ -28,7 +28,7 @@ pub enum HAL_Status
     HAL_TIMEOUT = 3,
 }
 
-impl HAL_Status
+impl HAL_StatusTypeDef
 {
     pub fn ok(self) -> RetValue<()>
     {
@@ -36,7 +36,7 @@ impl HAL_Status
     }
 }
 
-impl Into<RetValue<()>> for HAL_Status
+impl Into<RetValue<()>> for HAL_StatusTypeDef
 {
     fn into(self) -> RetValue<()>
     {
@@ -50,7 +50,7 @@ impl Into<RetValue<()>> for HAL_Status
     }
 }
 
-impl Into<ErrValue> for HAL_Status
+impl Into<ErrValue> for HAL_StatusTypeDef
 {
     fn into(self) -> ErrValue
     {

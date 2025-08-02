@@ -2,7 +2,7 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
-use super::common::HAL_Status;
+use super::common::HAL_StatusTypeDef;
 
 #[repr(C)]
 pub struct IWDG
@@ -28,5 +28,5 @@ pub struct IWDG_Init
 #[rustfmt::skip]
 #[allow(improper_ctypes)]
 extern "C" {
-    pub fn HAL_IWDG_Refresh(iwdg: *mut IWDG) -> HAL_Status;
+    pub fn HAL_IWDG_Refresh(iwdg: *mut IWDG) -> HAL_StatusTypeDef;
 }

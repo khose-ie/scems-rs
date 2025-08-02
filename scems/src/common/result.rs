@@ -1,3 +1,5 @@
+//! The common return value type and error kinds list.
+
 /// `ErrValue` includes all kinds of errors' code in scems.
 /// 
 /// Every function in scems which will return a result may has exception situation,

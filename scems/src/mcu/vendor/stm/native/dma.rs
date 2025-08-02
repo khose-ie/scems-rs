@@ -4,14 +4,14 @@
 
 use core::ffi::c_void;
 
-use super::common::HAL_Lock;
+use super::common::HAL_LockTypeDef;
 
 #[repr(C)]
 pub struct DMA
 {
     pub Instance: *mut DMA_Stream,
     pub Init: DMA_Init,
-    pub Lock: HAL_Lock,
+    pub Lock: HAL_LockTypeDef,
     pub State: HAL_DMA_State,
     pub Parent: *mut c_void,
     pub XferCpltCallback: *mut c_void,

@@ -4,7 +4,7 @@
 
 use crate::mcu::common::can::CanMessageHead;
 
-use super::common::{FunctionalState, HAL_Status};
+use super::common::{FunctionalState, HAL_StatusTypeDef};
 
 #[repr(C)]
 pub struct CAN
@@ -87,16 +87,16 @@ pub struct CAN_RxHeader
 #[rustfmt::skip]
 #[allow(improper_ctypes)]
 unsafe extern "C" {
-    pub fn HAL_CAN_Start(can: *mut CAN) -> HAL_Status;
-    pub fn HAL_CAN_Stop(can: *mut CAN) -> HAL_Status;
-    pub fn HAL_CAN_RequestSleep(can: *mut CAN) -> HAL_Status;
-    pub fn HAL_CAN_WakeUp(can: *mut CAN) -> HAL_Status;
+    pub fn HAL_CAN_Start(can: *mut CAN) -> HAL_StatusTypeDef;
+    pub fn HAL_CAN_Stop(can: *mut CAN) -> HAL_StatusTypeDef;
+    pub fn HAL_CAN_RequestSleep(can: *mut CAN) -> HAL_StatusTypeDef;
+    pub fn HAL_CAN_WakeUp(can: *mut CAN) -> HAL_StatusTypeDef;
     pub fn HAL_CAN_IsSleepActive(can: *mut CAN) -> u32;
-    pub fn HAL_CAN_AddTxMessage(can: *mut CAN, pHeader: *const CAN_TxHeader, aData: &[u8], pTxMailbox: *mut u32) -> HAL_Status;
-    pub fn HAL_CAN_AbortTxRequest(can: *mut CAN, TxMailboxes: u32) -> HAL_Status;
+    pub fn HAL_CAN_AddTxMessage(can: *mut CAN, pHeader: *const CAN_TxHeader, aData: &[u8], pTxMailbox: *mut u32) -> HAL_StatusTypeDef;
+    pub fn HAL_CAN_AbortTxRequest(can: *mut CAN, TxMailboxes: u32) -> HAL_StatusTypeDef;
     pub fn HAL_CAN_GetTxMailboxesFreeLevel(can: *mut CAN) -> u32;
     pub fn HAL_CAN_IsTxMessagePending(can: *mut CAN, TxMailboxes: u32) -> u32;
     pub fn HAL_CAN_GetTxTimestamp(can: *mut CAN, TxMailbox: u32) -> u32;
-    pub fn HAL_CAN_GetRxMessage(can: *mut CAN, RxFifo: u32, pHeader: *mut CAN_RxHeader, aData: &mut [u8]) -> HAL_Status;
+    pub fn HAL_CAN_GetRxMessage(can: *mut CAN, RxFifo: u32, pHeader: *mut CAN_RxHeader, aData: &mut [u8]) -> HAL_StatusTypeDef;
     pub fn HAL_CAN_GetRxFifoFillLevel(can: *mut CAN, RxFifo: u32) -> u32;
 }

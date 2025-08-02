@@ -4,8 +4,8 @@ use crate::common::result::RetValue;
 use crate::derive::{AsPtr, HandlePtr};
 use crate::mcu::common::uart::{Uart, UartEventAgent};
 use crate::mcu::common::{EventLaunch, HandlePtr};
-use crate::mcu::vendors::stm::common::DeviceQueue;
-use crate::mcu::vendors::stm::native::uart::*;
+use crate::mcu::vendor::stm::common::DeviceQueue;
+use crate::mcu::vendor::stm::native::uart::*;
 
 const UART_COUNT: usize = 8;
 static mut UARTS: DeviceQueue<UART, UartDevice, UART_COUNT> = DeviceQueue::new();
