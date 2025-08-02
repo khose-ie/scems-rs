@@ -1,4 +1,4 @@
-use crate::common::result::IResult;
+use crate::common::result::RetValue;
 
 use super::EventLaunch;
 
@@ -6,11 +6,11 @@ pub trait TimBase
 where
     Self: EventLaunch<dyn TimBaseEventAgent>,
 {
-    fn activate(&self) -> IResult<()>;
+    fn activate(&self) -> RetValue<()>;
     fn deactivate(&self);
-    fn async_activate(&self) -> IResult<()>;
+    fn async_activate(&self) -> RetValue<()>;
     fn async_deactivate(&self);
-    fn async_activate_data(&self, data: &mut [u32]) -> IResult<()>;
+    fn async_activate_data(&self, data: &mut [u32]) -> RetValue<()>;
     fn async_deactivate_data(&self);
     fn count_value(&self) -> u32;
 }
@@ -29,11 +29,11 @@ pub trait TimPwm
 where
     Self: EventLaunch<dyn TimPwmEventAgent>,
 {
-    fn activate(&self) -> IResult<()>;
+    fn activate(&self) -> RetValue<()>;
     fn deactivate(&self);
-    fn async_activate(&self) -> IResult<()>;
+    fn async_activate(&self) -> RetValue<()>;
     fn async_deactivate(&self);
-    fn async_activate_data(&self, data: &mut [u32]) -> IResult<()>;
+    fn async_activate_data(&self, data: &mut [u32]) -> RetValue<()>;
     fn async_deactivate_data(&self);
     fn count_value(&self) -> u32;
 }

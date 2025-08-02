@@ -19,7 +19,7 @@ use core::marker::PhantomData;
 use core::ptr::null_mut;
 
 use crate::common::cast::CastOpt;
-use crate::common::result::{IError, IResult};
+use crate::common::result::{ErrValue, RetValue};
 use crate::mcu::common::HandlePtr;
 
 /// A queue template to be used to map the peripheral device and the handler pointer of it.
@@ -49,9 +49,9 @@ where
     }
 
     #[rustfmt::skip]
-    pub fn alloc(&mut self, sample_value: *mut U) -> IResult<()>
+    pub fn alloc(&mut self, sample_value: *mut U) -> RetValue<()>
     {
-        let sample_value = sample_value.cast_opt().ok_or(IError::Param)?;
+        let sample_value = sample_value.cast_opt().ok_or(ErrValue::Param)?;
         let mut sample_temp: *mut U = null_mut();
 
         for sample in self.samples.iter()
@@ -79,7 +79,7 @@ where
             }
         }
 
-        let _ = sample_temp.cast_opt().ok_or(IError::StackOverflow)?;
+        let _ = sample_temp.cast_opt().ok_or(ErrValue::StackOverflow)?;
         Ok(())
     }
 
@@ -102,9 +102,9 @@ where
     }
 
     #[rustfmt::skip]
-    pub fn find(&self, handle_value: *mut T) -> IResult<*mut U>
+    pub fn find(&self, handle_value: *mut T) -> RetValue<*mut U>
     {
-        let Some(handle_value) = handle_value.cast_opt() else { return Err(IError::Param); };
+        let Some(handle_value) = handle_value.cast_opt() else { return Err(ErrValue::Param); };
         let mut sample_value: *mut U = null_mut();
 
         for sample in self.samples.iter()
@@ -119,7 +119,7 @@ where
             }
         }
 
-        let Some(x) = sample_value.cast_opt() else { return Err(IError::NotFound); };
+        let Some(x) = sample_value.cast_opt() else { return Err(ErrValue::NotFound); };
         Ok(x)
     }
 }

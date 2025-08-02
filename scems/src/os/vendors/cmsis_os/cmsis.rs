@@ -6,7 +6,7 @@
 use core::ffi::{c_char, c_void, CStr};
 use core::ptr::{null, null_mut};
 
-use crate::common::result::{IError, IResult};
+use crate::common::result::{ErrValue, RetValue};
 use crate::derive::EnumCastI32;
 use crate::os::common::task::TaskPriorities;
 use crate::os::common::timer::TimerMode;
@@ -87,15 +87,15 @@ pub enum osStatus_t
 
 impl osStatus_t
 {
-    pub fn ok(self) -> IResult<()>
+    pub fn ok(self) -> RetValue<()>
     {
         self.into()
     }
 }
 
-impl Into<IResult<()>> for osStatus_t
+impl Into<RetValue<()>> for osStatus_t
 {
-    fn into(self) -> IResult<()>
+    fn into(self) -> RetValue<()>
     {
         match self
         {
@@ -105,20 +105,20 @@ impl Into<IResult<()>> for osStatus_t
     }
 }
 
-impl Into<IError> for osStatus_t
+impl Into<ErrValue> for osStatus_t
 {
-    fn into(self) -> IError
+    fn into(self) -> ErrValue
     {
         match self
         {
-            Self::osOK => IError::None,
-            Self::osError => IError::Param,
-            Self::osErrorTimeout => IError::BusBusy,
-            Self::osErrorResource => IError::Overtime,
-            Self::osErrorParameter => IError::Param,
-            Self::osErrorNoMemory => IError::MemAlloc,
-            Self::osErrorISR => IError::Permission,
-            Self::osStatusReserved => IError::Unknown,
+            Self::osOK => ErrValue::None,
+            Self::osError => ErrValue::Param,
+            Self::osErrorTimeout => ErrValue::BusBusy,
+            Self::osErrorResource => ErrValue::Overtime,
+            Self::osErrorParameter => ErrValue::Param,
+            Self::osErrorNoMemory => ErrValue::MemAlloc,
+            Self::osErrorISR => ErrValue::Permission,
+            Self::osStatusReserved => ErrValue::Unknown,
         }
     }
 }

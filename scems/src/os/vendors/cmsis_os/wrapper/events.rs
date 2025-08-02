@@ -1,7 +1,7 @@
 use core::ptr::null;
 
 use crate::common::cast::CastOpt;
-use crate::common::result::{IError, IResult};
+use crate::common::result::{ErrValue, RetValue};
 use crate::os::common::events::IEvents;
 use crate::os::vendors::cmsis_os::cmsis::*;
 
@@ -13,9 +13,9 @@ pub struct Events
 impl Events
 {
     #[rustfmt::skip]
-    pub fn new() -> IResult<Self>
+    pub fn new() -> RetValue<Self>
     {
-        let handle = unsafe { osEventFlagsNew(null()).cast_opt().ok_or(IError::InstanceCreate) }?;
+        let handle = unsafe { osEventFlagsNew(null()).cast_opt().ok_or(ErrValue::InstanceCreate) }?;
         Ok(Events { handle })
     }
 }
@@ -30,11 +30,11 @@ impl Drop for Events
 
 impl IEvents for Events
 {
-    fn launch(&self, events: u32) -> IResult<()>
+    fn launch(&self, events: u32) -> RetValue<()>
     {
         if events & osFlagsError != 0
         {
-            return Err(IError::Param);
+            return Err(ErrValue::Param);
         }
 
         let event_state = unsafe { osEventFlagsSet(self.handle, events) };
@@ -47,7 +47,7 @@ impl IEvents for Events
         Ok(())
     }
 
-    fn receive(&self, events: u32, timeout: u32) -> IResult<u32>
+    fn receive(&self, events: u32, timeout: u32) -> RetValue<u32>
     {
         let event_state = unsafe { osEventFlagsWait(self.handle, events, osFlagsWaitAny, timeout) };
 

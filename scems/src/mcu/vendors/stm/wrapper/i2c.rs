@@ -1,6 +1,6 @@
 use core::mem::{transmute, ManuallyDrop};
 
-use crate::common::result::IResult;
+use crate::common::result::RetValue;
 use crate::derive::{AsPtr, HandlePtr};
 use crate::mcu::common::i2c::{I2cMaster, I2cMasterEventAgent};
 use crate::mcu::common::i2c::{I2cMem, I2cMemEventAgent, I2cMemWide};
@@ -60,7 +60,7 @@ impl Drop for I2cMemDevice
 impl EventLaunch<dyn I2cMemEventAgent> for I2cMemDevice
 {
     #[allow(static_mut_refs)]
-    fn set_event_agent(&mut self, event_handle: &dyn I2cMemEventAgent) -> IResult<()>
+    fn set_event_agent(&mut self, event_handle: &dyn I2cMemEventAgent) -> RetValue<()>
     {
         self.event_handle = Some(unsafe { transmute(event_handle as *const dyn I2cMemEventAgent) });
         unsafe { I2CS.alloc(self.as_i2c_ptr()) }
@@ -76,28 +76,28 @@ impl EventLaunch<dyn I2cMemEventAgent> for I2cMemDevice
 
 impl I2cMem for I2cMemDevice
 {
-    fn mem_write(&self, saddr: u16, maddr: u16, mwide: I2cMemWide, data: &[u8], timeout: u32) -> IResult<()>
+    fn mem_write(&self, saddr: u16, maddr: u16, mwide: I2cMemWide, data: &[u8], timeout: u32) -> RetValue<()>
     {
         unsafe {
             HAL_I2C_Mem_Write(self.handle, saddr, maddr, mwide.into(), data.as_ptr(), data.len() as u16, timeout).into()
         }
     }
 
-    fn mem_read(&self, saddr: u16, maddr: u16, mwide: I2cMemWide, data: &mut [u8], timeout: u32) -> IResult<()>
+    fn mem_read(&self, saddr: u16, maddr: u16, mwide: I2cMemWide, data: &mut [u8], timeout: u32) -> RetValue<()>
     {
         unsafe {
             HAL_I2C_Mem_Read(self.handle, saddr, maddr, mwide.into(), data.as_ptr(), data.len() as u16, timeout).into()
         }
     }
 
-    fn async_mem_write(&self, saddr: u16, maddr: u16, mwide: I2cMemWide, data: &[u8]) -> IResult<()>
+    fn async_mem_write(&self, saddr: u16, maddr: u16, mwide: I2cMemWide, data: &[u8]) -> RetValue<()>
     {
         unsafe {
             HAL_I2C_Mem_Write_DMA(self.handle, saddr, maddr, mwide.into(), data.as_ptr(), data.len() as u16).into()
         }
     }
 
-    fn async_mem_read(&self, saddr: u16, maddr: u16, mwide: I2cMemWide, data: &mut [u8]) -> IResult<()>
+    fn async_mem_read(&self, saddr: u16, maddr: u16, mwide: I2cMemWide, data: &mut [u8]) -> RetValue<()>
     {
         unsafe {
             HAL_I2C_Mem_Read_DMA(self.handle, saddr, maddr, mwide.into(), data.as_ptr(), data.len() as u16).into()
@@ -136,7 +136,7 @@ impl Drop for I2cMasterDevice
 impl EventLaunch<dyn I2cMasterEventAgent> for I2cMasterDevice
 {
     #[allow(static_mut_refs)]
-    fn set_event_agent(&mut self, event_handle: &dyn I2cMasterEventAgent) -> IResult<()>
+    fn set_event_agent(&mut self, event_handle: &dyn I2cMasterEventAgent) -> RetValue<()>
     {
         self.event_handle = Some(unsafe { transmute(event_handle as *const dyn I2cMasterEventAgent) });
         unsafe { I2CS.alloc(self.as_i2c_ptr()) }
@@ -152,22 +152,22 @@ impl EventLaunch<dyn I2cMasterEventAgent> for I2cMasterDevice
 
 impl I2cMaster for I2cMasterDevice
 {
-    fn transmit(&self, saddr: u16, data: &[u8], timeout: u32) -> IResult<()>
+    fn transmit(&self, saddr: u16, data: &[u8], timeout: u32) -> RetValue<()>
     {
         unsafe { HAL_I2C_Master_Transmit(self.handle, saddr, data.as_ptr(), data.len() as u16, timeout).into() }
     }
 
-    fn receive(&self, saddr: u16, data: &mut [u8], timeout: u32) -> IResult<()>
+    fn receive(&self, saddr: u16, data: &mut [u8], timeout: u32) -> RetValue<()>
     {
         unsafe { HAL_I2C_Master_Receive(self.handle, saddr, data.as_ptr(), data.len() as u16, timeout).into() }
     }
 
-    fn async_transmit(&self, saddr: u16, data: &[u8]) -> IResult<()>
+    fn async_transmit(&self, saddr: u16, data: &[u8]) -> RetValue<()>
     {
         unsafe { HAL_I2C_Master_Transmit_DMA(self.handle, saddr, data.as_ptr(), data.len() as u16).into() }
     }
 
-    fn async_receive(&self, saddr: u16, data: &mut [u8]) -> IResult<()>
+    fn async_receive(&self, saddr: u16, data: &mut [u8]) -> RetValue<()>
     {
         unsafe { HAL_I2C_Master_Receive_DMA(self.handle, saddr, data.as_ptr(), data.len() as u16).into() }
     }
@@ -204,7 +204,7 @@ impl Drop for I2cSlaveDevice
 impl EventLaunch<dyn I2cSlaveEventAgent> for I2cSlaveDevice
 {
     #[allow(static_mut_refs)]
-    fn set_event_agent(&mut self, event_handle: &dyn I2cSlaveEventAgent) -> IResult<()>
+    fn set_event_agent(&mut self, event_handle: &dyn I2cSlaveEventAgent) -> RetValue<()>
     {
         self.event_handle = Some(unsafe { transmute(event_handle as *const dyn I2cSlaveEventAgent) });
         unsafe { I2CS.alloc(self.as_i2c_ptr()) }
@@ -220,27 +220,27 @@ impl EventLaunch<dyn I2cSlaveEventAgent> for I2cSlaveDevice
 
 impl I2cSlave for I2cSlaveDevice
 {
-    fn listen(&self) -> IResult<()>
+    fn listen(&self) -> RetValue<()>
     {
         unsafe { HAL_I2C_EnableListen_IT(self.handle).into() }
     }
 
-    fn transmit(&self, data: &[u8], timeout: u32) -> IResult<()>
+    fn transmit(&self, data: &[u8], timeout: u32) -> RetValue<()>
     {
         unsafe { HAL_I2C_Slave_Transmit(self.handle, data.as_ptr(), data.len() as u16, timeout).into() }
     }
 
-    fn receive(&self, data: &mut [u8], timeout: u32) -> IResult<()>
+    fn receive(&self, data: &mut [u8], timeout: u32) -> RetValue<()>
     {
         unsafe { HAL_I2C_Slave_Receive(self.handle, data.as_ptr(), data.len() as u16, timeout).into() }
     }
 
-    fn async_transmit(&self, data: &[u8]) -> IResult<()>
+    fn async_transmit(&self, data: &[u8]) -> RetValue<()>
     {
         unsafe { HAL_I2C_Slave_Transmit_DMA(self.handle, data.as_ptr(), data.len() as u16).into() }
     }
 
-    fn async_receive(&self, data: &mut [u8]) -> IResult<()>
+    fn async_receive(&self, data: &mut [u8]) -> RetValue<()>
     {
         unsafe { HAL_I2C_Slave_Receive_DMA(self.handle, data.as_ptr(), data.len() as u16).into() }
     }

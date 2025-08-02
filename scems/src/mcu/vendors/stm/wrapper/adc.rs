@@ -1,6 +1,6 @@
 use core::mem::transmute;
 
-use crate::common::result::IResult;
+use crate::common::result::RetValue;
 use crate::derive::{AsPtr, HandlePtr};
 use crate::mcu::common::adc::{Adc, AdcEventAgent};
 use crate::mcu::common::{EventLaunch, HandlePtr};
@@ -38,7 +38,7 @@ impl Drop for AdcDevice
 impl EventLaunch<dyn AdcEventAgent> for AdcDevice
 {
     #[allow(static_mut_refs)]
-    fn set_event_agent(&mut self, event_handle: &dyn AdcEventAgent) -> IResult<()>
+    fn set_event_agent(&mut self, event_handle: &dyn AdcEventAgent) -> RetValue<()>
     {
         self.event_handle = Some(unsafe { transmute(event_handle as *const dyn AdcEventAgent) });
         unsafe { ADCS.alloc(self.as_ptr()) }
@@ -57,7 +57,7 @@ impl EventLaunch<dyn AdcEventAgent> for AdcDevice
 
 impl Adc for AdcDevice
 {
-    fn convert_once(&self) -> IResult<u32>
+    fn convert_once(&self) -> RetValue<u32>
     {
         unsafe {
             HAL_ADC_Start(self.handle).ok()?;
@@ -66,17 +66,17 @@ impl Adc for AdcDevice
         }
     }
 
-    fn async_convert_once(&self) -> IResult<()>
+    fn async_convert_once(&self) -> RetValue<()>
     {
         unsafe { HAL_ADC_Start_IT(self.handle).into() }
     }
 
-    fn async_convert_continuous_start(&self, data: &mut [u32]) -> IResult<()>
+    fn async_convert_continuous_start(&self, data: &mut [u32]) -> RetValue<()>
     {
         unsafe { HAL_ADC_Start_DMA(self.handle, data.as_mut_ptr(), data.len() as u32).into() }
     }
 
-    fn async_convert_continuous_stop(&self) -> IResult<()>
+    fn async_convert_continuous_stop(&self) -> RetValue<()>
     {
         unsafe { HAL_ADC_Stop_DMA(self.handle).into() }
     }

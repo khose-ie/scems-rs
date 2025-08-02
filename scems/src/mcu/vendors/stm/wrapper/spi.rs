@@ -1,6 +1,6 @@
 use core::mem::transmute;
 
-use crate::common::result::IResult;
+use crate::common::result::RetValue;
 use crate::derive::{AsPtr, HandlePtr};
 use crate::mcu::common::spi::{Spi, SpiEventAgent};
 use crate::mcu::common::{EventLaunch, HandlePtr};
@@ -36,7 +36,7 @@ impl Drop for SpiDevice
 impl EventLaunch<dyn SpiEventAgent> for SpiDevice
 {
     #[allow(static_mut_refs)]
-    fn set_event_agent(&mut self, event_handle: &dyn SpiEventAgent) -> IResult<()>
+    fn set_event_agent(&mut self, event_handle: &dyn SpiEventAgent) -> RetValue<()>
     {
         self.event_handle = Some(unsafe { transmute(event_handle as *const dyn SpiEventAgent) });
         unsafe { SPIS.alloc(self.as_ptr()) }
@@ -52,17 +52,17 @@ impl EventLaunch<dyn SpiEventAgent> for SpiDevice
 
 impl Spi for SpiDevice
 {
-    fn transmit(&self, data: &[u8], timeout: u32) -> IResult<()>
+    fn transmit(&self, data: &[u8], timeout: u32) -> RetValue<()>
     {
         unsafe { HAL_SPI_Transmit(self.handle, data.as_ptr(), data.len() as u16, timeout).into() }
     }
 
-    fn receive(&self, data: &mut [u8], timeout: u32) -> IResult<()>
+    fn receive(&self, data: &mut [u8], timeout: u32) -> RetValue<()>
     {
         unsafe { HAL_SPI_Receive(self.handle, data.as_ptr(), data.len() as u16, timeout).into() }
     }
 
-    fn transmit_receive(&self, tx_data: &[u8], rx_data: &mut [u8], timeout: u32) -> IResult<()>
+    fn transmit_receive(&self, tx_data: &[u8], rx_data: &mut [u8], timeout: u32) -> RetValue<()>
     {
         unsafe {
             HAL_SPI_TransmitReceive(self.handle, tx_data.as_ptr(), rx_data.as_ptr(), tx_data.len() as u16, timeout)
@@ -70,24 +70,24 @@ impl Spi for SpiDevice
         }
     }
 
-    fn async_transmit(&self, data: &[u8]) -> IResult<()>
+    fn async_transmit(&self, data: &[u8]) -> RetValue<()>
     {
         unsafe { HAL_SPI_Transmit_DMA(self.handle, data.as_ptr(), data.len() as u16).into() }
     }
 
-    fn async_receive(&self, data: &mut [u8]) -> IResult<()>
+    fn async_receive(&self, data: &mut [u8]) -> RetValue<()>
     {
         unsafe { HAL_SPI_Receive_DMA(self.handle, data.as_ptr(), data.len() as u16).into() }
     }
 
-    fn async_transmit_receive(&self, tx_data: &[u8], rx_data: &mut [u8]) -> IResult<()>
+    fn async_transmit_receive(&self, tx_data: &[u8], rx_data: &mut [u8]) -> RetValue<()>
     {
         unsafe {
             HAL_SPI_TransmitReceive_DMA(self.handle, tx_data.as_ptr(), rx_data.as_ptr(), tx_data.len() as u16).into()
         }
     }
 
-    fn abort(&self) -> IResult<()>
+    fn abort(&self) -> RetValue<()>
     {
         unsafe { HAL_SPI_Abort_IT(self.handle).into() }
     }

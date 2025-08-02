@@ -1,8 +1,8 @@
-use crate::common::result::IResult;
+use crate::common::result::RetValue;
 
 pub trait ISemaphore
 {
     fn take(&self);
     fn back(&self);
-    fn attempt_take(&self, timeout: u32) -> IResult<()>;
+    fn attempt_take(&self, timeout: u32) -> RetValue<()>;
 }

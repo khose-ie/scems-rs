@@ -1,6 +1,6 @@
 use core::ops::{Deref, DerefMut, Index, IndexMut};
 
-use crate::common::result::IResult;
+use crate::common::result::RetValue;
 
 pub trait IMemPool<T>
 where
@@ -40,10 +40,10 @@ where
     T: ?Sized + Clone,
     Self: Index<usize> + IndexMut<usize>,
 {
-    fn push(&mut self, data: &T) -> IResult<usize>;
+    fn push(&mut self, data: &T) -> RetValue<usize>;
     fn remove(&mut self, data: &T);
     fn remove_position(&mut self, index: usize);
-    fn search(&self, data: &T) -> IResult<usize>;
-    fn expend(&mut self) -> IResult<()>;
+    fn search(&self, data: &T) -> RetValue<usize>;
+    fn expend(&mut self) -> RetValue<()>;
     fn num(&self) -> usize;
 }

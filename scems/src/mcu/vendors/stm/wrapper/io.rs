@@ -1,6 +1,6 @@
 use core::mem::transmute;
 
-use crate::common::result::IResult;
+use crate::common::result::RetValue;
 use crate::derive::{EnumCastU16, EnumCount};
 use crate::mcu::common::io::{Io, IoEventAgent, IoState};
 use crate::mcu::common::EventLaunch;
@@ -58,7 +58,7 @@ impl Drop for IoDevice
 
 impl EventLaunch<dyn IoEventAgent> for IoDevice
 {
-    fn set_event_agent(&mut self, event_handle: &dyn IoEventAgent) -> IResult<()>
+    fn set_event_agent(&mut self, event_handle: &dyn IoEventAgent) -> RetValue<()>
     {
         let pin: u16 = self.pin.into();
         unsafe {

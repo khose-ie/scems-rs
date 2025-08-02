@@ -1,6 +1,6 @@
 use core::fmt::{Arguments, Write};
 
-use scems::common::result::{IError, IResult};
+use scems::common::result::{ErrValue, RetValue};
 use scems::os::common::mem::IMemBlock;
 use scems::os::vendors::mem::{MemBlock, MemCache};
 
@@ -17,7 +17,7 @@ pub struct ConsoleServiceNative<'a>
 
 impl<'a> ConsoleServiceNative<'a>
 {
-    pub fn new() -> IResult<Self>
+    pub fn new() -> RetValue<Self>
     {
         Ok(Self {
             cache: MemCache::new()?,
@@ -31,12 +31,12 @@ impl<'a> ConsoleServiceNative<'a>
         self.terminal.tick(&self.dispatches);
     }
 
-    pub fn assign_serial_terminal(&mut self, serial_terminal: SerialTerminal) -> IResult<()>
+    pub fn assign_serial_terminal(&mut self, serial_terminal: SerialTerminal) -> RetValue<()>
     {
         match *self.terminal
         {
             ConsoleServiceTerminal::None => self.terminal.set(ConsoleServiceTerminal::Serial(serial_terminal)),
-            _ => return Err(IError::StackOverflow),
+            _ => return Err(ErrValue::StackOverflow),
         }
 
         Ok(())
@@ -49,7 +49,7 @@ impl<'a> ConsoleServiceNative<'a>
     }
 
     #[inline]
-    pub fn assign_command_execution(&mut self, execution: &'a dyn ConsoleCommandExecution) -> IResult<usize>
+    pub fn assign_command_execution(&mut self, execution: &'a dyn ConsoleCommandExecution) -> RetValue<usize>
     {
         self.dispatches.assign_command_execution(execution)
     }

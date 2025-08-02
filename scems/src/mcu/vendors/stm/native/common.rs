@@ -2,7 +2,7 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
-use crate::common::result::{IError, IResult};
+use crate::common::result::{ErrValue, RetValue};
 
 #[repr(C)]
 pub enum HAL_Lock
@@ -30,36 +30,36 @@ pub enum HAL_Status
 
 impl HAL_Status
 {
-    pub fn ok(self) -> IResult<()>
+    pub fn ok(self) -> RetValue<()>
     {
         self.into()
     }
 }
 
-impl Into<IResult<()>> for HAL_Status
+impl Into<RetValue<()>> for HAL_Status
 {
-    fn into(self) -> IResult<()>
+    fn into(self) -> RetValue<()>
     {
         match self
         {
             Self::HAL_OK => Ok(()),
-            Self::HAL_ERROR => Err(IError::Param),
-            Self::HAL_BUSY => Err(IError::BusBusy),
-            Self::HAL_TIMEOUT => Err(IError::Overtime),
+            Self::HAL_ERROR => Err(ErrValue::Param),
+            Self::HAL_BUSY => Err(ErrValue::BusBusy),
+            Self::HAL_TIMEOUT => Err(ErrValue::Overtime),
         }
     }
 }
 
-impl Into<IError> for HAL_Status
+impl Into<ErrValue> for HAL_Status
 {
-    fn into(self) -> IError
+    fn into(self) -> ErrValue
     {
         match self
         {
-            Self::HAL_OK => IError::None,
-            Self::HAL_ERROR => IError::Param,
-            Self::HAL_BUSY => IError::BusBusy,
-            Self::HAL_TIMEOUT => IError::Overtime,
+            Self::HAL_OK => ErrValue::None,
+            Self::HAL_ERROR => ErrValue::Param,
+            Self::HAL_BUSY => ErrValue::BusBusy,
+            Self::HAL_TIMEOUT => ErrValue::Overtime,
         }
     }
 }

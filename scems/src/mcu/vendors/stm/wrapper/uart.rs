@@ -1,6 +1,6 @@
 use core::mem::transmute;
 
-use crate::common::result::IResult;
+use crate::common::result::RetValue;
 use crate::derive::{AsPtr, HandlePtr};
 use crate::mcu::common::uart::{Uart, UartEventAgent};
 use crate::mcu::common::{EventLaunch, HandlePtr};
@@ -36,7 +36,7 @@ impl Drop for UartDevice
 impl EventLaunch<dyn UartEventAgent> for UartDevice
 {
     #[allow(static_mut_refs)]
-    fn set_event_agent(&mut self, event_handle: &dyn UartEventAgent) -> IResult<()>
+    fn set_event_agent(&mut self, event_handle: &dyn UartEventAgent) -> RetValue<()>
     {
         self.event_handle = Some(unsafe { transmute(event_handle as *const dyn UartEventAgent) });
         unsafe { UARTS.alloc(self.as_ptr()) }
@@ -52,39 +52,39 @@ impl EventLaunch<dyn UartEventAgent> for UartDevice
 
 impl Uart for UartDevice
 {
-    fn transmit(&self, data: &[u8], timeout: u32) -> IResult<()>
+    fn transmit(&self, data: &[u8], timeout: u32) -> RetValue<()>
     {
         unsafe { HAL_UART_Transmit(self.handle, data.as_ptr(), data.len() as u16, timeout).into() }
     }
 
-    fn receive(&self, data: &mut [u8], timeout: u32) -> IResult<u32>
+    fn receive(&self, data: &mut [u8], timeout: u32) -> RetValue<u32>
     {
         let mut size: u16 = 0;
         unsafe { HAL_UARTEx_ReceiveToIdle(self.handle, data.as_ptr(), data.len() as u16, &mut size, timeout).ok()? };
         Ok(size as u32)
     }
 
-    fn receive_size(&self, data: &mut [u8], timeout: u32) -> IResult<()>
+    fn receive_size(&self, data: &mut [u8], timeout: u32) -> RetValue<()>
     {
         unsafe { HAL_UART_Receive(self.handle, data.as_ptr(), data.len() as u16, timeout).into() }
     }
 
-    fn async_transmit(&self, data: &[u8]) -> IResult<()>
+    fn async_transmit(&self, data: &[u8]) -> RetValue<()>
     {
         unsafe { HAL_UART_Transmit_DMA(self.handle, data.as_ptr(), data.len() as u16).into() }
     }
 
-    fn async_receive(&self, data: &mut [u8]) -> IResult<()>
+    fn async_receive(&self, data: &mut [u8]) -> RetValue<()>
     {
         unsafe { HAL_UARTEx_ReceiveToIdle_DMA(self.handle, data.as_ptr(), data.len() as u16).into() }
     }
 
-    fn async_receive_size(&self, data: &mut [u8]) -> IResult<()>
+    fn async_receive_size(&self, data: &mut [u8]) -> RetValue<()>
     {
         unsafe { HAL_UART_Receive_DMA(self.handle, data.as_ptr(), data.len() as u16).into() }
     }
 
-    fn abort(&self) -> IResult<()>
+    fn abort(&self) -> RetValue<()>
     {
         unsafe { HAL_UART_Abort(self.handle).into() }
     }

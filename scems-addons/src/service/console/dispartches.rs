@@ -1,4 +1,4 @@
-use scems::common::result::{IError, IResult};
+use scems::common::result::{ErrValue, RetValue};
 use scems::os::common::mem::IMemQueue;
 use scems::os::vendors::mem::MemQueue;
 
@@ -11,13 +11,13 @@ pub struct ConsoleServiceDispatches<'a>
 
 impl<'a> ConsoleServiceDispatches<'a>
 {
-    pub fn new() -> IResult<Self>
+    pub fn new() -> RetValue<Self>
     {
         Ok(Self { execution_queue: MemQueue::new()? })
     }
 
     #[inline]
-    pub fn assign_command_execution(&mut self, execution: &'a dyn ConsoleCommandExecution) -> IResult<usize>
+    pub fn assign_command_execution(&mut self, execution: &'a dyn ConsoleCommandExecution) -> RetValue<usize>
     {
         self.execution_queue.push(&execution)
     }
@@ -31,7 +31,7 @@ impl<'a> ConsoleServiceDispatches<'a>
 
 impl<'a> ConsoleCommandDispatches for ConsoleServiceDispatches<'a>
 {
-    fn dispatch_and_execute(&self, command: &[u8], response: &mut [u8]) -> IResult<()>
+    fn dispatch_and_execute(&self, command: &[u8], response: &mut [u8]) -> RetValue<()>
     {
         const MAX_ARGS: usize = 16;
 
@@ -65,7 +65,7 @@ impl<'a> ConsoleCommandDispatches for ConsoleServiceDispatches<'a>
 
         if count == 0
         {
-            return Err(IError::Param);
+            return Err(ErrValue::Param);
         }
 
         let cmd = args[0];
@@ -82,7 +82,7 @@ impl<'a> ConsoleCommandDispatches for ConsoleServiceDispatches<'a>
             }
         }
 
-        let execution = execution.ok_or(IError::NotFound)?;
+        let execution = execution.ok_or(ErrValue::NotFound)?;
         Ok(execution.execute_console_command(params, response)?)
     }
 }

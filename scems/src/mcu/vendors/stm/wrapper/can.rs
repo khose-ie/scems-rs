@@ -1,6 +1,6 @@
 use core::mem::transmute;
 
-use crate::common::result::{IError, IResult};
+use crate::common::result::{ErrValue, RetValue};
 use crate::derive::{AsPtr, HandlePtr};
 use crate::mcu::common::can::{Can, CanEventAgent, CanMessage};
 use crate::mcu::common::{EventLaunch, HandlePtr};
@@ -39,7 +39,7 @@ impl Drop for CanDevice
 impl EventLaunch<dyn CanEventAgent> for CanDevice
 {
     #[allow(static_mut_refs)]
-    fn set_event_agent(&mut self, event_handle: &dyn CanEventAgent) -> IResult<()>
+    fn set_event_agent(&mut self, event_handle: &dyn CanEventAgent) -> RetValue<()>
     {
         self.event_handle = Some(unsafe { transmute(event_handle as *const dyn CanEventAgent) });
         unsafe { CANS.alloc(self.as_ptr()) }
@@ -55,17 +55,17 @@ impl EventLaunch<dyn CanEventAgent> for CanDevice
 
 impl Can for CanDevice
 {
-    fn activate(&self) -> IResult<()>
+    fn activate(&self) -> RetValue<()>
     {
         unsafe { HAL_CAN_Start(self.handle).into() }
     }
 
-    fn deactivate(&self) -> IResult<()>
+    fn deactivate(&self) -> RetValue<()>
     {
         unsafe { HAL_CAN_Stop(self.handle).into() }
     }
 
-    fn transmit(&self, can_message: &CanMessage, timeout: u32) -> IResult<()>
+    fn transmit(&self, can_message: &CanMessage, timeout: u32) -> RetValue<()>
     {
         let mut status;
         let mut can_status;
@@ -95,7 +95,7 @@ impl Can for CanDevice
 
         if !matches!(status, HAL_Status::HAL_OK)
         {
-            return Err(IError::BusBusy);
+            return Err(ErrValue::BusBusy);
         }
 
         let tick = unsafe { HAL_GetTick() };
@@ -120,13 +120,13 @@ impl Can for CanDevice
         if can_status != 0
         {
             unsafe { HAL_CAN_AbortTxRequest(self.handle, mail_box) };
-            return Err(IError::BusBusy);
+            return Err(ErrValue::BusBusy);
         }
 
         Ok(())
     }
 
-    fn receive(&self, can_message: &mut CanMessage, timeout: u32) -> IResult<()>
+    fn receive(&self, can_message: &mut CanMessage, timeout: u32) -> RetValue<()>
     {
         let mut status;
         let mut duration: u32;
@@ -154,7 +154,7 @@ impl Can for CanDevice
 
         if !matches!(status, HAL_Status::HAL_OK)
         {
-            return Err(IError::BusBusy);
+            return Err(ErrValue::BusBusy);
         }
 
         can_message.head.STD_ID = rx_head.StdId;
@@ -162,7 +162,7 @@ impl Can for CanDevice
         Ok(())
     }
 
-    fn async_transmit(&self, can_message: &CanMessage) -> IResult<()>
+    fn async_transmit(&self, can_message: &CanMessage) -> RetValue<()>
     {
         let mut mail_box: u32 = 0;
         let tx_head = CAN_TxHeader::from(&can_message.head);
@@ -203,7 +203,7 @@ impl Can for CanDevice
 #[allow(static_mut_refs)]
 pub unsafe extern "C" fn HAL_CAN_RxFifo0MsgPendingCallback(can: *mut CAN)
 {
-    let mut value = Err(IError::NotAvailable);
+    let mut value = Err(ErrValue::NotAvailable);
 
     if let Some(sample) = CANS.find(can).ok()
     {

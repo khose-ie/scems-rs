@@ -1,9 +1,9 @@
-use crate::common::result::IResult;
+use crate::common::result::RetValue;
 
 pub trait IMessageQueue
 {
-    fn launch(&self, message_content: &dyn MessageContent, timeout: u32) -> IResult<()>;
-    fn receive(&self, message_content: &mut dyn MessageContent, timeout: u32)-> IResult<()>;
+    fn launch(&self, message_content: &dyn MessageContent, timeout: u32) -> RetValue<()>;
+    fn receive(&self, message_content: &mut dyn MessageContent, timeout: u32)-> RetValue<()>;
 }
 
 pub trait MessageContent

@@ -1,8 +1,8 @@
-use crate::common::result::IResult;
+use crate::common::result::RetValue;
 
 pub trait ITimer
 {
-    fn start(&mut self, times: u32) -> IResult<()>;
+    fn start(&mut self, times: u32) -> RetValue<()>;
     fn stop(&mut self);
     fn actived(&self) -> bool;
 }

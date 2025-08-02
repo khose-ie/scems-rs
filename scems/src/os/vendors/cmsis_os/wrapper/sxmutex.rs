@@ -2,7 +2,7 @@ use core::ptr::null;
 
 use super::delay;
 use crate::common::cast::CastOpt;
-use crate::common::result::{IError, IResult};
+use crate::common::result::{ErrValue, RetValue};
 use crate::os::common::sxmutex::ISxMutex;
 use crate::os::vendors::cmsis_os::cmsis::*;
 
@@ -18,9 +18,9 @@ pub struct SxMutex
 
 impl SxMutex
 {
-    pub fn new() -> IResult<Self>
+    pub fn new() -> RetValue<Self>
     {
-        let handle = unsafe { osMutexNew(null()).cast_opt().ok_or(IError::InstanceCreate) }?;
+        let handle = unsafe { osMutexNew(null()).cast_opt().ok_or(ErrValue::InstanceCreate) }?;
         Ok(SxMutex { handle, in_keep: false, request_keep: false, involve_num: 0 })
     }
 }

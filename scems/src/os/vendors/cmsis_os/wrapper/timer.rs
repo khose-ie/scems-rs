@@ -3,8 +3,8 @@ use core::mem::transmute;
 use core::ptr::null;
 
 use crate::common::cast::CastOpt;
-use crate::common::result::IError;
-use crate::common::result::IResult;
+use crate::common::result::ErrValue;
+use crate::common::result::RetValue;
 use crate::os::common::timer::TimerEventAgent;
 use crate::os::common::timer::{ITimer, TimerMode};
 use crate::os::vendors::cmsis_os::cmsis::*;
@@ -53,7 +53,7 @@ impl Drop for Timer
 
 impl ITimer for Timer
 {
-    fn start(&mut self, times: u32) -> IResult<()>
+    fn start(&mut self, times: u32) -> RetValue<()>
     {
         if let None = self.handle.cast_opt()
         {
@@ -61,7 +61,7 @@ impl ITimer for Timer
                 unsafe { osTimerNew(Timer::func, self.mode.into(), self.event_agent_handle.as_void_ptr(), null()) };
         }
 
-        let x = self.handle.cast_opt().ok_or(IError::InstanceCreate)?;
+        let x = self.handle.cast_opt().ok_or(ErrValue::InstanceCreate)?;
         unsafe { osTimerStart(x, times).into() }
     }
 

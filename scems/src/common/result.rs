@@ -1,7 +1,7 @@
-pub type IResult<T> = core::result::Result<T, IError>;
+pub type RetValue<T> = core::result::Result<T, ErrValue>;
 
 #[derive(Debug)]
-pub enum IError
+pub enum ErrValue
 {
     None = 0,
 

@@ -1,8 +1,8 @@
-use crate::common::result::IResult;
+use crate::common::result::RetValue;
 
 pub trait Flash
 {
-    fn erase_sector(&self, sector: u32) -> IResult<()>;
-    fn write(&self, address: u32, data: u8) -> IResult<()>;
-    fn write32(&self, address: u32, data: u32) -> IResult<()>;
+    fn erase_sector(&self, sector: u32) -> RetValue<()>;
+    fn write(&self, address: u32, data: u8) -> RetValue<()>;
+    fn write32(&self, address: u32, data: u32) -> RetValue<()>;
 }

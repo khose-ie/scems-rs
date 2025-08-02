@@ -5,7 +5,7 @@ pub mod terminal;
 use core::fmt::Arguments;
 
 use scems::common::log::LogStream;
-use scems::common::result::IResult;
+use scems::common::result::RetValue;
 use scems::os::common::mutex::IMutexBlock;
 use scems::os::common::task::TaskMain;
 use scems::os::vendors::mutex::MutexBlock;
@@ -18,7 +18,7 @@ pub trait Console<'a>
 where
     Self: LogStream + ConsoleCommandStore<'a>,
 {
-    fn assign_serial_terminal(&self, serial_terminal: SerialTerminal) -> IResult<()>;
+    fn assign_serial_terminal(&self, serial_terminal: SerialTerminal) -> RetValue<()>;
     fn unassign_terminal(&self);
 }
 
@@ -31,19 +31,19 @@ pub trait ConsoleTerminal
 
 pub trait ConsoleCommandStore<'a>
 {
-    fn assign_command_execution(&self, execution: &'a dyn ConsoleCommandExecution) -> IResult<usize>;
+    fn assign_command_execution(&self, execution: &'a dyn ConsoleCommandExecution) -> RetValue<usize>;
     fn remove_command_execution(&self, execution: &'a dyn ConsoleCommandExecution);
 }
 
 pub trait ConsoleCommandDispatches
 {
-    fn dispatch_and_execute(&self, command: &[u8], response: &mut [u8]) -> IResult<()>;
+    fn dispatch_and_execute(&self, command: &[u8], response: &mut [u8]) -> RetValue<()>;
 }
 
 pub trait ConsoleCommandExecution
 {
     fn console_command_name(&self) -> &str;
-    fn execute_console_command(&self, args: &[&[u8]], response: &mut [u8]) -> IResult<()>;
+    fn execute_console_command(&self, args: &[&[u8]], response: &mut [u8]) -> RetValue<()>;
 }
 
 pub struct ConsoleService<'a>
@@ -53,7 +53,7 @@ pub struct ConsoleService<'a>
 
 impl<'a> ConsoleService<'a>
 {
-    pub fn new() -> IResult<Self>
+    pub fn new() -> RetValue<Self>
     {
         Ok(Self { native: MutexBlock::new(ConsoleServiceNative::new()?)? })
     }
@@ -62,7 +62,7 @@ impl<'a> ConsoleService<'a>
 impl<'a> Console<'a> for ConsoleService<'a>
 {
     #[inline]
-    fn assign_serial_terminal(&self, serial_terminal: SerialTerminal) -> IResult<()>
+    fn assign_serial_terminal(&self, serial_terminal: SerialTerminal) -> RetValue<()>
     {
         self.native.lock_with(|native| native.assign_serial_terminal(serial_terminal))
     }
@@ -77,7 +77,7 @@ impl<'a> Console<'a> for ConsoleService<'a>
 impl<'a> ConsoleCommandStore<'a> for ConsoleService<'a>
 {
     #[inline]
-    fn assign_command_execution(&self, execution: &'a dyn ConsoleCommandExecution) -> IResult<usize>
+    fn assign_command_execution(&self, execution: &'a dyn ConsoleCommandExecution) -> RetValue<usize>
     {
         self.native.lock_with(|native| native.assign_command_execution(execution))
     }

@@ -1,4 +1,4 @@
-use crate::common::result::IResult;
+use crate::common::result::RetValue;
 
 use super::EventLaunch;
 
@@ -6,15 +6,15 @@ pub trait Spi
 where
     Self: EventLaunch<dyn SpiEventAgent>,
 {
-    fn transmit(&self, data: &[u8], timeout: u32) -> IResult<()>;
-    fn receive(&self, data: &mut [u8], timeout: u32) -> IResult<()>;
-    fn transmit_receive(&self, tx_data: &[u8], rx_data: &mut [u8], timeout: u32) -> IResult<()>;
+    fn transmit(&self, data: &[u8], timeout: u32) -> RetValue<()>;
+    fn receive(&self, data: &mut [u8], timeout: u32) -> RetValue<()>;
+    fn transmit_receive(&self, tx_data: &[u8], rx_data: &mut [u8], timeout: u32) -> RetValue<()>;
 
-    fn async_transmit(&self, data: &[u8]) -> IResult<()>;
-    fn async_receive(&self, data: &mut [u8]) -> IResult<()>;
-    fn async_transmit_receive(&self, tx_data: &[u8], rx_data: &mut [u8]) -> IResult<()>;
+    fn async_transmit(&self, data: &[u8]) -> RetValue<()>;
+    fn async_receive(&self, data: &mut [u8]) -> RetValue<()>;
+    fn async_transmit_receive(&self, tx_data: &[u8], rx_data: &mut [u8]) -> RetValue<()>;
 
-    fn abort(&self) -> IResult<()>;
+    fn abort(&self) -> RetValue<()>;
 }
 
 pub trait SpiEvent

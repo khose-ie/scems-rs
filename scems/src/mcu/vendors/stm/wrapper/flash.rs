@@ -1,4 +1,4 @@
-use crate::common::result::IResult;
+use crate::common::result::RetValue;
 use crate::mcu::common::flash::Flash;
 use crate::mcu::vendors::stm::native::flash::*;
 
@@ -14,7 +14,7 @@ impl OnChipFlashDevice
 
 impl OnChipFlashDevice
 {
-    unsafe fn write_common(&self, kind: u32, address: u32, data: u64) -> IResult<()>
+    unsafe fn write_common(&self, kind: u32, address: u32, data: u64) -> RetValue<()>
     {
         HAL_FLASH_Lock().ok()?;
         let value = HAL_FLASH_Program(kind, address, data);
@@ -25,7 +25,7 @@ impl OnChipFlashDevice
 
 impl Flash for OnChipFlashDevice
 {
-    fn erase_sector(&self, sector: u32) -> IResult<()>
+    fn erase_sector(&self, sector: u32) -> RetValue<()>
     {
         let mut error: u32 = 0;
         let mut erase_init: FLASH_EraseInit = Default::default();
@@ -44,12 +44,12 @@ impl Flash for OnChipFlashDevice
         }
     }
 
-    fn write(&self, address: u32, data: u8) -> IResult<()>
+    fn write(&self, address: u32, data: u8) -> RetValue<()>
     {
         unsafe { self.write_common(FLASH_TYPEPROGRAM_BYTE, address, data as u64) }
     }
 
-    fn write32(&self, address: u32, data: u32) -> IResult<()>
+    fn write32(&self, address: u32, data: u32) -> RetValue<()>
     {
         unsafe { self.write_common(FLASH_TYPEPROGRAM_WORD, address, data as u64) }
     }

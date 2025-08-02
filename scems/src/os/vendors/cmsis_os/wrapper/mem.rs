@@ -4,7 +4,7 @@ use core::ptr::{copy, drop_in_place, null, write_bytes};
 use core::slice::{from_raw_parts, from_raw_parts_mut};
 
 use crate::common::cast::CastOpt;
-use crate::common::result::{IError, IResult};
+use crate::common::result::{ErrValue, RetValue};
 use crate::os::common::mem::{IMemBlock, IMemBlockHeap, IMemCache, IMemPool, IMemQueue};
 use crate::os::vendors::cmsis_os::cmsis::*;
 
@@ -44,7 +44,7 @@ impl MemPool
     }
 
     #[allow(static_mut_refs)]
-    pub(crate) unsafe fn choice(size: u32) -> IResult<&'static dyn IMemPool<osMemoryPoolId_t>>
+    pub(crate) unsafe fn choice(size: u32) -> RetValue<&'static dyn IMemPool<osMemoryPoolId_t>>
     {
         let mut choose: Option<&'static dyn IMemPool<osMemoryPoolId_t>> = None;
 
@@ -57,15 +57,15 @@ impl MemPool
             }
         }
 
-        Ok(choose.ok_or(IError::NotFound)?)
+        Ok(choose.ok_or(ErrValue::NotFound)?)
     }
 
-    pub(crate) unsafe fn malloc(size: u32) -> IResult<(*mut c_void, u32)>
+    pub(crate) unsafe fn malloc(size: u32) -> RetValue<(*mut c_void, u32)>
     {
         const MEM_ALLOC_TIME: u32 = 100;
 
         let pool = MemPool::choice(size)?;
-        let mem = osMemoryPoolAlloc(pool.handle(), MEM_ALLOC_TIME).cast_opt().ok_or(IError::MemAlloc)?;
+        let mem = osMemoryPoolAlloc(pool.handle(), MEM_ALLOC_TIME).cast_opt().ok_or(ErrValue::MemAlloc)?;
 
         Ok((mem, pool.block_size()))
     }
@@ -103,14 +103,14 @@ pub struct MemBlock<T>
 
 impl<T> MemBlock<T>
 {
-    pub fn new() -> IResult<Self>
+    pub fn new() -> RetValue<Self>
     {
         let (mem, _) = unsafe { MemPool::malloc(size_of::<T>() as u32) }?;
         unsafe { write_bytes(mem, 0, size_of::<T>()) };
         Ok(MemBlock { mem_space: mem.cast() })
     }
 
-    pub fn from(sample: T) -> IResult<Self>
+    pub fn from(sample: T) -> RetValue<Self>
     {
         let (mem, _) = unsafe { MemPool::malloc(size_of::<T>() as u32) }?;
         unsafe { *(mem.cast()) = sample };
@@ -191,14 +191,14 @@ pub struct MemBlockHeap<T>
 
 impl<T> MemBlockHeap<T>
 {
-    pub fn new() -> IResult<Self>
+    pub fn new() -> RetValue<Self>
     {
         let mem = unsafe { MemHeap::malloc(size_of::<T>() as u32) }?;
         unsafe { write_bytes(mem, 0, size_of::<T>()) };
         Ok(MemBlockHeap { mem_space: mem.cast() })
     }
 
-    pub fn from(sample: T) -> IResult<Self>
+    pub fn from(sample: T) -> RetValue<Self>
     {
         let mem = unsafe { MemHeap::malloc(size_of::<T>() as u32) }?;
         unsafe { *(mem.cast()) = sample };
@@ -265,7 +265,7 @@ pub struct MemCache<const N: usize>
 
 impl<const N: usize> MemCache<N>
 {
-    pub fn new() -> IResult<Self>
+    pub fn new() -> RetValue<Self>
     {
         let (mem, size) = unsafe { MemPool::malloc(N as u32)? };
         Ok(MemCache { mem_space: mem.cast(), size: size as usize })
@@ -346,7 +346,7 @@ impl<T, const N: usize> MemQueue<T, N>
 where
     T: Clone,
 {
-    pub fn new() -> IResult<Self>
+    pub fn new() -> RetValue<Self>
     {
         let (mem, size) = unsafe { MemPool::malloc((size_of::<T>() * N) as u32)? };
         Ok(MemQueue { mem_space: mem.cast(), use_num: 0, max_num: size as usize / size_of::<T>() })
@@ -367,7 +367,7 @@ impl<T, const N: usize> IMemQueue<T, N> for MemQueue<T, N>
 where
     T: Clone,
 {
-    fn push(&mut self, data: &T) -> IResult<usize>
+    fn push(&mut self, data: &T) -> RetValue<usize>
     {
         if self.use_num >= self.max_num
         {
@@ -408,7 +408,7 @@ where
         unsafe { write_bytes(&mut self[last], 0, size_of::<T>()) };
     }
 
-    fn search(&self, data: &T) -> IResult<usize>
+    fn search(&self, data: &T) -> RetValue<usize>
     {
         for index in 0..self.use_num
         {
@@ -418,10 +418,10 @@ where
             }
         }
 
-        Err(IError::NotFound)
+        Err(ErrValue::NotFound)
     }
 
-    fn expend(&mut self) -> IResult<()>
+    fn expend(&mut self) -> RetValue<()>
     {
         let size = self.max_num * size_of::<T>();
         let (mem, new_size) = unsafe { MemPool::malloc((size * 2) as u32)? };
@@ -515,7 +515,7 @@ impl<'a, T> Iterator for MemQueueIterMut<'a, T>
 }
 
 #[allow(static_mut_refs)]
-pub fn assign_mem_pool(mem_pool: &dyn IMemPool<osMemoryPoolId_t>) -> IResult<()>
+pub fn assign_mem_pool(mem_pool: &dyn IMemPool<osMemoryPoolId_t>) -> RetValue<()>
 {
     for mem_pool_sample in unsafe { MEM_POOLS.as_mut() }
     {
@@ -526,7 +526,7 @@ pub fn assign_mem_pool(mem_pool: &dyn IMemPool<osMemoryPoolId_t>) -> IResult<()>
         }
     }
 
-    Err(IError::StackOverflow)
+    Err(ErrValue::StackOverflow)
 }
 
 pub struct MemHeap {}
@@ -534,9 +534,9 @@ pub struct MemHeap {}
 impl MemHeap
 {
     #[inline]
-    pub unsafe fn malloc(size: u32) -> IResult<*mut c_void>
+    pub unsafe fn malloc(size: u32) -> RetValue<*mut c_void>
     {
-        Ok(malloc(size).cast_opt().ok_or(IError::MemAlloc)?)
+        Ok(malloc(size).cast_opt().ok_or(ErrValue::MemAlloc)?)
     }
 
     #[inline]

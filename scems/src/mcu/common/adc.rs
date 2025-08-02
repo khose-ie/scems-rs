@@ -1,4 +1,4 @@
-use crate::common::result::IResult;
+use crate::common::result::RetValue;
 
 use super::EventLaunch;
 
@@ -6,10 +6,10 @@ pub trait Adc
 where
     Self: EventLaunch<dyn AdcEventAgent>,
 {
-    fn convert_once(&self) -> IResult<u32>;
-    fn async_convert_once(&self) -> IResult<()>;
-    fn async_convert_continuous_start(&self, data: &mut [u32]) -> IResult<()>;
-    fn async_convert_continuous_stop(&self) -> IResult<()>;
+    fn convert_once(&self) -> RetValue<u32>;
+    fn async_convert_once(&self) -> RetValue<()>;
+    fn async_convert_continuous_start(&self, data: &mut [u32]) -> RetValue<()>;
+    fn async_convert_continuous_stop(&self) -> RetValue<()>;
 }
 
 pub trait AdcEvent

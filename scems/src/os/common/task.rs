@@ -1,21 +1,21 @@
 use core::ops::{Deref, DerefMut};
 
-use crate::common::result::IResult;
+use crate::common::result::RetValue;
 
 pub trait ITask
 {
-    fn activate(&mut self, name: &str, stack_size: u32, pritories: TaskPriorities, main: &dyn TaskMain) -> IResult<()>;
+    fn activate(&mut self, name: &str, stack_size: u32, pritories: TaskPriorities, main: &dyn TaskMain) -> RetValue<()>;
     fn deactivate(&mut self);
     fn name(&self) -> &str;
-    fn suspand(&self) -> IResult<()>;
-    fn resume(&self) -> IResult<()>;
+    fn suspand(&self) -> RetValue<()>;
+    fn resume(&self) -> RetValue<()>;
 }
 
 pub trait ITaskSample<T>
 where
     Self: Deref + DerefMut + AsRef<T> + AsMut<T>,
 {
-    fn activate(&mut self, name: &str, stack_size: u32, priorities: TaskPriorities) -> IResult<()>;
+    fn activate(&mut self, name: &str, stack_size: u32, priorities: TaskPriorities) -> RetValue<()>;
     fn deactivate(&mut self);
 }
 

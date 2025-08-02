@@ -1,7 +1,7 @@
-use crate::common::result::IResult;
+use crate::common::result::RetValue;
 
 pub trait IEvents
 {
-    fn launch(&self, events: u32) -> IResult<()>;
-    fn receive(&self, events: u32, timeout: u32) -> IResult<u32>;
+    fn launch(&self, events: u32) -> RetValue<()>;
+    fn receive(&self, events: u32, timeout: u32) -> RetValue<u32>;
 }

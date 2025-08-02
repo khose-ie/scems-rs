@@ -1,4 +1,4 @@
-use crate::common::result::IResult;
+use crate::common::result::RetValue;
 
 use super::EventLaunch;
 
@@ -6,13 +6,13 @@ pub trait Uart
 where
     Self: EventLaunch<dyn UartEventAgent>,
 {
-    fn transmit(&self, data: &[u8], timeout: u32) -> IResult<()>;
-    fn receive(&self, data: &mut [u8], timeout: u32) -> IResult<u32>;
-    fn receive_size(&self, data: &mut [u8], timeout: u32) -> IResult<()>;
-    fn async_transmit(&self, data: &[u8]) -> IResult<()>;
-    fn async_receive(&self, data: &mut [u8]) -> IResult<()>;
-    fn async_receive_size(&self, data: &mut [u8]) -> IResult<()>;
-    fn abort(&self) -> IResult<()>;
+    fn transmit(&self, data: &[u8], timeout: u32) -> RetValue<()>;
+    fn receive(&self, data: &mut [u8], timeout: u32) -> RetValue<u32>;
+    fn receive_size(&self, data: &mut [u8], timeout: u32) -> RetValue<()>;
+    fn async_transmit(&self, data: &[u8]) -> RetValue<()>;
+    fn async_receive(&self, data: &mut [u8]) -> RetValue<()>;
+    fn async_receive_size(&self, data: &mut [u8]) -> RetValue<()>;
+    fn abort(&self) -> RetValue<()>;
 }
 
 pub trait UartEvent

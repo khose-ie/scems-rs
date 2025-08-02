@@ -1,4 +1,4 @@
-use crate::common::result::IResult;
+use crate::common::result::RetValue;
 
 use super::EventLaunch;
 
@@ -6,12 +6,12 @@ pub trait Can
 where
     Self: EventLaunch<dyn CanEventAgent>,
 {
-    fn activate(&self) -> IResult<()>;
-    fn deactivate(&self) -> IResult<()>;
+    fn activate(&self) -> RetValue<()>;
+    fn deactivate(&self) -> RetValue<()>;
 
-    fn transmit(&self, can_message: &CanMessage, timeout: u32) -> IResult<()>;
-    fn receive(&self, can_message: &mut CanMessage, timeout: u32) -> IResult<()>;
-    fn async_transmit(&self, can_message: &CanMessage) -> IResult<()>;
+    fn transmit(&self, can_message: &CanMessage, timeout: u32) -> RetValue<()>;
+    fn receive(&self, can_message: &mut CanMessage, timeout: u32) -> RetValue<()>;
+    fn async_transmit(&self, can_message: &CanMessage) -> RetValue<()>;
     fn async_receive(&mut self, can_message: &mut CanMessage);
 }
 

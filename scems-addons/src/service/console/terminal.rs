@@ -1,6 +1,6 @@
 use core::cell::RefCell;
 
-use scems::common::result::IResult;
+use scems::common::result::RetValue;
 use scems::mcu::common::uart::{Uart, UartEventAgent};
 use scems::mcu::vendors::uart::UartDevice;
 use scems::os::common::events::IEvents;
@@ -63,7 +63,7 @@ pub struct SerialTerminal
 
 impl SerialTerminal
 {
-    pub fn new(uart: UartDevice) -> IResult<Self>
+    pub fn new(uart: UartDevice) -> RetValue<Self>
     {
         Ok(Self {
             uart,

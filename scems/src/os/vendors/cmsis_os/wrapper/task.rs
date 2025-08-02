@@ -5,8 +5,8 @@ use core::ops::DerefMut;
 use core::ptr::null;
 
 use crate::common::cast::CastOpt;
-use crate::common::result::IError;
-use crate::common::result::IResult;
+use crate::common::result::ErrValue;
+use crate::common::result::RetValue;
 use crate::os::common::task::ITaskSample;
 use crate::os::common::task::{ITask, TaskMain, TaskPriorities};
 use crate::os::vendors::cmsis_os::cmsis::*;
@@ -47,7 +47,7 @@ impl Drop for Task
 
 impl ITask for Task
 {
-    fn activate(&mut self, name: &str, stack_size: u32, pritories: TaskPriorities, main: &dyn TaskMain) -> IResult<()>
+    fn activate(&mut self, name: &str, stack_size: u32, pritories: TaskPriorities, main: &dyn TaskMain) -> RetValue<()>
     {
         let thread_attr = osThreadAttr_t::new(name, stack_size, pritories);
 
@@ -55,7 +55,7 @@ impl ITask for Task
         {
             self.task_main_agent.task_main = Some(main as *const dyn TaskMain as *mut dyn TaskMain);
             self.handle = unsafe { osThreadNew(Task::main, self.task_main_agent.as_void_ptr(), &thread_attr) };
-            self.handle.cast_opt().ok_or(IError::InstanceCreate)?;
+            self.handle.cast_opt().ok_or(ErrValue::InstanceCreate)?;
         }
 
         Ok(())
@@ -75,12 +75,12 @@ impl ITask for Task
         unsafe { CStr::from_ptr(osThreadGetName(self.handle)).to_str().unwrap_or_default() }
     }
 
-    fn suspand(&self) -> IResult<()>
+    fn suspand(&self) -> RetValue<()>
     {
         unsafe { osThreadSuspend(self.handle).into() }
     }
 
-    fn resume(&self) -> IResult<()>
+    fn resume(&self) -> RetValue<()>
     {
         unsafe { osThreadResume(self.handle).into() }
     }
@@ -150,7 +150,7 @@ impl<T> ITaskSample<T> for TaskSample<T>
 where
     T: TaskMain,
 {
-    fn activate(&mut self, name: &str, stack_size: u32, priorities: TaskPriorities) -> IResult<()>
+    fn activate(&mut self, name: &str, stack_size: u32, priorities: TaskPriorities) -> RetValue<()>
     {
         self.task.activate(name, stack_size, priorities, &self.sample)
     }

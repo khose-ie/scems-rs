@@ -2,8 +2,8 @@ use core::cell::RefCell;
 use core::ptr::null;
 
 use crate::common::cast::CastOpt;
-use crate::common::result::IError;
-use crate::common::result::IResult;
+use crate::common::result::ErrValue;
+use crate::common::result::RetValue;
 use crate::os::common::mutex::IMutex;
 use crate::os::common::mutex::IMutexBlock;
 use crate::os::vendors::cmsis_os::cmsis::*;
@@ -15,9 +15,9 @@ pub struct Mutex
 
 impl Mutex
 {
-    pub fn new() -> IResult<Self>
+    pub fn new() -> RetValue<Self>
     {
-        let handle = unsafe { osMutexNew(null()).cast_opt().ok_or(IError::InstanceCreate) }?;
+        let handle = unsafe { osMutexNew(null()).cast_opt().ok_or(ErrValue::InstanceCreate) }?;
         Ok(Mutex { handle })
     }
 }
@@ -42,7 +42,7 @@ impl IMutex for Mutex
         unsafe { osMutexRelease(self.handle) };
     }
 
-    fn attempt_lock(&self, time: u32) -> IResult<()>
+    fn attempt_lock(&self, time: u32) -> RetValue<()>
     {
         unsafe { osMutexAcquire(self.handle, time).into() }
     }
@@ -56,7 +56,7 @@ pub struct MutexBlock<T>
 
 impl<T> MutexBlock<T>
 {
-    pub fn new(value: T) -> IResult<Self>
+    pub fn new(value: T) -> RetValue<Self>
     {
         Ok(MutexBlock { mutex: Mutex::new()?, value: RefCell::new(value) })
     }
@@ -72,7 +72,7 @@ impl<T> IMutexBlock<T> for MutexBlock<T>
         self.mutex.unlock();
     }
 
-    fn lock_with<R>(&self, f: impl FnOnce(&mut T) -> IResult<R>) -> IResult<R>
+    fn lock_with<R>(&self, f: impl FnOnce(&mut T) -> RetValue<R>) -> RetValue<R>
     {
         self.mutex.lock();
         let mut value = self.value.borrow_mut();
@@ -81,7 +81,7 @@ impl<T> IMutexBlock<T> for MutexBlock<T>
         result
     }
 
-    fn attempt_lock_with<R>(&self, time: u32, f: impl FnOnce(&mut T) -> IResult<R>) -> IResult<R>
+    fn attempt_lock_with<R>(&self, time: u32, f: impl FnOnce(&mut T) -> RetValue<R>) -> RetValue<R>
     {
         self.mutex.attempt_lock(time)?;
         let mut value = self.value.borrow_mut();
