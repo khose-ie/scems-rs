@@ -1,4 +1,4 @@
-pub trait WatchDog
+pub trait WatchDogDevice
 {
     fn refresh(&self);
 }

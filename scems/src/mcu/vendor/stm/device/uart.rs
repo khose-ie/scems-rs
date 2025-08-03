@@ -4,15 +4,16 @@ use core::mem::transmute;
 
 use crate::common::result::RetValue;
 use crate::derive::{AsPtr, HandlePtr};
-use crate::mcu::common::uart::{Uart, UartEventAgent};
+use crate::mcu::common::uart::{UartDevice, UartDeviceEventAgent};
 use crate::mcu::common::{EventLaunch, HandlePtr};
-use crate::mcu::vendor::stm::device_queue::DeviceQueue;
+use crate::mcu::vendor::stm::device_queue::{DeviceQueue, SampleQueue};
 use crate::mcu::vendor::stm::native::uart::*;
 
 pub use crate::mcu::vendor::stm::native::uart::UART_HandleTypeDef;
+use crate::mcu::vendor::PeriphDevice;
 
 const UART_COUNT: usize = 8;
-static mut UARTS: DeviceQueue<UART_HandleTypeDef, UartDevice, UART_COUNT> = DeviceQueue::new();
+static mut UARTS: DeviceQueue<UART_HandleTypeDef, Uart, UART_COUNT> = DeviceQueue::new();
 
 /// The top encapsulation which be used to operate the STM32 UART peripheral.
 ///
@@ -23,47 +24,43 @@ static mut UARTS: DeviceQueue<UART_HandleTypeDef, UartDevice, UART_COUNT> = Devi
 /// should be done in a low-level code, and in the startup time of MCU.
 /// For a initialized peripheral, you can create a this struct with it as the handle, and use
 /// this struct to operate it.
-#[derive(AsPtr, HandlePtr)]
-pub struct UartDevice
+#[derive(AsPtr, HandlePtr, Clone, Copy)]
+pub struct Uart
 {
     handle: *mut UART_HandleTypeDef,
-    event_handle: Option<*const dyn UartEventAgent>,
+    event_handle: Option<*const dyn UartDeviceEventAgent>,
 }
 
-impl UartDevice
+impl PeriphDevice<UART_HandleTypeDef> for Uart
 {
-    pub fn new(handle: *mut UART_HandleTypeDef) -> Self
+    fn new(handle: *mut UART_HandleTypeDef) -> Self
     {
-        UartDevice { handle, event_handle: None }
+        Uart { handle, event_handle: None }
+    }
+
+    fn handle_value(&self) -> *mut UART_HandleTypeDef
+    {
+        self.handle
     }
 }
 
-impl Drop for UartDevice
-{
-    fn drop(&mut self)
-    {
-        self.clean_event_agent();
-    }
-}
-
-impl EventLaunch<dyn UartEventAgent> for UartDevice
+impl EventLaunch<dyn UartDeviceEventAgent> for Uart
 {
     #[allow(static_mut_refs)]
-    fn set_event_agent(&mut self, event_handle: &dyn UartEventAgent) -> RetValue<()>
+    fn set_event_agent(&mut self, event_handle: &dyn UartDeviceEventAgent) -> RetValue<()>
     {
-        self.event_handle = unsafe { Some(transmute(event_handle as *const dyn UartEventAgent)) };
-        unsafe { UARTS.alloc(self.as_ptr()) }
+        self.event_handle = unsafe { Some(transmute(event_handle as *const dyn UartDeviceEventAgent)) };
+        Ok(())
     }
 
     #[allow(static_mut_refs)]
     fn clean_event_agent(&mut self)
     {
         self.event_handle = None;
-        unsafe { UARTS.clean(self.as_ptr()) };
     }
 }
 
-impl Uart for UartDevice
+impl UartDevice for Uart
 {
     fn transmit(&self, data: &[u8], timeout: u32) -> RetValue<()>
     {
@@ -102,6 +99,39 @@ impl Uart for UartDevice
         unsafe { HAL_UART_Abort(self.handle).into() }
     }
 }
+
+pub static mut UART_DEVICE_QUEUE: SampleQueue<Uart, UART_HandleTypeDef, UART_COUNT> = SampleQueue::new();
+
+pub struct UartDeviceQueue;
+
+impl UartDeviceQueue
+{
+    #[inline]
+    #[allow(static_mut_refs)]
+    pub fn allocate(sample_handle: *mut UART_HandleTypeDef) -> RetValue<&'static mut Uart>
+    {
+        unsafe { UART_DEVICE_QUEUE.allocate(sample_handle) }
+    }
+
+    #[inline]
+    #[allow(static_mut_refs)]
+    pub fn clean(sample_handle: *mut UART_HandleTypeDef)
+    {
+        unsafe { UART_DEVICE_QUEUE.clean(sample_handle) };
+    }
+
+    #[inline]
+    #[allow(static_mut_refs)]
+    pub fn search(sample_handle: *mut UART_HandleTypeDef) -> RetValue<&'static Uart>
+    {
+        unsafe { UART_DEVICE_QUEUE.search(sample_handle) }
+    }
+
+}
+
+
+
+
 
 #[no_mangle]
 #[allow(static_mut_refs)]

@@ -2,9 +2,9 @@ use crate::common::result::RetValue;
 
 use super::EventLaunch;
 
-pub trait Can
+pub trait CanDevice
 where
-    Self: EventLaunch<dyn CanEventAgent>,
+    Self: EventLaunch<dyn CanDeviceEventAgent>,
 {
     fn activate(&self) -> RetValue<()>;
     fn deactivate(&self) -> RetValue<()>;
@@ -21,7 +21,7 @@ pub trait CanEvent
     fn on_can_error(&mut self) {}
 }
 
-pub trait CanEventAgent
+pub trait CanDeviceEventAgent
 {
     fn on_can_message_receive(&self) {}
     fn on_can_error(&self) {}

@@ -6,3 +6,9 @@ pub mod io;
 pub mod spi;
 pub mod uart;
 pub mod wd;
+
+pub trait PeriphDevice<T>
+{
+    fn new(handle: *mut T) -> Self;
+    fn handle_value(&self) -> *mut T;
+}

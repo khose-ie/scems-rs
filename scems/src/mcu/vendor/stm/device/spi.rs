@@ -2,7 +2,7 @@ use core::mem::transmute;
 
 use crate::common::result::RetValue;
 use crate::derive::{AsPtr, HandlePtr};
-use crate::mcu::common::spi::{Spi, SpiEventAgent};
+use crate::mcu::common::spi::{SpiDevice, SpiDeviceEventAgent};
 use crate::mcu::common::{EventLaunch, HandlePtr};
 use crate::mcu::vendor::stm::device_queue::DeviceQueue;
 use crate::mcu::vendor::stm::native::spi::*;
@@ -10,24 +10,24 @@ use crate::mcu::vendor::stm::native::spi::*;
 pub use crate::mcu::vendor::stm::native::spi::SPI_HandleTypeDef;
 
 const SPI_COUNT: usize = 8;
-static mut SPIS: DeviceQueue<SPI_HandleTypeDef, SpiDevice, SPI_COUNT> = DeviceQueue::new();
+static mut SPIS: DeviceQueue<SPI_HandleTypeDef, Spi, SPI_COUNT> = DeviceQueue::new();
 
 #[derive(AsPtr, HandlePtr)]
-pub struct SpiDevice
+pub struct Spi
 {
     handle: *mut SPI_HandleTypeDef,
-    event_handle: Option<*const dyn SpiEventAgent>,
+    event_handle: Option<*const dyn SpiDeviceEventAgent>,
 }
 
-impl SpiDevice
+impl Spi
 {
     pub fn new(handle: *mut SPI_HandleTypeDef) -> Self
     {
-        SpiDevice { handle, event_handle: None }
+        Spi { handle, event_handle: None }
     }
 }
 
-impl Drop for SpiDevice
+impl Drop for Spi
 {
     fn drop(&mut self)
     {
@@ -35,12 +35,12 @@ impl Drop for SpiDevice
     }
 }
 
-impl EventLaunch<dyn SpiEventAgent> for SpiDevice
+impl EventLaunch<dyn SpiDeviceEventAgent> for Spi
 {
     #[allow(static_mut_refs)]
-    fn set_event_agent(&mut self, event_handle: &dyn SpiEventAgent) -> RetValue<()>
+    fn set_event_agent(&mut self, event_handle: &dyn SpiDeviceEventAgent) -> RetValue<()>
     {
-        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn SpiEventAgent) });
+        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn SpiDeviceEventAgent) });
         unsafe { SPIS.alloc(self.as_ptr()) }
     }
 
@@ -52,7 +52,7 @@ impl EventLaunch<dyn SpiEventAgent> for SpiDevice
     }
 }
 
-impl Spi for SpiDevice
+impl SpiDevice for Spi
 {
     fn transmit(&self, data: &[u8], timeout: u32) -> RetValue<()>
     {

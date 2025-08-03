@@ -1,22 +1,22 @@
-use crate::mcu::common::wd::WatchDog;
+use crate::mcu::common::wd::WatchDogDevice;
 use crate::mcu::vendor::stm::native::iwdg::*;
 
 pub use crate::mcu::vendor::stm::native::iwdg::IWDG_HandleTypeDef;
 
-pub struct WatchDogDevice
+pub struct WatchDog
 {
     handle: *mut IWDG_HandleTypeDef,
 }
 
-impl WatchDogDevice
+impl WatchDog
 {
     pub fn new(handle: *mut IWDG_HandleTypeDef) -> Self
     {
-        WatchDogDevice { handle }
+        WatchDog { handle }
     }
 }
 
-impl WatchDog for WatchDogDevice
+impl WatchDogDevice for WatchDog
 {
     fn refresh(&self)
     {

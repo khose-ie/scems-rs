@@ -1,6 +1,6 @@
 use crate::common::result::RetValue;
 
-pub trait Flash
+pub trait FlashDevice
 {
     fn erase_sector(&self, sector: u32) -> RetValue<()>;
     fn write(&self, address: u32, data: u8) -> RetValue<()>;

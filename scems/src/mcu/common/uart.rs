@@ -3,15 +3,15 @@
 use super::EventLaunch;
 use crate::common::result::RetValue;
 
-/// `Uart` is a common trait to control UART peripheral, with functions to let the UART to do 
+/// A common trait to control UART peripheral, with functions to let the UART to do 
 /// some basic actions.
 /// 
 /// The UART implementations for every MCU manufacturers should implement this trait.
 /// And every upper modules who want to control an UART should reference this trait, and call the
 /// functions of this trait.
-pub trait Uart
+pub trait UartDevice
 where
-    Self: EventLaunch<dyn UartEventAgent>,
+    Self: EventLaunch<dyn UartDeviceEventAgent>,
 {
     /// Transmit the specified length data via UART.
     /// 
@@ -58,38 +58,38 @@ where
 
     /// Transmit the specified length data via UART in asynchronous mode.
     /// 
-    /// The usage of this function is same with [`Uart::transmit`], the only difference is that 
-    /// this function will not hung. It will transmit the data via an asynchronous way like the 
-    /// DMA and interrupts.
+    /// The usage of this function is same with [`UartDevice::transmit`], the only difference is 
+    /// that this function will not hung. It will transmit the data via an asynchronous way like 
+    /// the DMA and interrupts.
     /// So, the OK return of this function only means that the data has been moved to the buffer 
     /// of a DMA or interrupt, not means they are transmited successfully.
     /// 
     /// The result of the transmission will be notified via the 
-    /// [`UartEventAgent::on_uart_tx_complete`].
+    /// [`UartDeviceEventAgent::on_uart_tx_complete`].
     /// Use this function means that you have enable the DMA or interrupt transmission of this 
     /// DMA in the initialization code.
     fn async_transmit(&self, data: &[u8]) -> RetValue<()>;
 
     /// Receive some data until the UART to be idle.
     /// 
-    /// The usage of this function is same with [`Uart::receive`], the only difference is that 
-    /// this function will not hung. It will receive the data via an asynchronous way like the 
-    /// DMA and interrupts.
+    /// The usage of this function is same with [`UartDevice::receive`], the only difference is 
+    /// that this function will not hung. It will receive the data via an asynchronous way like 
+    /// the DMA and interrupts.
     /// So you need to input a `data` slice as the buffer space, the received data will be move 
-    /// to the buffer, and the event [`UartEventAgent::on_uart_rx_complete`] will be call when 
-    /// the UART come back to idle.
+    /// to the buffer, and the event [`UartDeviceEventAgent::on_uart_rx_complete`] will be call 
+    /// when the UART come back to idle.
     /// Use this function means that you have enable the DMA or interrupt transmission of this 
     /// DMA in the initialization code.
     fn async_receive(&self, data: &mut [u8]) -> RetValue<()>;
 
     /// Receive some data until the UART to be idle.
     /// 
-    /// The usage of this function is same with [`Uart::receive_size`], the only difference is 
-    /// that this function will not hung. It will receive the data via an asynchronous way like 
-    /// the DMA and interrupts.
+    /// The usage of this function is same with [`UartDevice::receive_size`], the only difference 
+    /// is that this function will not hung. It will receive the data via an asynchronous way 
+    /// like the DMA and interrupts.
     /// So you need to input a `data` slice as the buffer space, the received data will be move 
-    /// to the buffer, and the event [`UartEventAgent::on_uart_rx_size_complete`] will be call 
-    /// when the UART come back to idle.
+    /// to the buffer, and the event [`UartDeviceEventAgent::on_uart_rx_size_complete`] will be 
+    /// call when the UART come back to idle.
     /// Use this function means that you have enable the DMA or interrupt transmission of this 
     /// DMA in the initialization code.
     fn async_receive_size(&self, data: &mut [u8]) -> RetValue<()>;
@@ -101,7 +101,7 @@ where
 }
 
 /// `UartEventAgent` as the meanings of the word, it is an agent, or the real handler, whatever, 
-/// to handle all events sent from the `Uart`.
+/// to handle all events sent from the `UartDevice`.
 /// 
 /// Actually, these callback functions will be called in the interrupt vector handle which 
 /// triggered by UART peripheral.
@@ -110,13 +110,13 @@ where
 /// 
 /// All functions of this trait have an empty default implementation, it meanus that you can only 
 /// implement the function that you care about.
-pub trait UartEventAgent
+pub trait UartDeviceEventAgent
 {
     /// This function will call when the asynchronous transmit has been completed.
     fn on_uart_tx_complete(&self) {}
 
     /// This function will call when you received something and it has been move to the buffer 
-    /// `data` that you input in [`Uart::async_receive`].
+    /// `data` that you input in [`UartDevice::async_receive`].
     /// 
     /// The receive length will be transport via parameter `_size`.
     /// Please attention, if the received data length is over the length of slice `data`, this 
@@ -125,7 +125,7 @@ pub trait UartEventAgent
     fn on_uart_rx_complete(&self, _size: u32) {}
 
     /// This function will call when you received specified length of data and it has been move to the buffer 
-    /// `data` that you input in [`Uart::async_receive_size`].
+    /// `data` that you input in [`UartDevice::async_receive_size`].
     fn on_uart_rx_size_complete(&self) {}
 
     /// This function will call when your abort action has been completed.

@@ -2,9 +2,9 @@ use core::mem::{transmute, ManuallyDrop};
 
 use crate::common::result::RetValue;
 use crate::derive::{AsPtr, HandlePtr};
-use crate::mcu::common::i2c::{I2cMaster, I2cMasterEventAgent};
-use crate::mcu::common::i2c::{I2cMem, I2cMemEventAgent, I2cMemWide};
-use crate::mcu::common::i2c::{I2cSlave, I2cSlaveEventAgent};
+use crate::mcu::common::i2c::{I2cMasterDevice, I2cMasterDeviceEventAgent};
+use crate::mcu::common::i2c::{I2cMemDevice, I2cMemDeviceEventAgent, I2cMemWide};
+use crate::mcu::common::i2c::{I2cSlaveDevice, I2cSlaveDeviceEventAgent};
 use crate::mcu::common::{EventLaunch, HandlePtr};
 use crate::mcu::vendor::stm::device_queue::DeviceQueue;
 use crate::mcu::vendor::stm::native::i2c::*;
@@ -12,17 +12,17 @@ use crate::mcu::vendor::stm::native::i2c::*;
 pub use crate::mcu::vendor::stm::native::i2c::I2C_HandleTypeDef;
 
 const I2C_COUNT: usize = 8;
-static mut I2CS: DeviceQueue<I2C_HandleTypeDef, I2cDevice, I2C_COUNT> = DeviceQueue::new();
+static mut I2CS: DeviceQueue<I2C_HandleTypeDef, I2c, I2C_COUNT> = DeviceQueue::new();
 
 #[repr(C)]
-union I2cDevice
+union I2c
 {
-    pub mem: ManuallyDrop<I2cMemDevice>,
-    pub master: ManuallyDrop<I2cMasterDevice>,
-    pub slave: ManuallyDrop<I2cSlaveDevice>,
+    pub mem: ManuallyDrop<I2cMem>,
+    pub master: ManuallyDrop<I2cMaster>,
+    pub slave: ManuallyDrop<I2cSlave>,
 }
 
-impl HandlePtr<I2C_HandleTypeDef> for I2cDevice
+impl HandlePtr<I2C_HandleTypeDef> for I2c
 {
     #[inline]
     fn handle_ptr(&self) -> *mut I2C_HandleTypeDef
@@ -32,26 +32,26 @@ impl HandlePtr<I2C_HandleTypeDef> for I2cDevice
 }
 
 #[derive(AsPtr, HandlePtr)]
-pub struct I2cMemDevice
+pub struct I2cMem
 {
     handle: *mut I2C_HandleTypeDef,
-    event_handle: Option<*const dyn I2cMemEventAgent>,
+    event_handle: Option<*const dyn I2cMemDeviceEventAgent>,
 }
 
-impl I2cMemDevice
+impl I2cMem
 {
     pub fn new(handle: *mut I2C_HandleTypeDef) -> Self
     {
-        I2cMemDevice { handle, event_handle: None }
+        I2cMem { handle, event_handle: None }
     }
 
-    fn as_i2c_ptr(&self) -> *mut I2cDevice
+    fn as_i2c_ptr(&self) -> *mut I2c
     {
-        self as *const I2cMemDevice as *mut I2cMemDevice as *mut I2cDevice
+        self as *const I2cMem as *mut I2cMem as *mut I2c
     }
 }
 
-impl Drop for I2cMemDevice
+impl Drop for I2cMem
 {
     fn drop(&mut self)
     {
@@ -59,12 +59,12 @@ impl Drop for I2cMemDevice
     }
 }
 
-impl EventLaunch<dyn I2cMemEventAgent> for I2cMemDevice
+impl EventLaunch<dyn I2cMemDeviceEventAgent> for I2cMem
 {
     #[allow(static_mut_refs)]
-    fn set_event_agent(&mut self, event_handle: &dyn I2cMemEventAgent) -> RetValue<()>
+    fn set_event_agent(&mut self, event_handle: &dyn I2cMemDeviceEventAgent) -> RetValue<()>
     {
-        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn I2cMemEventAgent) });
+        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn I2cMemDeviceEventAgent) });
         unsafe { I2CS.alloc(self.as_i2c_ptr()) }
     }
 
@@ -76,7 +76,7 @@ impl EventLaunch<dyn I2cMemEventAgent> for I2cMemDevice
     }
 }
 
-impl I2cMem for I2cMemDevice
+impl I2cMemDevice for I2cMem
 {
     fn mem_write(&self, saddr: u16, maddr: u16, mwide: I2cMemWide, data: &[u8], timeout: u32) -> RetValue<()>
     {
@@ -108,26 +108,26 @@ impl I2cMem for I2cMemDevice
 }
 
 #[derive(AsPtr, HandlePtr)]
-pub struct I2cMasterDevice
+pub struct I2cMaster
 {
     handle: *mut I2C_HandleTypeDef,
-    event_handle: Option<*const dyn I2cMasterEventAgent>,
+    event_handle: Option<*const dyn I2cMasterDeviceEventAgent>,
 }
 
-impl I2cMasterDevice
+impl I2cMaster
 {
     pub fn new(handle: *mut I2C_HandleTypeDef) -> Self
     {
-        I2cMasterDevice { handle, event_handle: None }
+        I2cMaster { handle, event_handle: None }
     }
 
-    fn as_i2c_ptr(&self) -> *mut I2cDevice
+    fn as_i2c_ptr(&self) -> *mut I2c
     {
-        self as *const I2cMasterDevice as *mut I2cMasterDevice as *mut I2cDevice
+        self as *const I2cMaster as *mut I2cMaster as *mut I2c
     }
 }
 
-impl Drop for I2cMasterDevice
+impl Drop for I2cMaster
 {
     fn drop(&mut self)
     {
@@ -135,12 +135,12 @@ impl Drop for I2cMasterDevice
     }
 }
 
-impl EventLaunch<dyn I2cMasterEventAgent> for I2cMasterDevice
+impl EventLaunch<dyn I2cMasterDeviceEventAgent> for I2cMaster
 {
     #[allow(static_mut_refs)]
-    fn set_event_agent(&mut self, event_handle: &dyn I2cMasterEventAgent) -> RetValue<()>
+    fn set_event_agent(&mut self, event_handle: &dyn I2cMasterDeviceEventAgent) -> RetValue<()>
     {
-        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn I2cMasterEventAgent) });
+        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn I2cMasterDeviceEventAgent) });
         unsafe { I2CS.alloc(self.as_i2c_ptr()) }
     }
 
@@ -152,7 +152,7 @@ impl EventLaunch<dyn I2cMasterEventAgent> for I2cMasterDevice
     }
 }
 
-impl I2cMaster for I2cMasterDevice
+impl I2cMasterDevice for I2cMaster
 {
     fn transmit(&self, saddr: u16, data: &[u8], timeout: u32) -> RetValue<()>
     {
@@ -176,26 +176,26 @@ impl I2cMaster for I2cMasterDevice
 }
 
 #[derive(AsPtr, HandlePtr)]
-pub struct I2cSlaveDevice
+pub struct I2cSlave
 {
     handle: *mut I2C_HandleTypeDef,
-    event_handle: Option<*const dyn I2cSlaveEventAgent>,
+    event_handle: Option<*const dyn I2cSlaveDeviceEventAgent>,
 }
 
-impl I2cSlaveDevice
+impl I2cSlave
 {
     pub fn new(handle: *mut I2C_HandleTypeDef) -> Self
     {
-        I2cSlaveDevice { handle, event_handle: None }
+        I2cSlave { handle, event_handle: None }
     }
 
-    fn as_i2c_ptr(&self) -> *mut I2cDevice
+    fn as_i2c_ptr(&self) -> *mut I2c
     {
-        self as *const I2cSlaveDevice as *mut I2cSlaveDevice as *mut I2cDevice
+        self as *const I2cSlave as *mut I2cSlave as *mut I2c
     }
 }
 
-impl Drop for I2cSlaveDevice
+impl Drop for I2cSlave
 {
     fn drop(&mut self)
     {
@@ -203,12 +203,12 @@ impl Drop for I2cSlaveDevice
     }
 }
 
-impl EventLaunch<dyn I2cSlaveEventAgent> for I2cSlaveDevice
+impl EventLaunch<dyn I2cSlaveDeviceEventAgent> for I2cSlave
 {
     #[allow(static_mut_refs)]
-    fn set_event_agent(&mut self, event_handle: &dyn I2cSlaveEventAgent) -> RetValue<()>
+    fn set_event_agent(&mut self, event_handle: &dyn I2cSlaveDeviceEventAgent) -> RetValue<()>
     {
-        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn I2cSlaveEventAgent) });
+        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn I2cSlaveDeviceEventAgent) });
         unsafe { I2CS.alloc(self.as_i2c_ptr()) }
     }
 
@@ -220,7 +220,7 @@ impl EventLaunch<dyn I2cSlaveEventAgent> for I2cSlaveDevice
     }
 }
 
-impl I2cSlave for I2cSlaveDevice
+impl I2cSlaveDevice for I2cSlave
 {
     fn listen(&self) -> RetValue<()>
     {

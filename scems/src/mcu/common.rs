@@ -17,18 +17,18 @@ use crate::common::result::RetValue;
 /// the only one trait bound.
 pub trait Mcu
 {
-    type Adc: adc::Adc;
-    type Can: can::Can;
-    type Flash: flash::Flash;
-    type I2cMaster: i2c::I2cMaster;
-    type I2cMem: i2c::I2cMem;
-    type I2cSlave: i2c::I2cSlave;
-    type Io: io::Io;
-    type Spi: spi::Spi;
-    type Uart: uart::Uart;
-    type TimBase: tim::TimBase;
-    type TImPwm: tim::TimPwm;
-    type WatchDog: wd::WatchDog;
+    type Adc: adc::AdcDevice;
+    type Can: can::CanDevice;
+    type Flash: flash::FlashDevice;
+    type I2cMaster: i2c::I2cMasterDevice;
+    type I2cMem: i2c::I2cMemDevice;
+    type I2cSlave: i2c::I2cSlaveDevice;
+    type Io: io::IoDevice;
+    type Spi: spi::SpiDevice;
+    type Uart: uart::UartDevice;
+    type TimBase: tim::TimBaseDevice;
+    type TImPwm: tim::TimPwmDevice;
+    type WatchDog: wd::WatchDogDevice;
 }
 
 /// `EventLaunch` is a trait that the peripheral trait who implements this trait means that it can 

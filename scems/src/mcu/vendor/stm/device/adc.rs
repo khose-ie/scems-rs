@@ -2,7 +2,7 @@ use core::mem::transmute;
 
 use crate::common::result::RetValue;
 use crate::derive::{AsPtr, HandlePtr};
-use crate::mcu::common::adc::{Adc, AdcEventAgent};
+use crate::mcu::common::adc::{AdcDevice, AdcDeviceEventAgent};
 use crate::mcu::common::{EventLaunch, HandlePtr};
 use crate::mcu::vendor::stm::device_queue::DeviceQueue;
 use crate::mcu::vendor::stm::native::adc::*;
@@ -12,24 +12,24 @@ pub use crate::mcu::vendor::stm::native::adc::ADC_HandleTypeDef;
 const ADC_DEF_TIMEOUT: u32 = 1000;
 
 const ADC_COUNT: usize = 8;
-static mut ADCS: DeviceQueue<ADC_HandleTypeDef, AdcDevice, ADC_COUNT> = DeviceQueue::new();
+static mut ADCS: DeviceQueue<ADC_HandleTypeDef, Adc, ADC_COUNT> = DeviceQueue::new();
 
 #[derive(AsPtr, HandlePtr)]
-pub struct AdcDevice
+pub struct Adc
 {
     handle: *mut ADC_HandleTypeDef,
-    event_handle: Option<*const dyn AdcEventAgent>,
+    event_handle: Option<*const dyn AdcDeviceEventAgent>,
 }
 
-impl AdcDevice
+impl Adc
 {
     pub fn new(handle: *mut ADC_HandleTypeDef) -> Self
     {
-        AdcDevice { handle, event_handle: None }
+        Adc { handle, event_handle: None }
     }
 }
 
-impl Drop for AdcDevice
+impl Drop for Adc
 {
     fn drop(&mut self)
     {
@@ -37,12 +37,12 @@ impl Drop for AdcDevice
     }
 }
 
-impl EventLaunch<dyn AdcEventAgent> for AdcDevice
+impl EventLaunch<dyn AdcDeviceEventAgent> for Adc
 {
     #[allow(static_mut_refs)]
-    fn set_event_agent(&mut self, event_handle: &dyn AdcEventAgent) -> RetValue<()>
+    fn set_event_agent(&mut self, event_handle: &dyn AdcDeviceEventAgent) -> RetValue<()>
     {
-        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn AdcEventAgent) });
+        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn AdcDeviceEventAgent) });
         unsafe { ADCS.alloc(self.as_ptr()) }
     }
 
@@ -57,7 +57,7 @@ impl EventLaunch<dyn AdcEventAgent> for AdcDevice
     }
 }
 
-impl Adc for AdcDevice
+impl AdcDevice for Adc
 {
     fn convert_once(&self) -> RetValue<u32>
     {

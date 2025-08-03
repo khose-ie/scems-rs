@@ -2,9 +2,9 @@ use crate::common::result::RetValue;
 
 use super::EventLaunch;
 
-pub trait Spi
+pub trait SpiDevice
 where
-    Self: EventLaunch<dyn SpiEventAgent>,
+    Self: EventLaunch<dyn SpiDeviceEventAgent>,
 {
     fn transmit(&self, data: &[u8], timeout: u32) -> RetValue<()>;
     fn receive(&self, data: &mut [u8], timeout: u32) -> RetValue<()>;
@@ -26,7 +26,7 @@ pub trait SpiEvent
     fn on_spi_error(&mut self) {}
 }
 
-pub trait SpiEventAgent
+pub trait SpiDeviceEventAgent
 {
     fn on_spi_tx_complete(&self) {}
     fn on_spi_rx_complete(&self) {}

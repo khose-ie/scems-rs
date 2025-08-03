@@ -2,7 +2,7 @@ use core::mem::transmute;
 
 use crate::common::result::{ErrValue, RetValue};
 use crate::derive::{AsPtr, HandlePtr};
-use crate::mcu::common::can::{Can, CanEventAgent, CanMessage};
+use crate::mcu::common::can::{CanDevice, CanDeviceEventAgent, CanMessage};
 use crate::mcu::common::{EventLaunch, HandlePtr};
 use crate::mcu::vendor::stm::device_queue::DeviceQueue;
 use crate::mcu::vendor::stm::native::can::*;
@@ -11,26 +11,26 @@ use crate::mcu::vendor::stm::native::*;
 pub use crate::mcu::vendor::stm::native::can::CAN_HandleTypeDef;
 
 const CAN_COUNT: usize = 8;
-static mut CANS: DeviceQueue<CAN_HandleTypeDef, CanDevice, CAN_COUNT> = DeviceQueue::new();
+static mut CANS: DeviceQueue<CAN_HandleTypeDef, Can, CAN_COUNT> = DeviceQueue::new();
 
 #[derive(AsPtr, HandlePtr)]
-pub struct CanDevice
+pub struct Can
 {
     handle: *mut CAN_HandleTypeDef,
-    event_handle: Option<*const dyn CanEventAgent>,
+    event_handle: Option<*const dyn CanDeviceEventAgent>,
     fifo: u32,
     async_cache: Option<*mut CanMessage>,
 }
 
-impl CanDevice
+impl Can
 {
     pub fn new(handle: *mut CAN_HandleTypeDef, fifo: u32) -> Self
     {
-        CanDevice { handle, event_handle: None, fifo, async_cache: None }
+        Can { handle, event_handle: None, fifo, async_cache: None }
     }
 }
 
-impl Drop for CanDevice
+impl Drop for Can
 {
     fn drop(&mut self)
     {
@@ -38,12 +38,12 @@ impl Drop for CanDevice
     }
 }
 
-impl EventLaunch<dyn CanEventAgent> for CanDevice
+impl EventLaunch<dyn CanDeviceEventAgent> for Can
 {
     #[allow(static_mut_refs)]
-    fn set_event_agent(&mut self, event_handle: &dyn CanEventAgent) -> RetValue<()>
+    fn set_event_agent(&mut self, event_handle: &dyn CanDeviceEventAgent) -> RetValue<()>
     {
-        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn CanEventAgent) });
+        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn CanDeviceEventAgent) });
         unsafe { CANS.alloc(self.as_ptr()) }
     }
 
@@ -55,7 +55,7 @@ impl EventLaunch<dyn CanEventAgent> for CanDevice
     }
 }
 
-impl Can for CanDevice
+impl CanDevice for Can
 {
     fn activate(&self) -> RetValue<()>
     {

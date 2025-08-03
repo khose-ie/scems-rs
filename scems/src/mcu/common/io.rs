@@ -7,9 +7,9 @@ use crate::derive::EnumCastU32;
 use super::EventLaunch;
 
 /// Trait providing operations of an GPIO_TypeDef pin.
-pub trait Io
+pub trait IoDevice
 where
-    Self: EventLaunch<dyn IoEventAgent>,
+    Self: EventLaunch<dyn IoDeviceEventAgent>,
 {
     type Pin;
 
@@ -28,7 +28,7 @@ pub trait IoEvent
     fn on_io_state_change(&mut self) {}
 }
 
-pub trait IoEventAgent
+pub trait IoDeviceEventAgent
 {
     fn on_io_state_change(&self) {}
 }

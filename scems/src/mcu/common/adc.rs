@@ -3,15 +3,15 @@
 use super::EventLaunch;
 use crate::common::result::RetValue;
 
-/// `Adc` is the common trait for ADC peripheral, provides the interface functions to operate the
+/// `AdcDevice` is the common trait for ADC peripheral, provides the interface functions to operate the
 /// ADC.
 /// 
 /// The ADC implementations for every MCU manufacturers should implement this trait.
 /// And every upper modules who want to control an ADC should reference this trait, and call the
 /// functions of this trait.
-pub trait Adc
+pub trait AdcDevice
 where
-    Self: EventLaunch<dyn AdcEventAgent>,
+    Self: EventLaunch<dyn AdcDeviceEventAgent>,
 {
     /// Convert the analog signal to an unsigned 32-bit integer once.
     ///
@@ -25,7 +25,7 @@ where
     /// You call this function, means that you have enable the interrupts of the related ADC in
     /// the low-level platform initialization code.
     /// The converting value will be transport the interrupt handle function of the MCU, and the
-    /// caller should register an event agent to this `Adc`, see [`super::EventLaunch`]
+    /// caller should register an event agent to this `AdcDevice`, see [`super::EventLaunch`]
     fn async_convert_once(&self) -> RetValue<()>;
 
     /// To start the continuous conversion of an ADC.
@@ -34,7 +34,7 @@ where
     /// value and put the value to the slice you input.
     /// The ADC will not use the space over the scope of your slice, it will rotate the space.
     /// The coversion will always continued aftet you call this function, and the value in `data` 
-    /// space will be updated until you stop it, see [`Adc::async_terminate_conversion`].
+    /// space will be updated until you stop it, see [`AdcDevice::async_terminate_conversion`].
     fn async_convert_continuous(&self, data: &mut [u32]) -> RetValue<()>;
 
     /// To stop the continuous conversion of an ADC.
@@ -47,8 +47,8 @@ where
     fn async_terminate_conversion(&self) -> RetValue<()>;
 }
 
-/// `AdcEventAgent` as the meanings of the word, it is an agent, or the real handler, whatever, 
-/// to handle all events sent from the `Adc`.
+/// `AdcDeviceEventAgent` as the meanings of the word, it is an agent, or the real handler, 
+/// whatever, to handle all events sent from the `Adc`.
 /// 
 /// Actually, these callback functions will be called in the interrupt vector handle which 
 /// triggered by ADC peripheral.
@@ -57,12 +57,12 @@ where
 /// 
 /// All functions of this trait have an empty default implementation, it meanus that you can only 
 /// implement the function that you care about.
-pub trait AdcEventAgent
+pub trait AdcDeviceEventAgent
 {
     /// Will be called when the once conversion action has been completed.
     /// 
-    /// This function will be called after you call [`Adc::async_convert_once`], and the converted 
-    /// value will be transported via the parameter `_value`.
+    /// This function will be called after you call [`AdcDevice::async_convert_once`], and the 
+    /// converted value will be transported via the parameter `_value`.
     fn on_adc_convert_once_complete(&self, _value: u32) {}
 
     /// This function is use for the watch feature of the ADC, when the value is out of the window 

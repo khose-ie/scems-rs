@@ -1,18 +1,18 @@
 use crate::common::result::RetValue;
-use crate::mcu::common::flash::Flash;
+use crate::mcu::common::flash::FlashDevice;
 use crate::mcu::vendor::stm::native::flash::*;
 
-pub struct OnChipFlashDevice {}
+pub struct OnChipFlash {}
 
-impl OnChipFlashDevice
+impl OnChipFlash
 {
     pub fn new() -> Self
     {
-        OnChipFlashDevice {}
+        OnChipFlash {}
     }
 }
 
-impl OnChipFlashDevice
+impl OnChipFlash
 {
     unsafe fn write_common(&self, kind: u32, address: u32, data: u64) -> RetValue<()>
     {
@@ -23,7 +23,7 @@ impl OnChipFlashDevice
     }
 }
 
-impl Flash for OnChipFlashDevice
+impl FlashDevice for OnChipFlash
 {
     fn erase_sector(&self, sector: u32) -> RetValue<()>
     {
