@@ -42,7 +42,7 @@ impl Handle<SPI_HandleTypeDef> for Spi
 
 impl EventLaunch<dyn SpiDeviceEventAgent> for Spi
 {
-    fn set_event_agent(&mut self, event_handle: &dyn SpiDeviceEventAgent)
+    fn set_event_agent(&mut self, event_handle: &'static dyn SpiDeviceEventAgent)
     {
         self.event_handle = Some(unsafe { transmute(event_handle as *const dyn SpiDeviceEventAgent) });
     }

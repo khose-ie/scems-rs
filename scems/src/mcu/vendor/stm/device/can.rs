@@ -45,7 +45,7 @@ impl Handle<CAN_HandleTypeDef> for Can
 
 impl EventLaunch<dyn CanDeviceEventAgent> for Can
 {
-    fn set_event_agent(&mut self, event_handle: &dyn CanDeviceEventAgent)
+    fn set_event_agent(&mut self, event_handle: &'static dyn CanDeviceEventAgent)
     {
         self.event_handle = Some(unsafe { transmute(event_handle as *const dyn CanDeviceEventAgent) });
     }

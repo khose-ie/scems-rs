@@ -35,7 +35,7 @@ pub trait Mcu
 /// 
 pub trait EventLaunch<T: ?Sized>
 {
-    fn set_event_agent(&mut self, event_handle: &T);
+    fn set_event_agent(&mut self, event_handle: &'static T);
     fn clean_event_agent(&mut self);
 }
 

@@ -44,7 +44,7 @@ impl Handle<ADC_HandleTypeDef> for Adc
 
 impl EventLaunch<dyn AdcDeviceEventAgent> for Adc
 {
-    fn set_event_agent(&mut self, event_handle: &dyn AdcDeviceEventAgent)
+    fn set_event_agent(&mut self, event_handle: &'static dyn AdcDeviceEventAgent)
     {
         self.event_handle = Some(unsafe { transmute(event_handle as *const dyn AdcDeviceEventAgent) });
     }

@@ -53,7 +53,7 @@ impl Handle<UART_HandleTypeDef> for Uart
 
 impl EventLaunch<dyn UartDeviceEventAgent> for Uart
 {
-    fn set_event_agent(&mut self, event_handle: &dyn UartDeviceEventAgent)
+    fn set_event_agent(&mut self, event_handle: &'static dyn UartDeviceEventAgent)
     {
         self.event_handle = unsafe { Some(transmute(event_handle as *const dyn UartDeviceEventAgent)) };
     }

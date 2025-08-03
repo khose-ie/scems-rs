@@ -48,7 +48,7 @@ impl Io
 
 impl EventLaunch<dyn IoDeviceEventAgent> for Io
 {
-    fn set_event_agent(&mut self, event_handle: &dyn IoDeviceEventAgent)
+    fn set_event_agent(&mut self, event_handle: &'static dyn IoDeviceEventAgent)
     {
         let pin: u16 = self.pin.into();
         unsafe {

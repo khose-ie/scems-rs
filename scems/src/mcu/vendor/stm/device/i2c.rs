@@ -81,7 +81,7 @@ pub struct I2cMem
 
 impl EventLaunch<dyn I2cMemDeviceEventAgent> for I2cMem
 {
-    fn set_event_agent(&mut self, event_handle: &dyn I2cMemDeviceEventAgent)
+    fn set_event_agent(&mut self, event_handle: &'static dyn I2cMemDeviceEventAgent)
     {
         self.event_handle = Some(unsafe { transmute(event_handle as *const dyn I2cMemDeviceEventAgent) });
     }
@@ -136,7 +136,7 @@ pub struct I2cMaster
 
 impl EventLaunch<dyn I2cMasterDeviceEventAgent> for I2cMaster
 {
-    fn set_event_agent(&mut self, event_handle: &dyn I2cMasterDeviceEventAgent)
+    fn set_event_agent(&mut self, event_handle: &'static dyn I2cMasterDeviceEventAgent)
     {
         self.event_handle = Some(unsafe { transmute(event_handle as *const dyn I2cMasterDeviceEventAgent) });
     }
@@ -183,7 +183,7 @@ pub struct I2cSlave
 
 impl EventLaunch<dyn I2cSlaveDeviceEventAgent> for I2cSlave
 {
-    fn set_event_agent(&mut self, event_handle: &dyn I2cSlaveDeviceEventAgent)
+    fn set_event_agent(&mut self, event_handle: &'static dyn I2cSlaveDeviceEventAgent)
     {
         self.event_handle = Some(unsafe { transmute(event_handle as *const dyn I2cSlaveDeviceEventAgent) });
     }
