@@ -23,3 +23,4 @@ impl WatchDogDevice for WatchDog
         unsafe { HAL_IWDG_Refresh(self.handle) };
     }
 }
+

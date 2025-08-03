@@ -3,11 +3,11 @@ use core::mem::transmute;
 use crate::common::result::{ErrValue, RetValue};
 use crate::mcu::common::can::{CanDevice, CanDeviceEventAgent, CanMessage};
 use crate::mcu::common::EventLaunch;
-use crate::mcu::vendor::stm::sample_queue::SampleQueue;
 pub use crate::mcu::vendor::stm::native::can::CAN_HandleTypeDef;
 use crate::mcu::vendor::stm::native::can::*;
-use crate::mcu::vendor::stm::{native::*, CAN_COUNT};
-use crate::mcu::vendor::Handle;
+use crate::mcu::vendor::stm::native::*;
+use crate::mcu::vendor::stm::sample_queue::SampleQueue;
+use crate::mcu::vendor::stm::{Handle, CAN_COUNT};
 
 /////////////////////////////////////////////////////////////////////////////
 // CAN struct

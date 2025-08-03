@@ -6,8 +6,7 @@ use crate::mcu::common::EventLaunch;
 pub use crate::mcu::vendor::stm::native::spi::SPI_HandleTypeDef;
 use crate::mcu::vendor::stm::native::spi::*;
 use crate::mcu::vendor::stm::sample_queue::SampleQueue;
-use crate::mcu::vendor::stm::SPI_COUNT;
-use crate::mcu::vendor::Handle;
+use crate::mcu::vendor::stm::{Handle, SPI_COUNT};
 
 /////////////////////////////////////////////////////////////////////////////
 // SPI struct

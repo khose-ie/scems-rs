@@ -5,11 +5,10 @@ use crate::mcu::common::i2c::{I2cMasterDevice, I2cMasterDeviceEventAgent};
 use crate::mcu::common::i2c::{I2cMemDevice, I2cMemDeviceEventAgent, I2cMemWide};
 use crate::mcu::common::i2c::{I2cSlaveDevice, I2cSlaveDeviceEventAgent};
 use crate::mcu::common::EventLaunch;
-use crate::mcu::vendor::stm::sample_queue::SampleQueue;
 pub use crate::mcu::vendor::stm::native::i2c::I2C_HandleTypeDef;
 use crate::mcu::vendor::stm::native::i2c::*;
-use crate::mcu::vendor::stm::I2C_COUNT;
-use crate::mcu::vendor::Handle;
+use crate::mcu::vendor::stm::sample_queue::SampleQueue;
+use crate::mcu::vendor::stm::{Handle, I2C_COUNT};
 
 /////////////////////////////////////////////////////////////////////////////
 // I2C struct

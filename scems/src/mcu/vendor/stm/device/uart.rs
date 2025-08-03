@@ -5,11 +5,10 @@ use core::mem::transmute;
 use crate::common::result::{ErrValue, RetValue};
 use crate::mcu::common::uart::{UartDevice, UartDeviceEventAgent};
 use crate::mcu::common::EventLaunch;
-use crate::mcu::vendor::stm::sample_queue::SampleQueue;
 pub use crate::mcu::vendor::stm::native::uart::UART_HandleTypeDef;
 use crate::mcu::vendor::stm::native::uart::*;
-use crate::mcu::vendor::stm::UART_COUNT;
-use crate::mcu::vendor::Handle;
+use crate::mcu::vendor::stm::sample_queue::SampleQueue;
+use crate::mcu::vendor::stm::{Handle, UART_COUNT};
 
 /////////////////////////////////////////////////////////////////////////////
 // UART struct

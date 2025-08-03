@@ -3,11 +3,10 @@ use core::mem::transmute;
 use crate::common::result::{ErrValue, RetValue};
 use crate::mcu::common::adc::{AdcDevice, AdcDeviceEventAgent};
 use crate::mcu::common::EventLaunch;
-use crate::mcu::vendor::stm::sample_queue::SampleQueue;
 pub use crate::mcu::vendor::stm::native::adc::ADC_HandleTypeDef;
 use crate::mcu::vendor::stm::native::adc::*;
-use crate::mcu::vendor::stm::ADC_COUNT;
-use crate::mcu::vendor::Handle;
+use crate::mcu::vendor::stm::sample_queue::SampleQueue;
+use crate::mcu::vendor::stm::{Handle, ADC_COUNT};
 
 const ADC_DEF_TIMEOUT: u32 = 1000;
 

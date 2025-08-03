@@ -18,7 +18,7 @@
 use core::marker::PhantomData;
 
 use crate::common::result::{ErrValue, RetValue};
-use crate::mcu::vendor::Handle;
+use crate::mcu::vendor::stm::Handle;
 
 pub struct SampleQueue<T, U, const N: usize>
 where
