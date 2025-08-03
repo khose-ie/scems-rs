@@ -1,7 +1,7 @@
 use core::cell::RefCell;
 
 use scems::common::result::RetValue;
-use scems::mcu::common::uart::{UartCtrl, UartDeviceEventAgent};
+use scems::mcu::common::uart::{UartDevice, UartDeviceEventAgent};
 use scems::os::common::events::IEvents;
 use scems::os::common::mem::IMemCache;
 use scems::os::vendors::events::Events;
@@ -53,7 +53,7 @@ const EVENT_RX_COMPLETE: u32 = 0x01;
 
 pub struct SerialTerminal
 {
-    uart: &'static mut dyn UartCtrl,
+    uart: UartDevice,
     events: Events,
     input_cache: MemCache<256>,
     output_cache: MemCache<256>,
@@ -62,7 +62,7 @@ pub struct SerialTerminal
 
 impl SerialTerminal
 {
-    pub fn new(uart: &'static mut dyn UartCtrl) -> RetValue<Self>
+    pub fn new(uart: UartDevice) -> RetValue<Self>
     {
         Ok(Self {
             uart,
