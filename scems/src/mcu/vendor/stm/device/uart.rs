@@ -2,18 +2,18 @@
 
 use core::mem::transmute;
 
-use crate::common::result::RetValue;
-use crate::derive::{AsPtr, HandlePtr};
+use crate::common::result::{ErrValue, RetValue};
 use crate::mcu::common::uart::{UartDevice, UartDeviceEventAgent};
-use crate::mcu::common::{EventLaunch, HandlePtr};
-use crate::mcu::vendor::stm::device_queue::{DeviceQueue, SampleQueue};
-use crate::mcu::vendor::stm::native::uart::*;
-
+use crate::mcu::common::EventLaunch;
+use crate::mcu::vendor::stm::sample_queue::SampleQueue;
 pub use crate::mcu::vendor::stm::native::uart::UART_HandleTypeDef;
-use crate::mcu::vendor::PeriphDevice;
+use crate::mcu::vendor::stm::native::uart::*;
+use crate::mcu::vendor::stm::UART_COUNT;
+use crate::mcu::vendor::Handle;
 
-const UART_COUNT: usize = 8;
-static mut UARTS: DeviceQueue<UART_HandleTypeDef, Uart, UART_COUNT> = DeviceQueue::new();
+/////////////////////////////////////////////////////////////////////////////
+// UART struct
+/////////////////////////////////////////////////////////////////////////////
 
 /// The top encapsulation which be used to operate the STM32 UART peripheral.
 ///
@@ -24,20 +24,28 @@ static mut UARTS: DeviceQueue<UART_HandleTypeDef, Uart, UART_COUNT> = DeviceQueu
 /// should be done in a low-level code, and in the startup time of MCU.
 /// For a initialized peripheral, you can create a this struct with it as the handle, and use
 /// this struct to operate it.
-#[derive(AsPtr, HandlePtr, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct Uart
 {
     handle: *mut UART_HandleTypeDef,
     event_handle: Option<*const dyn UartDeviceEventAgent>,
 }
 
-impl PeriphDevice<UART_HandleTypeDef> for Uart
+impl Uart
 {
-    fn new(handle: *mut UART_HandleTypeDef) -> Self
+    fn new(handle: *mut UART_HandleTypeDef) -> RetValue<Self>
     {
-        Uart { handle, event_handle: None }
-    }
+        if handle.is_null()
+        {
+            return Err(ErrValue::Param);
+        }
 
+        Ok(Uart { handle, event_handle: None })
+    }
+}
+
+impl Handle<UART_HandleTypeDef> for Uart
+{
     fn handle_value(&self) -> *mut UART_HandleTypeDef
     {
         self.handle
@@ -46,14 +54,11 @@ impl PeriphDevice<UART_HandleTypeDef> for Uart
 
 impl EventLaunch<dyn UartDeviceEventAgent> for Uart
 {
-    #[allow(static_mut_refs)]
-    fn set_event_agent(&mut self, event_handle: &dyn UartDeviceEventAgent) -> RetValue<()>
+    fn set_event_agent(&mut self, event_handle: &dyn UartDeviceEventAgent)
     {
         self.event_handle = unsafe { Some(transmute(event_handle as *const dyn UartDeviceEventAgent)) };
-        Ok(())
     }
 
-    #[allow(static_mut_refs)]
     fn clean_event_agent(&mut self)
     {
         self.event_handle = None;
@@ -100,46 +105,49 @@ impl UartDevice for Uart
     }
 }
 
-pub static mut UART_DEVICE_QUEUE: SampleQueue<Uart, UART_HandleTypeDef, UART_COUNT> = SampleQueue::new();
+/////////////////////////////////////////////////////////////////////////////
+// UART queue
+/////////////////////////////////////////////////////////////////////////////
 
-pub struct UartDeviceQueue;
+static mut UART_QUEUE: SampleQueue<Uart, UART_HandleTypeDef, UART_COUNT> = SampleQueue::new();
 
-impl UartDeviceQueue
+pub struct UartQueue;
+
+impl UartQueue
 {
     #[inline]
     #[allow(static_mut_refs)]
     pub fn allocate(sample_handle: *mut UART_HandleTypeDef) -> RetValue<&'static mut Uart>
     {
-        unsafe { UART_DEVICE_QUEUE.allocate(sample_handle) }
+        unsafe { UART_QUEUE.allocate(&Uart::new(sample_handle)?) }
     }
 
     #[inline]
     #[allow(static_mut_refs)]
     pub fn clean(sample_handle: *mut UART_HandleTypeDef)
     {
-        unsafe { UART_DEVICE_QUEUE.clean(sample_handle) };
+        unsafe { UART_QUEUE.clean(sample_handle) };
     }
 
     #[inline]
     #[allow(static_mut_refs)]
     pub fn search(sample_handle: *mut UART_HandleTypeDef) -> RetValue<&'static Uart>
     {
-        unsafe { UART_DEVICE_QUEUE.search(sample_handle) }
+        unsafe { UART_QUEUE.search(sample_handle) }
     }
-
 }
 
-
-
-
+/////////////////////////////////////////////////////////////////////////////
+// HAL interrupt callback function implementations
+/////////////////////////////////////////////////////////////////////////////
 
 #[no_mangle]
 #[allow(static_mut_refs)]
 pub unsafe extern "C" fn HAL_UART_TxCpltCallback(uart: *mut UART_HandleTypeDef)
 {
-    if let Some(sample) = UARTS.find(uart).ok()
+    if let Some(sample) = UartQueue::search(uart).ok()
     {
-        if let Some(event_handle) = (*sample).event_handle
+        if let Some(event_handle) = sample.event_handle
         {
             (*event_handle).on_uart_tx_complete();
         }
@@ -153,9 +161,9 @@ pub unsafe extern "C" fn HAL_UART_TxCpltCallback(uart: *mut UART_HandleTypeDef)
 #[allow(static_mut_refs)]
 pub unsafe extern "C" fn HAL_UART_RxCpltCallback(uart: *mut UART_HandleTypeDef)
 {
-    if let Some(sample) = UARTS.find(uart).ok()
+    if let Some(sample) = UartQueue::search(uart).ok()
     {
-        if let Some(event_handle) = (*sample).event_handle
+        if let Some(event_handle) = sample.event_handle
         {
             (*event_handle).on_uart_rx_size_complete();
         }
@@ -169,9 +177,9 @@ pub unsafe extern "C" fn HAL_UART_RxCpltCallback(uart: *mut UART_HandleTypeDef)
 #[allow(static_mut_refs)]
 pub unsafe extern "C" fn HAL_UART_ErrorCallback(uart: *mut UART_HandleTypeDef)
 {
-    if let Some(sample) = UARTS.find(uart).ok()
+    if let Some(sample) = UartQueue::search(uart).ok()
     {
-        if let Some(event_handle) = (*sample).event_handle
+        if let Some(event_handle) = sample.event_handle
         {
             (*event_handle).on_uart_error();
         }
@@ -182,9 +190,9 @@ pub unsafe extern "C" fn HAL_UART_ErrorCallback(uart: *mut UART_HandleTypeDef)
 #[allow(static_mut_refs)]
 pub unsafe extern "C" fn HAL_UART_AbortCpltCallback(uart: *mut UART_HandleTypeDef)
 {
-    if let Some(sample) = UARTS.find(uart).ok()
+    if let Some(sample) = UartQueue::search(uart).ok()
     {
-        if let Some(event_handle) = (*sample).event_handle
+        if let Some(event_handle) = sample.event_handle
         {
             (*event_handle).on_uart_abort_complete();
         }
@@ -201,9 +209,9 @@ pub unsafe extern "C" fn HAL_UART_AbortCpltCallback(uart: *mut UART_HandleTypeDe
 #[allow(static_mut_refs)]
 pub unsafe extern "C" fn HAL_UARTEx_RxEventCallback(uart: *mut UART_HandleTypeDef, size: u16)
 {
-    if let Some(sample) = UARTS.find(uart).ok()
+    if let Some(sample) = UartQueue::search(uart).ok()
     {
-        if let Some(event_handle) = (*sample).event_handle
+        if let Some(event_handle) = sample.event_handle
         {
             (*event_handle).on_uart_rx_complete(size as u32);
         }

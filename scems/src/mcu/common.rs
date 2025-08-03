@@ -8,8 +8,6 @@ pub mod tim;
 pub mod uart;
 pub mod wd;
 
-use crate::common::result::RetValue;
-
 /// Trait for one MCU chip.
 ///
 /// All types in this trait has combined with peripheral trait.
@@ -37,7 +35,7 @@ pub trait Mcu
 /// 
 pub trait EventLaunch<T: ?Sized>
 {
-    fn set_event_agent(&mut self, event_handle: &T) -> RetValue<()>;
+    fn set_event_agent(&mut self, event_handle: &T);
     fn clean_event_agent(&mut self);
 }
 

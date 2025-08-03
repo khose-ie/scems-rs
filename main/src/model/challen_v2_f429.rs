@@ -1,6 +1,6 @@
 use scems::common::log::LogLevel;
 use scems::info;
-use scems::mcu::vendor::uart::{UART_HandleTypeDef, UartDevice, UartDeviceQueue};
+use scems::mcu::vendor::uart::{UART_HandleTypeDef, UartQueue};
 use scems::os::vendors::cmsis::osMemoryPoolId_t;
 use scems::os::vendors::mem::{assign_mem_pool, MemPool};
 use scems::os::vendors::task::TaskSample;
@@ -32,7 +32,9 @@ pub unsafe fn app_main()
     CONSOLE_SERVICE = Some(TaskSample::new(ConsoleService::new().unwrap()));
     let console_service = CONSOLE_SERVICE.as_mut().unwrap();
 
-    console_service.assign_serial_terminal(SerialTerminal::new(UartDeviceQueue::allocate(huart1).unwrap()).unwrap()).unwrap();
+    console_service
+        .assign_serial_terminal(SerialTerminal::new(UartQueue::allocate(&mut huart1).unwrap()).unwrap())
+        .unwrap();
     scems::common::log::assign_stream(console_service.as_mut());
     scems::common::log::set_level(LogLevel::Debug);
 

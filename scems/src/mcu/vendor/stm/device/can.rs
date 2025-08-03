@@ -1,19 +1,19 @@
 use core::mem::transmute;
 
 use crate::common::result::{ErrValue, RetValue};
-use crate::derive::{AsPtr, HandlePtr};
 use crate::mcu::common::can::{CanDevice, CanDeviceEventAgent, CanMessage};
-use crate::mcu::common::{EventLaunch, HandlePtr};
-use crate::mcu::vendor::stm::device_queue::DeviceQueue;
-use crate::mcu::vendor::stm::native::can::*;
-use crate::mcu::vendor::stm::native::*;
-
+use crate::mcu::common::EventLaunch;
+use crate::mcu::vendor::stm::sample_queue::SampleQueue;
 pub use crate::mcu::vendor::stm::native::can::CAN_HandleTypeDef;
+use crate::mcu::vendor::stm::native::can::*;
+use crate::mcu::vendor::stm::{native::*, CAN_COUNT};
+use crate::mcu::vendor::Handle;
 
-const CAN_COUNT: usize = 8;
-static mut CANS: DeviceQueue<CAN_HandleTypeDef, Can, CAN_COUNT> = DeviceQueue::new();
+/////////////////////////////////////////////////////////////////////////////
+// CAN struct
+/////////////////////////////////////////////////////////////////////////////
 
-#[derive(AsPtr, HandlePtr)]
+#[derive(Clone, Copy)]
 pub struct Can
 {
     handle: *mut CAN_HandleTypeDef,
@@ -24,34 +24,35 @@ pub struct Can
 
 impl Can
 {
-    pub fn new(handle: *mut CAN_HandleTypeDef, fifo: u32) -> Self
+    fn new(handle: *mut CAN_HandleTypeDef, fifo: u32) -> RetValue<Self>
     {
-        Can { handle, event_handle: None, fifo, async_cache: None }
+        if handle.is_null()
+        {
+            return Err(ErrValue::Param);
+        }
+
+        Ok(Can { handle, event_handle: None, fifo, async_cache: None })
     }
 }
 
-impl Drop for Can
+impl Handle<CAN_HandleTypeDef> for Can
 {
-    fn drop(&mut self)
+    fn handle_value(&self) -> *mut CAN_HandleTypeDef
     {
-        self.clean_event_agent();
+        self.handle
     }
 }
 
 impl EventLaunch<dyn CanDeviceEventAgent> for Can
 {
-    #[allow(static_mut_refs)]
-    fn set_event_agent(&mut self, event_handle: &dyn CanDeviceEventAgent) -> RetValue<()>
+    fn set_event_agent(&mut self, event_handle: &dyn CanDeviceEventAgent)
     {
         self.event_handle = Some(unsafe { transmute(event_handle as *const dyn CanDeviceEventAgent) });
-        unsafe { CANS.alloc(self.as_ptr()) }
     }
 
-    #[allow(static_mut_refs)]
     fn clean_event_agent(&mut self)
     {
         self.event_handle = None;
-        unsafe { CANS.clean(self.as_ptr()) };
     }
 }
 
@@ -177,6 +178,42 @@ impl CanDevice for Can
     }
 }
 
+/////////////////////////////////////////////////////////////////////////////
+// CAN queue
+/////////////////////////////////////////////////////////////////////////////
+
+static mut CAN_QUEUE: SampleQueue<Can, CAN_HandleTypeDef, CAN_COUNT> = SampleQueue::new();
+
+pub struct CanQueue;
+
+impl CanQueue
+{
+    #[inline]
+    #[allow(static_mut_refs)]
+    pub fn allocate(sample_handle: *mut CAN_HandleTypeDef, fifo: u32) -> RetValue<&'static mut Can>
+    {
+        unsafe { CAN_QUEUE.allocate(&Can::new(sample_handle, fifo)?) }
+    }
+
+    #[inline]
+    #[allow(static_mut_refs)]
+    pub fn clean(sample_handle: *mut CAN_HandleTypeDef)
+    {
+        unsafe { CAN_QUEUE.clean(sample_handle) };
+    }
+
+    #[inline]
+    #[allow(static_mut_refs)]
+    pub fn search(sample_handle: *mut CAN_HandleTypeDef) -> RetValue<&'static Can>
+    {
+        unsafe { CAN_QUEUE.search(sample_handle) }
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// HAL interrupt callback function implementations
+/////////////////////////////////////////////////////////////////////////////
+
 // #[no_mangle]
 // #[allow(static_mut_refs)]
 // pub unsafe extern "C" fn HAL_CAN_TxMailbox0CompleteCallback(can: *mut CAN_HandleTypeDef) {}
@@ -207,11 +244,11 @@ pub unsafe extern "C" fn HAL_CAN_RxFifo0MsgPendingCallback(can: *mut CAN_HandleT
 {
     let mut value = Err(ErrValue::NotAvailable);
 
-    if let Some(sample) = CANS.find(can).ok()
+    if let Some(sample) = CanQueue::search(can).ok()
     {
-        if let Some(async_cache) = (*sample).async_cache
+        if let Some(async_cache) = sample.async_cache
         {
-            value = (*sample).receive(&mut *async_cache, 0);
+            value = sample.receive(&mut *async_cache, 0);
         }
 
         if !value.is_ok()
@@ -219,7 +256,7 @@ pub unsafe extern "C" fn HAL_CAN_RxFifo0MsgPendingCallback(can: *mut CAN_HandleT
             return;
         }
 
-        if let Some(event_handle) = (*sample).event_handle
+        if let Some(event_handle) = sample.event_handle
         {
             (*event_handle).on_can_message_receive();
         }
@@ -253,9 +290,9 @@ pub unsafe extern "C" fn HAL_CAN_RxFifo1MsgPendingCallback(can: *mut CAN_HandleT
 #[allow(static_mut_refs)]
 pub unsafe extern "C" fn HAL_CAN_ErrorCallback(can: *mut CAN_HandleTypeDef)
 {
-    if let Some(sample) = CANS.find(can).ok()
+    if let Some(sample) = CanQueue::search(can).ok()
     {
-        if let Some(event_handle) = (*sample).event_handle
+        if let Some(event_handle) = sample.event_handle
         {
             (*event_handle).on_can_error();
         }

@@ -1,20 +1,21 @@
 use core::mem::transmute;
 
-use crate::common::result::RetValue;
-use crate::derive::{AsPtr, HandlePtr};
+use crate::common::result::{ErrValue, RetValue};
 use crate::mcu::common::adc::{AdcDevice, AdcDeviceEventAgent};
-use crate::mcu::common::{EventLaunch, HandlePtr};
-use crate::mcu::vendor::stm::device_queue::DeviceQueue;
-use crate::mcu::vendor::stm::native::adc::*;
-
+use crate::mcu::common::EventLaunch;
+use crate::mcu::vendor::stm::sample_queue::SampleQueue;
 pub use crate::mcu::vendor::stm::native::adc::ADC_HandleTypeDef;
+use crate::mcu::vendor::stm::native::adc::*;
+use crate::mcu::vendor::stm::ADC_COUNT;
+use crate::mcu::vendor::Handle;
 
 const ADC_DEF_TIMEOUT: u32 = 1000;
 
-const ADC_COUNT: usize = 8;
-static mut ADCS: DeviceQueue<ADC_HandleTypeDef, Adc, ADC_COUNT> = DeviceQueue::new();
+/////////////////////////////////////////////////////////////////////////////
+// ADC struct
+/////////////////////////////////////////////////////////////////////////////
 
-#[derive(AsPtr, HandlePtr)]
+#[derive(Clone, Copy)]
 pub struct Adc
 {
     handle: *mut ADC_HandleTypeDef,
@@ -23,37 +24,35 @@ pub struct Adc
 
 impl Adc
 {
-    pub fn new(handle: *mut ADC_HandleTypeDef) -> Self
+    fn new(handle: *mut ADC_HandleTypeDef) -> RetValue<Self>
     {
-        Adc { handle, event_handle: None }
+        if handle.is_null()
+        {
+            return Err(ErrValue::Param);
+        }
+
+        Ok(Adc { handle, event_handle: None })
     }
 }
 
-impl Drop for Adc
+impl Handle<ADC_HandleTypeDef> for Adc
 {
-    fn drop(&mut self)
+    fn handle_value(&self) -> *mut ADC_HandleTypeDef
     {
-        self.clean_event_agent();
+        self.handle
     }
 }
 
 impl EventLaunch<dyn AdcDeviceEventAgent> for Adc
 {
-    #[allow(static_mut_refs)]
-    fn set_event_agent(&mut self, event_handle: &dyn AdcDeviceEventAgent) -> RetValue<()>
+    fn set_event_agent(&mut self, event_handle: &dyn AdcDeviceEventAgent)
     {
         self.event_handle = Some(unsafe { transmute(event_handle as *const dyn AdcDeviceEventAgent) });
-        unsafe { ADCS.alloc(self.as_ptr()) }
     }
 
-    #[allow(static_mut_refs)]
     fn clean_event_agent(&mut self)
     {
-        if let Some(_) = self.event_handle
-        {
-            unsafe { ADCS.clean(self.as_ptr()) };
-            self.event_handle = None;
-        }
+        self.event_handle = None;
     }
 }
 
@@ -84,13 +83,49 @@ impl AdcDevice for Adc
     }
 }
 
+/////////////////////////////////////////////////////////////////////////////
+// ADC queue
+/////////////////////////////////////////////////////////////////////////////
+
+static mut ADC_QUEUE: SampleQueue<Adc, ADC_HandleTypeDef, ADC_COUNT> = SampleQueue::new();
+
+pub struct AdcQueue;
+
+impl AdcQueue
+{
+    #[inline]
+    #[allow(static_mut_refs)]
+    pub fn allocate(sample_handle: *mut ADC_HandleTypeDef) -> RetValue<&'static mut Adc>
+    {
+        unsafe { ADC_QUEUE.allocate(&Adc::new(sample_handle)?) }
+    }
+
+    #[inline]
+    #[allow(static_mut_refs)]
+    pub fn clean(sample_handle: *mut ADC_HandleTypeDef)
+    {
+        unsafe { ADC_QUEUE.clean(sample_handle) };
+    }
+
+    #[inline]
+    #[allow(static_mut_refs)]
+    pub fn search(sample_handle: *mut ADC_HandleTypeDef) -> RetValue<&'static Adc>
+    {
+        unsafe { ADC_QUEUE.search(sample_handle) }
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// HAL interrupt callback function implementations
+/////////////////////////////////////////////////////////////////////////////
+
 #[no_mangle]
 #[allow(static_mut_refs)]
 pub unsafe extern "C" fn HAL_ADC_ConvCpltCallback(adc: *mut ADC_HandleTypeDef)
 {
-    if let Some(sample) = ADCS.find(adc).ok()
+    if let Some(sample) = AdcQueue::search(adc).ok()
     {
-        if let Some(event_handle) = (*sample).event_handle
+        if let Some(event_handle) = sample.event_handle
         {
             (*event_handle).on_adc_convert_once_complete(HAL_ADC_GetValue(adc));
         }
@@ -105,9 +140,9 @@ pub unsafe extern "C" fn HAL_ADC_ConvCpltCallback(adc: *mut ADC_HandleTypeDef)
 #[allow(static_mut_refs)]
 pub unsafe extern "C" fn HAL_ADC_LevelOutOfWindowCallback(adc: *mut ADC_HandleTypeDef)
 {
-    if let Some(sample) = ADCS.find(adc).ok()
+    if let Some(sample) = AdcQueue::search(adc).ok()
     {
-        if let Some(event_handle) = (*sample).event_handle
+        if let Some(event_handle) = sample.event_handle
         {
             (*event_handle).on_adc_level_out_of_window();
         }
@@ -118,9 +153,9 @@ pub unsafe extern "C" fn HAL_ADC_LevelOutOfWindowCallback(adc: *mut ADC_HandleTy
 #[allow(static_mut_refs)]
 pub unsafe extern "C" fn HAL_ADC_ErrorCallback(adc: *mut ADC_HandleTypeDef)
 {
-    if let Some(sample) = ADCS.find(adc).ok()
+    if let Some(sample) = AdcQueue::search(adc).ok()
     {
-        if let Some(event_handle) = (*sample).event_handle
+        if let Some(event_handle) = sample.event_handle
         {
             (*event_handle).on_adc_error();
         }

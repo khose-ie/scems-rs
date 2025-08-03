@@ -7,8 +7,9 @@ pub mod spi;
 pub mod uart;
 pub mod wd;
 
-pub trait PeriphDevice<T>
+pub trait Handle<T>
+where
+    Self: Sized,
 {
-    fn new(handle: *mut T) -> Self;
     fn handle_value(&self) -> *mut T;
 }

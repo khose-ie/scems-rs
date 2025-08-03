@@ -1,18 +1,19 @@
 use core::mem::transmute;
 
-use crate::common::result::RetValue;
-use crate::derive::{AsPtr, HandlePtr};
+use crate::common::result::{ErrValue, RetValue};
 use crate::mcu::common::spi::{SpiDevice, SpiDeviceEventAgent};
-use crate::mcu::common::{EventLaunch, HandlePtr};
-use crate::mcu::vendor::stm::device_queue::DeviceQueue;
-use crate::mcu::vendor::stm::native::spi::*;
-
+use crate::mcu::common::EventLaunch;
 pub use crate::mcu::vendor::stm::native::spi::SPI_HandleTypeDef;
+use crate::mcu::vendor::stm::native::spi::*;
+use crate::mcu::vendor::stm::sample_queue::SampleQueue;
+use crate::mcu::vendor::stm::SPI_COUNT;
+use crate::mcu::vendor::Handle;
 
-const SPI_COUNT: usize = 8;
-static mut SPIS: DeviceQueue<SPI_HandleTypeDef, Spi, SPI_COUNT> = DeviceQueue::new();
+/////////////////////////////////////////////////////////////////////////////
+// SPI struct
+/////////////////////////////////////////////////////////////////////////////
 
-#[derive(AsPtr, HandlePtr)]
+#[derive(Clone, Copy)]
 pub struct Spi
 {
     handle: *mut SPI_HandleTypeDef,
@@ -21,34 +22,35 @@ pub struct Spi
 
 impl Spi
 {
-    pub fn new(handle: *mut SPI_HandleTypeDef) -> Self
+    pub fn new(handle: *mut SPI_HandleTypeDef) -> RetValue<Self>
     {
-        Spi { handle, event_handle: None }
+        if handle.is_null()
+        {
+            return Err(ErrValue::Param);
+        }
+
+        Ok(Spi { handle, event_handle: None })
     }
 }
 
-impl Drop for Spi
+impl Handle<SPI_HandleTypeDef> for Spi
 {
-    fn drop(&mut self)
+    fn handle_value(&self) -> *mut SPI_HandleTypeDef
     {
-        self.clean_event_agent();
+        self.handle
     }
 }
 
 impl EventLaunch<dyn SpiDeviceEventAgent> for Spi
 {
-    #[allow(static_mut_refs)]
-    fn set_event_agent(&mut self, event_handle: &dyn SpiDeviceEventAgent) -> RetValue<()>
+    fn set_event_agent(&mut self, event_handle: &dyn SpiDeviceEventAgent)
     {
         self.event_handle = Some(unsafe { transmute(event_handle as *const dyn SpiDeviceEventAgent) });
-        unsafe { SPIS.alloc(self.as_ptr()) }
     }
 
-    #[allow(static_mut_refs)]
     fn clean_event_agent(&mut self)
     {
         self.event_handle = None;
-        unsafe { SPIS.clean(self.as_ptr()) };
     }
 }
 
@@ -95,13 +97,49 @@ impl SpiDevice for Spi
     }
 }
 
+/////////////////////////////////////////////////////////////////////////////
+// SPI queue
+/////////////////////////////////////////////////////////////////////////////
+
+static mut SPI_QUEUE: SampleQueue<Spi, SPI_HandleTypeDef, SPI_COUNT> = SampleQueue::new();
+
+pub struct SpiQueue;
+
+impl SpiQueue
+{
+    #[inline]
+    #[allow(static_mut_refs)]
+    pub fn allocate(sample_handle: *mut SPI_HandleTypeDef) -> RetValue<&'static mut Spi>
+    {
+        unsafe { SPI_QUEUE.allocate(&Spi::new(sample_handle)?) }
+    }
+
+    #[inline]
+    #[allow(static_mut_refs)]
+    pub fn clean(sample_handle: *mut SPI_HandleTypeDef)
+    {
+        unsafe { SPI_QUEUE.clean(sample_handle) };
+    }
+
+    #[inline]
+    #[allow(static_mut_refs)]
+    pub fn search(sample_handle: *mut SPI_HandleTypeDef) -> RetValue<&'static Spi>
+    {
+        unsafe { SPI_QUEUE.search(sample_handle) }
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// HAL interrupt callback function implementations
+/////////////////////////////////////////////////////////////////////////////
+
 #[no_mangle]
 #[allow(static_mut_refs)]
 pub unsafe extern "C" fn HAL_SPI_TxCpltCallback(spi: *mut SPI_HandleTypeDef)
 {
-    if let Some(sample) = SPIS.find(spi).ok()
+    if let Some(sample) = SpiQueue::search(spi).ok()
     {
-        if let Some(event_handle) = (*sample).event_handle
+        if let Some(event_handle) = sample.event_handle
         {
             (*event_handle).on_spi_tx_complete();
         }
@@ -112,9 +150,9 @@ pub unsafe extern "C" fn HAL_SPI_TxCpltCallback(spi: *mut SPI_HandleTypeDef)
 #[allow(static_mut_refs)]
 pub unsafe extern "C" fn HAL_SPI_RxCpltCallback(spi: *mut SPI_HandleTypeDef)
 {
-    if let Some(sample) = SPIS.find(spi).ok()
+    if let Some(sample) = SpiQueue::search(spi).ok()
     {
-        if let Some(event_handle) = (*sample).event_handle
+        if let Some(event_handle) = sample.event_handle
         {
             (*event_handle).on_spi_rx_complete();
         }
@@ -125,9 +163,9 @@ pub unsafe extern "C" fn HAL_SPI_RxCpltCallback(spi: *mut SPI_HandleTypeDef)
 #[allow(static_mut_refs)]
 pub unsafe extern "C" fn HAL_SPI_TxRxCpltCallback(spi: *mut SPI_HandleTypeDef)
 {
-    if let Some(sample) = SPIS.find(spi).ok()
+    if let Some(sample) = SpiQueue::search(spi).ok()
     {
-        if let Some(event_handle) = (*sample).event_handle
+        if let Some(event_handle) = sample.event_handle
         {
             (*event_handle).on_spi_tx_rx_complete();
         }
@@ -150,9 +188,9 @@ pub unsafe extern "C" fn HAL_SPI_TxRxCpltCallback(spi: *mut SPI_HandleTypeDef)
 #[allow(static_mut_refs)]
 pub unsafe extern "C" fn HAL_SPI_ErrorCallback(spi: *mut SPI_HandleTypeDef)
 {
-    if let Some(sample) = SPIS.find(spi).ok()
+    if let Some(sample) = SpiQueue::search(spi).ok()
     {
-        if let Some(event_handle) = (*sample).event_handle
+        if let Some(event_handle) = sample.event_handle
         {
             (*event_handle).on_spi_error();
         }
@@ -163,9 +201,9 @@ pub unsafe extern "C" fn HAL_SPI_ErrorCallback(spi: *mut SPI_HandleTypeDef)
 #[allow(static_mut_refs)]
 pub unsafe extern "C" fn HAL_SPI_AbortCpltCallback(spi: *mut SPI_HandleTypeDef)
 {
-    if let Some(sample) = SPIS.find(spi).ok()
+    if let Some(sample) = SpiQueue::search(spi).ok()
     {
-        if let Some(event_handle) = (*sample).event_handle
+        if let Some(event_handle) = sample.event_handle
         {
             (*event_handle).on_spi_abort_complete();
         }
