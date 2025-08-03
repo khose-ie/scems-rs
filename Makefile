@@ -45,6 +45,8 @@ endif
 PLATFORM      ?= challen-v2-f429
 PLATFORM_PATH ?= platform/${PLATFORM}
 
+FEATURES ?=
+
 # CMake platform build parameters.
 CMAKE_BUILD      ?= build
 CMAKE_BUILD_TYPE ?= Debug
@@ -58,7 +60,7 @@ all: platform_with_app
 # Build the RUST based app code and generate a static library.
 app:
 	@$(ECHO) "-----------------------------   Compile App   -----------------------------"
-	@$(CARGO) build --manifest-path $(APP_PATH)/Cargo.toml ${RUST_BUILD_TYPE} --features ${PLATFORM} --target ${ARCH}
+	@$(CARGO) build --manifest-path $(APP_PATH)/Cargo.toml ${RUST_BUILD_TYPE} --features ${PLATFORM} ${FEATURES} --target ${ARCH}
 
 # Clean the app generated target.
 clean-app:

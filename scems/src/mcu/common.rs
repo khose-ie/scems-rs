@@ -38,13 +38,3 @@ pub trait EventLaunch<T: ?Sized>
     fn set_event_agent(&mut self, event_handle: &'static T);
     fn clean_event_agent(&mut self);
 }
-
-pub trait AsHandlePtr<T: ?Sized>
-{
-    fn as_handle_ptr(&self) -> *mut T;
-}
-
-pub trait HandlePtr<T: ?Sized>
-{
-    fn handle_ptr(&self) -> *mut T;
-}

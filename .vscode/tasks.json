@@ -8,13 +8,18 @@
             "options": [
                 "challen-v2-f429"
             ]
+        },
+        {
+            "id": "features",
+            "type": "promptString",
+            "description": "Please input the feature."
         }
     ],
     "tasks": [
         {
             "type": "shell",
             "label": "Make",
-            "command": "make PLATFORM=${input:platformName}",
+            "command": "make PLATFORM=${input:platformName} FEATURES=${input:features}",
             "args": [],
             "options": {
                 "cwd": "${workspaceFolder}"
