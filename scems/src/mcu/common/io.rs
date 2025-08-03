@@ -23,11 +23,6 @@ where
     fn toggle(&self);
 }
 
-pub trait IoEvent
-{
-    fn on_io_state_change(&mut self) {}
-}
-
 pub trait IoDeviceEventAgent
 {
     fn on_io_state_change(&self) {}

@@ -8,17 +8,10 @@ where
 {
     fn activate(&self) -> RetValue<()>;
     fn deactivate(&self) -> RetValue<()>;
-
     fn transmit(&self, can_message: &CanMessage, timeout: u32) -> RetValue<()>;
     fn receive(&self, can_message: &mut CanMessage, timeout: u32) -> RetValue<()>;
     fn async_transmit(&self, can_message: &CanMessage) -> RetValue<()>;
     fn async_receive(&mut self, can_message: &mut CanMessage);
-}
-
-pub trait CanEvent
-{
-    fn on_can_message_receive(&mut self) {}
-    fn on_can_error(&mut self) {}
 }
 
 pub trait CanDeviceEventAgent

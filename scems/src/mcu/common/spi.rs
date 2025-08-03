@@ -17,15 +17,6 @@ where
     fn abort(&self) -> RetValue<()>;
 }
 
-pub trait SpiEvent
-{
-    fn on_spi_tx_complete(&mut self) {}
-    fn on_spi_rx_complete(&mut self) {}
-    fn on_spi_tx_rx_complete(&mut self) {}
-    fn on_spi_abort_complete(&mut self) {}
-    fn on_spi_error(&mut self) {}
-}
-
 pub trait SpiDeviceEventAgent
 {
     fn on_spi_tx_complete(&self) {}
