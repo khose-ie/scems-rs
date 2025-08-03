@@ -5,7 +5,7 @@ pub type SpiDevice = &'static mut dyn SpiCtrl;
 
 pub trait SpiCtrl
 where
-    Self: EventLaunch<dyn SpiDeviceEventAgent>,
+    Self: EventLaunch<dyn SpiCtrlEvent>,
 {
     fn transmit(&self, data: &[u8], timeout: u32) -> RetValue<()>;
     fn receive(&self, data: &mut [u8], timeout: u32) -> RetValue<()>;
@@ -18,7 +18,7 @@ where
     fn abort(&self) -> RetValue<()>;
 }
 
-pub trait SpiDeviceEventAgent
+pub trait SpiCtrlEvent
 {
     fn on_spi_tx_complete(&self) {}
     fn on_spi_rx_complete(&self) {}

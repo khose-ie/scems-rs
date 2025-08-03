@@ -21,10 +21,10 @@ impl IoDevice
     }
 }
 
-impl EventLaunch<dyn IoDeviceEventAgent> for IoDevice
+impl EventLaunch<dyn IoCtrlEvent> for IoDevice
 {
     #[inline]
-    fn set_event_agent(&mut self, event_handle: &'static dyn IoDeviceEventAgent)
+    fn set_event_agent(&mut self, event_handle: &'static dyn IoCtrlEvent)
     {
         self.sample.set_event_agent(event_handle);
     }
@@ -62,7 +62,7 @@ impl IoCtrl for IoDevice
 /// Trait providing operations of an GPIO_TypeDef pin.
 pub trait IoCtrl
 where
-    Self: EventLaunch<dyn IoDeviceEventAgent>,
+    Self: EventLaunch<dyn IoCtrlEvent>,
 {
     type Pin;
 
@@ -76,7 +76,7 @@ where
     fn toggle(&self);
 }
 
-pub trait IoDeviceEventAgent
+pub trait IoCtrlEvent
 {
     fn on_io_state_change(&self) {}
 }

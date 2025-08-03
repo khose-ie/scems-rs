@@ -5,7 +5,7 @@ pub type TimBaseDevice = &'static mut dyn TimBaseCtrl;
 
 pub trait TimBaseCtrl
 where
-    Self: EventLaunch<dyn TimBaseDeviceEventAgent>,
+    Self: EventLaunch<dyn TimBaseCtrlEvent>,
 {
     fn activate(&self) -> RetValue<()>;
     fn deactivate(&self);
@@ -16,7 +16,7 @@ where
     fn count_value(&self) -> u32;
 }
 
-pub trait TimBaseDeviceEventAgent
+pub trait TimBaseCtrlEvent
 {
     fn on_tim_base_elapse(&self) {}
 }
@@ -25,7 +25,7 @@ pub type TimPwmDevice = &'static mut dyn TimPwmCtrl;
 
 pub trait TimPwmCtrl
 where
-    Self: EventLaunch<dyn TimPwmDeviceEventAgent>,
+    Self: EventLaunch<dyn TimPwmCtrlEvent>,
 {
     fn activate(&self) -> RetValue<()>;
     fn deactivate(&self);
@@ -36,7 +36,7 @@ where
     fn count_value(&self) -> u32;
 }
 
-pub trait TimPwmDeviceEventAgent
+pub trait TimPwmCtrlEvent
 {
     fn on_tim_pwm_finish(&self) {}
 }

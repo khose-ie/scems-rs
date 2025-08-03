@@ -1,9 +1,9 @@
 use core::mem::transmute;
 
 use crate::common::result::{ErrValue, RetValue};
-use crate::mcu::common::i2c::{I2cMasterCtrl, I2cMasterDeviceEventAgent};
-use crate::mcu::common::i2c::{I2cMemCtrl, I2cMemDeviceEventAgent, I2cMemWide};
-use crate::mcu::common::i2c::{I2cSlaveCtrl, I2cSlaveDeviceEventAgent};
+use crate::mcu::common::i2c::{I2cMasterCtrl, I2cMasterCtrlEvent};
+use crate::mcu::common::i2c::{I2cMemCtrl, I2cMemCtrlEvent, I2cMemWide};
+use crate::mcu::common::i2c::{I2cSlaveCtrl, I2cSlaveCtrlEvent};
 use crate::mcu::common::EventLaunch;
 pub use crate::mcu::vendor::stm::native::i2c::I2C_HandleTypeDef;
 use crate::mcu::vendor::stm::native::i2c::*;
@@ -76,14 +76,14 @@ impl Handle<I2C_HandleTypeDef> for I2c
 pub struct I2cMem
 {
     handle: *mut I2C_HandleTypeDef,
-    event_handle: Option<*const dyn I2cMemDeviceEventAgent>,
+    event_handle: Option<*const dyn I2cMemCtrlEvent>,
 }
 
-impl EventLaunch<dyn I2cMemDeviceEventAgent> for I2cMem
+impl EventLaunch<dyn I2cMemCtrlEvent> for I2cMem
 {
-    fn set_event_agent(&mut self, event_handle: &'static dyn I2cMemDeviceEventAgent)
+    fn set_event_agent(&mut self, event_handle: &'static dyn I2cMemCtrlEvent)
     {
-        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn I2cMemDeviceEventAgent) });
+        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn I2cMemCtrlEvent) });
     }
 
     fn clean_event_agent(&mut self)
@@ -131,14 +131,14 @@ impl I2cMemCtrl for I2cMem
 pub struct I2cMaster
 {
     handle: *mut I2C_HandleTypeDef,
-    event_handle: Option<*const dyn I2cMasterDeviceEventAgent>,
+    event_handle: Option<*const dyn I2cMasterCtrlEvent>,
 }
 
-impl EventLaunch<dyn I2cMasterDeviceEventAgent> for I2cMaster
+impl EventLaunch<dyn I2cMasterCtrlEvent> for I2cMaster
 {
-    fn set_event_agent(&mut self, event_handle: &'static dyn I2cMasterDeviceEventAgent)
+    fn set_event_agent(&mut self, event_handle: &'static dyn I2cMasterCtrlEvent)
     {
-        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn I2cMasterDeviceEventAgent) });
+        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn I2cMasterCtrlEvent) });
     }
 
     fn clean_event_agent(&mut self)
@@ -178,14 +178,14 @@ impl I2cMasterCtrl for I2cMaster
 pub struct I2cSlave
 {
     handle: *mut I2C_HandleTypeDef,
-    event_handle: Option<*const dyn I2cSlaveDeviceEventAgent>,
+    event_handle: Option<*const dyn I2cSlaveCtrlEvent>,
 }
 
-impl EventLaunch<dyn I2cSlaveDeviceEventAgent> for I2cSlave
+impl EventLaunch<dyn I2cSlaveCtrlEvent> for I2cSlave
 {
-    fn set_event_agent(&mut self, event_handle: &'static dyn I2cSlaveDeviceEventAgent)
+    fn set_event_agent(&mut self, event_handle: &'static dyn I2cSlaveCtrlEvent)
     {
-        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn I2cSlaveDeviceEventAgent) });
+        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn I2cSlaveCtrlEvent) });
     }
 
     fn clean_event_agent(&mut self)

@@ -2,7 +2,7 @@ use core::mem::transmute;
 use core::ptr::addr_eq;
 
 use crate::derive::{EnumCastU16, EnumCount};
-use crate::mcu::common::io::{IoCtrl, IoDevice, IoDeviceEventAgent, IoState};
+use crate::mcu::common::io::{IoCtrl, IoDevice, IoCtrlEvent, IoState};
 use crate::mcu::common::EventLaunch;
 use crate::mcu::vendor::stm::native::io::*;
 
@@ -31,12 +31,12 @@ pub enum GPIO_Pin
     P15 = 0x8000,
 }
 
-static mut IO_EVENT_QUEUE: [Option<*const dyn IoDeviceEventAgent>; GPIO_Pin::count()] = [None; GPIO_Pin::count()];
+static mut IO_EVENT_QUEUE: [Option<*const dyn IoCtrlEvent>; GPIO_Pin::count()] = [None; GPIO_Pin::count()];
 
 pub struct Io
 {
     handle: *mut GPIO_TypeDef,
-    event_handle: Option<*const dyn IoDeviceEventAgent>,
+    event_handle: Option<*const dyn IoCtrlEvent>,
     pin: GPIO_Pin,
 }
 
@@ -67,14 +67,14 @@ impl Drop for Io
     }
 }
 
-impl EventLaunch<dyn IoDeviceEventAgent> for Io
+impl EventLaunch<dyn IoCtrlEvent> for Io
 {
-    fn set_event_agent(&mut self, event_handle: &'static dyn IoDeviceEventAgent)
+    fn set_event_agent(&mut self, event_handle: &'static dyn IoCtrlEvent)
     {
         let pin: u16 = self.pin.into();
         unsafe {
             IO_EVENT_QUEUE[pin.trailing_zeros() as usize] =
-                Some(transmute(event_handle as *const dyn IoDeviceEventAgent))
+                Some(transmute(event_handle as *const dyn IoCtrlEvent))
         };
     }
 

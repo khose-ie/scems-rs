@@ -1,7 +1,7 @@
 use core::mem::transmute;
 
 use crate::common::result::{ErrValue, RetValue};
-use crate::mcu::common::can::{CanCtrl, CanDeviceEventAgent, CanMessage};
+use crate::mcu::common::can::{CanCtrl, CanCtrlEvent, CanMessage};
 use crate::mcu::common::EventLaunch;
 pub use crate::mcu::vendor::stm::native::can::CAN_HandleTypeDef;
 use crate::mcu::vendor::stm::native::can::*;
@@ -17,7 +17,7 @@ use crate::mcu::vendor::stm::{Handle, CAN_COUNT};
 pub struct Can
 {
     handle: *mut CAN_HandleTypeDef,
-    event_handle: Option<*const dyn CanDeviceEventAgent>,
+    event_handle: Option<*const dyn CanCtrlEvent>,
     fifo: u32,
     async_cache: Option<*mut CanMessage>,
 }
@@ -43,11 +43,11 @@ impl Handle<CAN_HandleTypeDef> for Can
     }
 }
 
-impl EventLaunch<dyn CanDeviceEventAgent> for Can
+impl EventLaunch<dyn CanCtrlEvent> for Can
 {
-    fn set_event_agent(&mut self, event_handle: &'static dyn CanDeviceEventAgent)
+    fn set_event_agent(&mut self, event_handle: &'static dyn CanCtrlEvent)
     {
-        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn CanDeviceEventAgent) });
+        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn CanCtrlEvent) });
     }
 
     fn clean_event_agent(&mut self)

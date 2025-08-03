@@ -13,7 +13,7 @@ pub type AdcDevice = &'static mut dyn AdcCtrl;
 /// functions of this trait.
 pub trait AdcCtrl
 where
-    Self: EventLaunch<dyn AdcDeviceEventAgent>,
+    Self: EventLaunch<dyn AdcCtrlEvent>,
 {
     /// Convert the analog signal to an unsigned 32-bit integer once.
     ///
@@ -49,7 +49,7 @@ where
     fn async_terminate_conversion(&self) -> RetValue<()>;
 }
 
-/// `AdcDeviceEventAgent` as the meanings of the word, it is an agent, or the real handler,
+/// `AdcCtrlEvent` as the meanings of the word, it is an agent, or the real handler,
 /// whatever, to handle all events sent from the `Adc`.
 ///
 /// Actually, these callback functions will be called in the interrupt vector handle which
@@ -59,7 +59,7 @@ where
 ///
 /// All functions of this trait have an empty default implementation, it meanus that you can only
 /// implement the function that you care about.
-pub trait AdcDeviceEventAgent
+pub trait AdcCtrlEvent
 {
     /// Will be called when the once conversion action has been completed.
     ///

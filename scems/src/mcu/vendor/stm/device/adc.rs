@@ -1,7 +1,7 @@
 use core::mem::transmute;
 
 use crate::common::result::{ErrValue, RetValue};
-use crate::mcu::common::adc::{AdcCtrl, AdcDeviceEventAgent};
+use crate::mcu::common::adc::{AdcCtrl, AdcCtrlEvent};
 use crate::mcu::common::EventLaunch;
 pub use crate::mcu::vendor::stm::native::adc::ADC_HandleTypeDef;
 use crate::mcu::vendor::stm::native::adc::*;
@@ -18,7 +18,7 @@ const ADC_DEF_TIMEOUT: u32 = 1000;
 pub struct Adc
 {
     handle: *mut ADC_HandleTypeDef,
-    event_handle: Option<*const dyn AdcDeviceEventAgent>,
+    event_handle: Option<*const dyn AdcCtrlEvent>,
 }
 
 impl Adc
@@ -42,11 +42,11 @@ impl Handle<ADC_HandleTypeDef> for Adc
     }
 }
 
-impl EventLaunch<dyn AdcDeviceEventAgent> for Adc
+impl EventLaunch<dyn AdcCtrlEvent> for Adc
 {
-    fn set_event_agent(&mut self, event_handle: &'static dyn AdcDeviceEventAgent)
+    fn set_event_agent(&mut self, event_handle: &'static dyn AdcCtrlEvent)
     {
-        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn AdcDeviceEventAgent) });
+        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn AdcCtrlEvent) });
     }
 
     fn clean_event_agent(&mut self)

@@ -13,7 +13,7 @@ pub type UartDevice = &'static mut dyn UartCtrl;
 /// functions of this trait.
 pub trait UartCtrl
 where
-    Self: EventLaunch<dyn UartDeviceEventAgent>,
+    Self: EventLaunch<dyn UartCtrlEvent>,
 {
     /// Transmit the specified length data via UART.
     /// 
@@ -67,7 +67,7 @@ where
     /// of a DMA or interrupt, not means they are transmited successfully.
     /// 
     /// The result of the transmission will be notified via the 
-    /// [`UartDeviceEventAgent::on_uart_tx_complete`].
+    /// [`UartCtrlEvent::on_uart_tx_complete`].
     /// Use this function means that you have enable the DMA or interrupt transmission of this 
     /// DMA in the initialization code.
     fn async_transmit(&self, data: &[u8]) -> RetValue<()>;
@@ -78,7 +78,7 @@ where
     /// that this function will not hung. It will receive the data via an asynchronous way like 
     /// the DMA and interrupts.
     /// So you need to input a `data` slice as the buffer space, the received data will be move 
-    /// to the buffer, and the event [`UartDeviceEventAgent::on_uart_rx_complete`] will be call 
+    /// to the buffer, and the event [`UartCtrlEvent::on_uart_rx_complete`] will be call 
     /// when the UART come back to idle.
     /// Use this function means that you have enable the DMA or interrupt transmission of this 
     /// DMA in the initialization code.
@@ -90,7 +90,7 @@ where
     /// is that this function will not hung. It will receive the data via an asynchronous way 
     /// like the DMA and interrupts.
     /// So you need to input a `data` slice as the buffer space, the received data will be move 
-    /// to the buffer, and the event [`UartDeviceEventAgent::on_uart_rx_size_complete`] will be 
+    /// to the buffer, and the event [`UartCtrlEvent::on_uart_rx_size_complete`] will be 
     /// call when the UART come back to idle.
     /// Use this function means that you have enable the DMA or interrupt transmission of this 
     /// DMA in the initialization code.
@@ -112,7 +112,7 @@ where
 /// 
 /// All functions of this trait have an empty default implementation, it meanus that you can only 
 /// implement the function that you care about.
-pub trait UartDeviceEventAgent
+pub trait UartCtrlEvent
 {
     /// This function will call when the asynchronous transmit has been completed.
     fn on_uart_tx_complete(&self) {}

@@ -1,7 +1,7 @@
 use core::mem::transmute;
 
 use crate::common::result::{ErrValue, RetValue};
-use crate::mcu::common::spi::{SpiCtrl, SpiDeviceEventAgent};
+use crate::mcu::common::spi::{SpiCtrl, SpiCtrlEvent};
 use crate::mcu::common::EventLaunch;
 pub use crate::mcu::vendor::stm::native::spi::SPI_HandleTypeDef;
 use crate::mcu::vendor::stm::native::spi::*;
@@ -16,7 +16,7 @@ use crate::mcu::vendor::stm::{Handle, SPI_COUNT};
 pub struct Spi
 {
     handle: *mut SPI_HandleTypeDef,
-    event_handle: Option<*const dyn SpiDeviceEventAgent>,
+    event_handle: Option<*const dyn SpiCtrlEvent>,
 }
 
 impl Spi
@@ -40,11 +40,11 @@ impl Handle<SPI_HandleTypeDef> for Spi
     }
 }
 
-impl EventLaunch<dyn SpiDeviceEventAgent> for Spi
+impl EventLaunch<dyn SpiCtrlEvent> for Spi
 {
-    fn set_event_agent(&mut self, event_handle: &'static dyn SpiDeviceEventAgent)
+    fn set_event_agent(&mut self, event_handle: &'static dyn SpiCtrlEvent)
     {
-        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn SpiDeviceEventAgent) });
+        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn SpiCtrlEvent) });
     }
 
     fn clean_event_agent(&mut self)

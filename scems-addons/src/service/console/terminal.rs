@@ -1,7 +1,7 @@
 use core::cell::RefCell;
 
 use scems::common::result::RetValue;
-use scems::mcu::common::uart::{UartDevice, UartDeviceEventAgent};
+use scems::mcu::common::uart::{UartDevice, UartCtrlEvent};
 use scems::os::common::events::IEvents;
 use scems::os::common::mem::IMemCache;
 use scems::os::vendors::events::Events;
@@ -120,7 +120,7 @@ impl ConsoleTerminal for SerialTerminal
     }
 }
 
-impl UartDeviceEventAgent for SerialTerminal
+impl UartCtrlEvent for SerialTerminal
 {
     fn on_uart_tx_complete(&self)
     {

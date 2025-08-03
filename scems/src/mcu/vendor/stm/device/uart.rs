@@ -3,7 +3,7 @@
 use core::mem::transmute;
 
 use crate::common::result::{ErrValue, RetValue};
-use crate::mcu::common::uart::{UartCtrl, UartDeviceEventAgent};
+use crate::mcu::common::uart::{UartCtrl, UartCtrlEvent};
 use crate::mcu::common::EventLaunch;
 pub use crate::mcu::vendor::stm::native::uart::UART_HandleTypeDef;
 use crate::mcu::vendor::stm::native::uart::*;
@@ -27,7 +27,7 @@ use crate::mcu::vendor::stm::{Handle, UART_COUNT};
 pub struct Uart
 {
     handle: *mut UART_HandleTypeDef,
-    event_handle: Option<*const dyn UartDeviceEventAgent>,
+    event_handle: Option<*const dyn UartCtrlEvent>,
 }
 
 impl Uart
@@ -51,11 +51,11 @@ impl Handle<UART_HandleTypeDef> for Uart
     }
 }
 
-impl EventLaunch<dyn UartDeviceEventAgent> for Uart
+impl EventLaunch<dyn UartCtrlEvent> for Uart
 {
-    fn set_event_agent(&mut self, event_handle: &'static dyn UartDeviceEventAgent)
+    fn set_event_agent(&mut self, event_handle: &'static dyn UartCtrlEvent)
     {
-        self.event_handle = unsafe { Some(transmute(event_handle as *const dyn UartDeviceEventAgent)) };
+        self.event_handle = unsafe { Some(transmute(event_handle as *const dyn UartCtrlEvent)) };
     }
 
     fn clean_event_agent(&mut self)

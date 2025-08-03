@@ -5,7 +5,7 @@ pub type CanDevice = &'static mut dyn CanCtrl;
 
 pub trait CanCtrl
 where
-    Self: EventLaunch<dyn CanDeviceEventAgent>,
+    Self: EventLaunch<dyn CanCtrlEvent>,
 {
     fn activate(&self) -> RetValue<()>;
     fn deactivate(&self) -> RetValue<()>;
@@ -15,7 +15,7 @@ where
     fn async_receive(&mut self, can_message: &mut CanMessage);
 }
 
-pub trait CanDeviceEventAgent
+pub trait CanCtrlEvent
 {
     fn on_can_message_receive(&self) {}
     fn on_can_error(&self) {}
