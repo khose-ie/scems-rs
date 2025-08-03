@@ -3,7 +3,9 @@ use crate::derive::{EnumCastU16, EnumCastU8};
 
 use super::EventLaunch;
 
-pub trait I2cMemDevice
+pub type I2cMemDevice = &'static mut dyn I2cMemCtrl;
+
+pub trait I2cMemCtrl
 where
     Self: EventLaunch<dyn I2cMemDeviceEventAgent>,
 {
@@ -36,7 +38,9 @@ pub enum I2cDirection
     Transmit = 1,
 }
 
-pub trait I2cMasterDevice
+pub type I2cMasterDevice = &'static mut dyn I2cMasterCtrl;
+
+pub trait I2cMasterCtrl
 where
     Self: EventLaunch<dyn I2cMasterDeviceEventAgent>,
 {
@@ -53,7 +57,9 @@ pub trait I2cMasterDeviceEventAgent
     fn on_i2c_master_error(&self) {}
 }
 
-pub trait I2cSlaveDevice
+pub type I2cSlaveDevice = &'static mut dyn I2cSlaveCtrl;
+
+pub trait I2cSlaveCtrl
 where
     Self: EventLaunch<dyn I2cSlaveDeviceEventAgent>,
 {

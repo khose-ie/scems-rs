@@ -1,9 +1,9 @@
 use core::mem::transmute;
 
 use crate::common::result::{ErrValue, RetValue};
-use crate::mcu::common::i2c::{I2cMasterDevice, I2cMasterDeviceEventAgent};
-use crate::mcu::common::i2c::{I2cMemDevice, I2cMemDeviceEventAgent, I2cMemWide};
-use crate::mcu::common::i2c::{I2cSlaveDevice, I2cSlaveDeviceEventAgent};
+use crate::mcu::common::i2c::{I2cMasterCtrl, I2cMasterDeviceEventAgent};
+use crate::mcu::common::i2c::{I2cMemCtrl, I2cMemDeviceEventAgent, I2cMemWide};
+use crate::mcu::common::i2c::{I2cSlaveCtrl, I2cSlaveDeviceEventAgent};
 use crate::mcu::common::EventLaunch;
 pub use crate::mcu::vendor::stm::native::i2c::I2C_HandleTypeDef;
 use crate::mcu::vendor::stm::native::i2c::*;
@@ -92,7 +92,7 @@ impl EventLaunch<dyn I2cMemDeviceEventAgent> for I2cMem
     }
 }
 
-impl I2cMemDevice for I2cMem
+impl I2cMemCtrl for I2cMem
 {
     fn mem_write(&self, saddr: u16, maddr: u16, mwide: I2cMemWide, data: &[u8], timeout: u32) -> RetValue<()>
     {
@@ -147,7 +147,7 @@ impl EventLaunch<dyn I2cMasterDeviceEventAgent> for I2cMaster
     }
 }
 
-impl I2cMasterDevice for I2cMaster
+impl I2cMasterCtrl for I2cMaster
 {
     fn transmit(&self, saddr: u16, data: &[u8], timeout: u32) -> RetValue<()>
     {
@@ -194,7 +194,7 @@ impl EventLaunch<dyn I2cSlaveDeviceEventAgent> for I2cSlave
     }
 }
 
-impl I2cSlaveDevice for I2cSlave
+impl I2cSlaveCtrl for I2cSlave
 {
     fn listen(&self) -> RetValue<()>
     {

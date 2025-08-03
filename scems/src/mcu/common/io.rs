@@ -2,12 +2,11 @@
 // ！
 // ！ The definations in this module provide a common interface to operate a GPIO_TypeDef pin.
 
+use super::EventLaunch;
 use crate::derive::EnumCastU32;
 
-use super::EventLaunch;
-
 /// Trait providing operations of an GPIO_TypeDef pin.
-pub trait IoDevice
+pub trait IoCtrl
 where
     Self: EventLaunch<dyn IoDeviceEventAgent>,
 {

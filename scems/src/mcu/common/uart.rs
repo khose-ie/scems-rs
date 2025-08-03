@@ -3,13 +3,15 @@
 use super::EventLaunch;
 use crate::common::result::RetValue;
 
+pub type UartDevice = &'static mut dyn UartCtrl;
+
 /// A common trait to control UART peripheral, with functions to let the UART to do 
 /// some basic actions.
 /// 
 /// The UART implementations for every MCU manufacturers should implement this trait.
 /// And every upper modules who want to control an UART should reference this trait, and call the
 /// functions of this trait.
-pub trait UartDevice
+pub trait UartCtrl
 where
     Self: EventLaunch<dyn UartDeviceEventAgent>,
 {
@@ -58,7 +60,7 @@ where
 
     /// Transmit the specified length data via UART in asynchronous mode.
     /// 
-    /// The usage of this function is same with [`UartDevice::transmit`], the only difference is 
+    /// The usage of this function is same with [`UartCtrl::transmit`], the only difference is 
     /// that this function will not hung. It will transmit the data via an asynchronous way like 
     /// the DMA and interrupts.
     /// So, the OK return of this function only means that the data has been moved to the buffer 
@@ -72,7 +74,7 @@ where
 
     /// Receive some data until the UART to be idle.
     /// 
-    /// The usage of this function is same with [`UartDevice::receive`], the only difference is 
+    /// The usage of this function is same with [`UartCtrl::receive`], the only difference is 
     /// that this function will not hung. It will receive the data via an asynchronous way like 
     /// the DMA and interrupts.
     /// So you need to input a `data` slice as the buffer space, the received data will be move 
@@ -84,7 +86,7 @@ where
 
     /// Receive some data until the UART to be idle.
     /// 
-    /// The usage of this function is same with [`UartDevice::receive_size`], the only difference 
+    /// The usage of this function is same with [`UartCtrl::receive_size`], the only difference 
     /// is that this function will not hung. It will receive the data via an asynchronous way 
     /// like the DMA and interrupts.
     /// So you need to input a `data` slice as the buffer space, the received data will be move 
@@ -101,7 +103,7 @@ where
 }
 
 /// `UartEventAgent` as the meanings of the word, it is an agent, or the real handler, whatever, 
-/// to handle all events sent from the `UartDevice`.
+/// to handle all events sent from the `UartCtrl`.
 /// 
 /// Actually, these callback functions will be called in the interrupt vector handle which 
 /// triggered by UART peripheral.
@@ -116,7 +118,7 @@ pub trait UartDeviceEventAgent
     fn on_uart_tx_complete(&self) {}
 
     /// This function will call when you received something and it has been move to the buffer 
-    /// `data` that you input in [`UartDevice::async_receive`].
+    /// `data` that you input in [`UartCtrl::async_receive`].
     /// 
     /// The receive length will be transport via parameter `_size`.
     /// Please attention, if the received data length is over the length of slice `data`, this 
@@ -125,7 +127,7 @@ pub trait UartDeviceEventAgent
     fn on_uart_rx_complete(&self, _size: u32) {}
 
     /// This function will call when you received specified length of data and it has been move to the buffer 
-    /// `data` that you input in [`UartDevice::async_receive_size`].
+    /// `data` that you input in [`UartCtrl::async_receive_size`].
     fn on_uart_rx_size_complete(&self) {}
 
     /// This function will call when your abort action has been completed.

@@ -1,8 +1,9 @@
 use crate::common::result::RetValue;
-
 use super::EventLaunch;
 
-pub trait SpiDevice
+pub type SpiDevice = &'static mut dyn SpiCtrl;
+
+pub trait SpiCtrl
 where
     Self: EventLaunch<dyn SpiDeviceEventAgent>,
 {

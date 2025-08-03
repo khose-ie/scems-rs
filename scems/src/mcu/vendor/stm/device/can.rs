@@ -1,7 +1,7 @@
 use core::mem::transmute;
 
 use crate::common::result::{ErrValue, RetValue};
-use crate::mcu::common::can::{CanDevice, CanDeviceEventAgent, CanMessage};
+use crate::mcu::common::can::{CanCtrl, CanDeviceEventAgent, CanMessage};
 use crate::mcu::common::EventLaunch;
 pub use crate::mcu::vendor::stm::native::can::CAN_HandleTypeDef;
 use crate::mcu::vendor::stm::native::can::*;
@@ -56,7 +56,7 @@ impl EventLaunch<dyn CanDeviceEventAgent> for Can
     }
 }
 
-impl CanDevice for Can
+impl CanCtrl for Can
 {
     fn activate(&self) -> RetValue<()>
     {

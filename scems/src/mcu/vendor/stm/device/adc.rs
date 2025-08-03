@@ -1,7 +1,7 @@
 use core::mem::transmute;
 
 use crate::common::result::{ErrValue, RetValue};
-use crate::mcu::common::adc::{AdcDevice, AdcDeviceEventAgent};
+use crate::mcu::common::adc::{AdcCtrl, AdcDeviceEventAgent};
 use crate::mcu::common::EventLaunch;
 pub use crate::mcu::vendor::stm::native::adc::ADC_HandleTypeDef;
 use crate::mcu::vendor::stm::native::adc::*;
@@ -55,7 +55,7 @@ impl EventLaunch<dyn AdcDeviceEventAgent> for Adc
     }
 }
 
-impl AdcDevice for Adc
+impl AdcCtrl for Adc
 {
     fn convert_once(&self) -> RetValue<u32>
     {

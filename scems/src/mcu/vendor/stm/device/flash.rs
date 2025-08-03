@@ -1,5 +1,5 @@
 use crate::common::result::RetValue;
-use crate::mcu::common::flash::FlashDevice;
+use crate::mcu::common::flash::FlashCtrl;
 use crate::mcu::vendor::stm::native::flash::*;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -27,7 +27,7 @@ impl OnChipFlash
     }
 }
 
-impl FlashDevice for OnChipFlash
+impl FlashCtrl for OnChipFlash
 {
     fn erase_sector(&self, sector: u32) -> RetValue<()>
     {

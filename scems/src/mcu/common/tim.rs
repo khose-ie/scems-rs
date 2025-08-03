@@ -1,8 +1,9 @@
 use crate::common::result::RetValue;
-
 use super::EventLaunch;
 
-pub trait TimBaseDevice
+pub type TimBaseDevice = &'static mut dyn TimBaseCtrl;
+
+pub trait TimBaseCtrl
 where
     Self: EventLaunch<dyn TimBaseDeviceEventAgent>,
 {
@@ -20,7 +21,9 @@ pub trait TimBaseDeviceEventAgent
     fn on_tim_base_elapse(&self) {}
 }
 
-pub trait TimPwmDevice
+pub type TimPwmDevice = &'static mut dyn TimPwmCtrl;
+
+pub trait TimPwmCtrl
 where
     Self: EventLaunch<dyn TimPwmDeviceEventAgent>,
 {

@@ -15,18 +15,18 @@ pub mod wd;
 /// the only one trait bound.
 pub trait Mcu
 {
-    type Adc: adc::AdcDevice;
-    type Can: can::CanDevice;
-    type Flash: flash::FlashDevice;
-    type I2cMaster: i2c::I2cMasterDevice;
-    type I2cMem: i2c::I2cMemDevice;
-    type I2cSlave: i2c::I2cSlaveDevice;
-    type Io: io::IoDevice;
-    type Spi: spi::SpiDevice;
-    type Uart: uart::UartDevice;
-    type TimBase: tim::TimBaseDevice;
-    type TImPwm: tim::TimPwmDevice;
-    type WatchDog: wd::WatchDogDevice;
+    type Adc: adc::AdcCtrl;
+    type Can: can::CanCtrl;
+    type Flash: flash::FlashCtrl;
+    type I2cMaster: i2c::I2cMasterCtrl;
+    type I2cMem: i2c::I2cMemCtrl;
+    type I2cSlave: i2c::I2cSlaveCtrl;
+    type Io: io::IoCtrl;
+    type Spi: spi::SpiCtrl;
+    type Uart: uart::UartCtrl;
+    type TimBase: tim::TimBaseCtrl;
+    type TImPwm: tim::TimPwmCtrl;
+    type WatchDog: wd::WatchDogCtrl;
 }
 
 /// `EventLaunch` is a trait that the peripheral trait who implements this trait means that it can 

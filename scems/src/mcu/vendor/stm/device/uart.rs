@@ -3,7 +3,7 @@
 use core::mem::transmute;
 
 use crate::common::result::{ErrValue, RetValue};
-use crate::mcu::common::uart::{UartDevice, UartDeviceEventAgent};
+use crate::mcu::common::uart::{UartCtrl, UartDeviceEventAgent};
 use crate::mcu::common::EventLaunch;
 pub use crate::mcu::vendor::stm::native::uart::UART_HandleTypeDef;
 use crate::mcu::vendor::stm::native::uart::*;
@@ -64,7 +64,7 @@ impl EventLaunch<dyn UartDeviceEventAgent> for Uart
     }
 }
 
-impl UartDevice for Uart
+impl UartCtrl for Uart
 {
     fn transmit(&self, data: &[u8], timeout: u32) -> RetValue<()>
     {

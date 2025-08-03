@@ -1,4 +1,4 @@
-use crate::mcu::common::wd::WatchDogDevice;
+use crate::mcu::common::wd::WatchDogCtrl;
 use crate::mcu::vendor::stm::native::iwdg::*;
 
 pub use crate::mcu::vendor::stm::native::iwdg::IWDG_HandleTypeDef;
@@ -16,7 +16,7 @@ impl WatchDog
     }
 }
 
-impl WatchDogDevice for WatchDog
+impl WatchDogCtrl for WatchDog
 {
     fn refresh(&self)
     {

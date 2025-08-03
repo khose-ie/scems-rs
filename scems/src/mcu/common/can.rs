@@ -1,8 +1,9 @@
+use super::EventLaunch;
 use crate::common::result::RetValue;
 
-use super::EventLaunch;
+pub type CanDevice = &'static mut dyn CanCtrl;
 
-pub trait CanDevice
+pub trait CanCtrl
 where
     Self: EventLaunch<dyn CanDeviceEventAgent>,
 {

@@ -1,7 +1,7 @@
 use core::mem::transmute;
 
 use crate::common::result::{ErrValue, RetValue};
-use crate::mcu::common::spi::{SpiDevice, SpiDeviceEventAgent};
+use crate::mcu::common::spi::{SpiCtrl, SpiDeviceEventAgent};
 use crate::mcu::common::EventLaunch;
 pub use crate::mcu::vendor::stm::native::spi::SPI_HandleTypeDef;
 use crate::mcu::vendor::stm::native::spi::*;
@@ -53,7 +53,7 @@ impl EventLaunch<dyn SpiDeviceEventAgent> for Spi
     }
 }
 
-impl SpiDevice for Spi
+impl SpiCtrl for Spi
 {
     fn transmit(&self, data: &[u8], timeout: u32) -> RetValue<()>
     {

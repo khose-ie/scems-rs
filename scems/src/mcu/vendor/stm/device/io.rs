@@ -1,15 +1,16 @@
 use core::mem::transmute;
 
 use crate::derive::{EnumCastU16, EnumCount};
-use crate::mcu::common::io::{IoDevice, IoDeviceEventAgent, IoState};
+use crate::mcu::common::io::{IoCtrl, IoDeviceEventAgent, IoState};
 use crate::mcu::common::EventLaunch;
 use crate::mcu::vendor::stm::native::io::*;
 
 pub use crate::mcu::vendor::stm::native::io::GPIO_TypeDef;
 
 #[repr(u16)]
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, EnumCount, EnumCastU16)]
-pub enum IoPin
+pub enum GPIO_Pin
 {
     P00 = 0x0001,
     P01 = 0x0002,
@@ -29,17 +30,17 @@ pub enum IoPin
     P15 = 0x8000,
 }
 
-static mut IO_EVENT_QUEUE: [Option<*const dyn IoDeviceEventAgent>; IoPin::count()] = [None; IoPin::count()];
+static mut IO_EVENT_QUEUE: [Option<*const dyn IoDeviceEventAgent>; GPIO_Pin::count()] = [None; GPIO_Pin::count()];
 
 pub struct Io
 {
     handle: *mut GPIO_TypeDef,
-    pin: IoPin,
+    pin: GPIO_Pin,
 }
 
 impl Io
 {
-    pub const fn new(handle: *mut GPIO_TypeDef, pin: IoPin) -> Self
+    pub const fn new(handle: *mut GPIO_TypeDef, pin: GPIO_Pin) -> Self
     {
         Io { handle, pin }
     }
@@ -63,9 +64,9 @@ impl EventLaunch<dyn IoDeviceEventAgent> for Io
     }
 }
 
-impl IoDevice for Io
+impl IoCtrl for Io
 {
-    type Pin = IoPin;
+    type Pin = GPIO_Pin;
 
     fn state(&self) -> IoState
     {
@@ -99,7 +100,7 @@ impl IoQueue
 {
     #[inline]
     #[allow(static_mut_refs)]
-    pub fn allocate(sample_handle: *mut GPIO_TypeDef, pin: IoPin) -> Io
+    pub fn allocate(sample_handle: *mut GPIO_TypeDef, pin: GPIO_Pin) -> Io
     {
         Io::new(sample_handle, pin)
     }
