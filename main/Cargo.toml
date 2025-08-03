@@ -22,3 +22,4 @@ cc = "1.0"
 [features]
 challen-v2-f429 = ["scems/mcu-stm", "scems/os-cmsis-os"]
 example-io-lamp = ["challen-v2-f429"]
+example-uart-echo = ["challen-v2-f429"]
