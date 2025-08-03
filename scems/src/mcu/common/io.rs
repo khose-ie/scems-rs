@@ -5,22 +5,22 @@
 use super::EventLaunch;
 use crate::derive::EnumCastU32;
 
+#[cfg(feature = "mcu-stm")]
+use crate::mcu::vendor::stm::io::{Io as VendorIo, GPIO_Pin as VendorPin};
+
 pub struct IoDevice
 {
-    #[cfg(feature = "mcu-stm")]
-    sample: crate::mcu::vendor::stm::io::Io,
+    sample: VendorIo,
 }
 
 impl IoDevice
 {
-    #[cfg(feature = "mcu-stm")]
-    pub fn new(sample: crate::mcu::vendor::stm::io::Io) -> IoDevice
+    pub fn new(sample: VendorIo) -> IoDevice
     {
         IoDevice { sample }
     }
 }
 
-#[cfg(feature = "mcu-stm")]
 impl EventLaunch<dyn IoDeviceEventAgent> for IoDevice
 {
     #[inline]
@@ -38,8 +38,7 @@ impl EventLaunch<dyn IoDeviceEventAgent> for IoDevice
 
 impl IoCtrl for IoDevice
 {
-    #[cfg(feature = "mcu-stm")]
-    type Pin = crate::mcu::vendor::stm::io::GPIO_Pin;
+    type Pin = VendorPin;
 
     #[inline]
     fn state(&self) -> IoState
