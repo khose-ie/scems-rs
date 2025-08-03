@@ -1,7 +1,8 @@
 use core::mem::transmute;
+use core::ptr::addr_eq;
 
 use crate::derive::{EnumCastU16, EnumCount};
-use crate::mcu::common::io::{IoCtrl, IoDeviceEventAgent, IoState};
+use crate::mcu::common::io::{IoCtrl, IoDevice, IoDeviceEventAgent, IoState};
 use crate::mcu::common::EventLaunch;
 use crate::mcu::vendor::stm::native::io::*;
 
@@ -35,6 +36,7 @@ static mut IO_EVENT_QUEUE: [Option<*const dyn IoDeviceEventAgent>; GPIO_Pin::cou
 pub struct Io
 {
     handle: *mut GPIO_TypeDef,
+    event_handle: Option<*const dyn IoDeviceEventAgent>,
     pin: GPIO_Pin,
 }
 
@@ -42,7 +44,26 @@ impl Io
 {
     pub const fn new(handle: *mut GPIO_TypeDef, pin: GPIO_Pin) -> Self
     {
-        Io { handle, pin }
+        Io { handle, event_handle: None, pin }
+    }
+}
+
+impl Drop for Io
+{
+    fn drop(&mut self)
+    {
+        let pin: u16 = self.pin.into();
+
+        if let Some(event_handle) = self.event_handle
+        {
+            if let Some(event) = unsafe { IO_EVENT_QUEUE }[pin.trailing_zeros() as usize]
+            {
+                if !event_handle.is_null() && addr_eq(event_handle, event)
+                {
+                    self.clean_event_agent();
+                }
+            }
+        }
     }
 }
 
@@ -100,9 +121,9 @@ impl IoQueue
 {
     #[inline]
     #[allow(static_mut_refs)]
-    pub fn allocate(sample_handle: *mut GPIO_TypeDef, pin: GPIO_Pin) -> Io
+    pub fn allocate(sample_handle: *mut GPIO_TypeDef, pin: GPIO_Pin) -> IoDevice
     {
-        Io::new(sample_handle, pin)
+        IoDevice::new(Io::new(sample_handle, pin))
     }
 }
 
