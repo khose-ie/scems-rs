@@ -24,15 +24,17 @@ pub trait Mcu
     type Io: io::IoCtrl;
     type Spi: spi::SpiCtrl;
     type Uart: uart::UartCtrl;
-    type TimBase: tim::TimBaseCtrl;
-    type TImPwm: tim::TimPwmCtrl;
+    // type TimBase: tim::TimBaseCtrl;
+    // type TImPwm: tim::TimPwmCtrl;
     type WatchDog: wd::WatchDogCtrl;
+
+    fn tick_value() -> u32;
 }
 
-/// `EventLaunch` is a trait that the peripheral trait who implements this trait means that it can 
+/// `EventLaunch` is a trait that the peripheral trait who implements this trait means that it can
 /// be set an event agent, and the peripheral will call function to send the event.
-/// 
-/// 
+///
+///
 pub trait EventLaunch<T: ?Sized>
 {
     fn set_event_agent(&mut self, event_handle: &'static T);
