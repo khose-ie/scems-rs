@@ -1,5 +1,3 @@
-use core::mem::transmute;
-
 use crate::common::result::{ErrValue, RetValue};
 use crate::mcu::common::can::{CanCtrl, CanCtrlEvent, CanMessage};
 use crate::mcu::common::EventLaunch;
@@ -47,7 +45,7 @@ impl EventLaunch<dyn CanCtrlEvent> for Can
 {
     fn set_event_agent(&mut self, event_handle: &'static dyn CanCtrlEvent)
     {
-        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn CanCtrlEvent) });
+        self.event_handle = Some(event_handle);
     }
 
     fn clean_event_agent(&mut self)
@@ -81,7 +79,7 @@ impl CanCtrl for Can
 
         loop
         {
-            status = unsafe { HAL_CAN_AddTxMessage(self.handle, &tx_head, &can_message.data.content, &mut mail_box) };
+            status = unsafe { HAL_CAN_AddTxMessage(self.handle, &tx_head, &can_message.data, &mut mail_box) };
 
             if matches!(status, HAL_StatusTypeDef::HAL_OK)
             {
@@ -139,8 +137,7 @@ impl CanCtrl for Can
 
         loop
         {
-            status =
-                unsafe { HAL_CAN_GetRxMessage(self.handle, self.fifo, &mut rx_head, &mut can_message.data.content) };
+            status = unsafe { HAL_CAN_GetRxMessage(self.handle, self.fifo, &mut rx_head, &mut can_message.data) };
 
             if matches!(status, HAL_StatusTypeDef::HAL_OK)
             {
@@ -160,7 +157,7 @@ impl CanCtrl for Can
             return Err(ErrValue::Busy);
         }
 
-        can_message.head.STD_ID = rx_head.StdId;
+        can_message.head = rx_head.into();
 
         Ok(())
     }
@@ -169,7 +166,7 @@ impl CanCtrl for Can
     {
         let mut mail_box: u32 = 0;
         let tx_head = CAN_TxHeaderTypeDef::from(&can_message.head);
-        unsafe { HAL_CAN_AddTxMessage(self.handle, &tx_head, &can_message.data.content, &mut mail_box).into() }
+        unsafe { HAL_CAN_AddTxMessage(self.handle, &tx_head, &can_message.data, &mut mail_box).into() }
     }
 
     fn async_receive(&mut self, can_message: &mut CanMessage)

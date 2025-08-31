@@ -19,7 +19,7 @@ where
     ///
     /// The integer will reflect the situation of the ADC when calling this function (there may be
     /// a little delay).
-    fn convert_once(&self) -> RetValue<u32>;
+    fn convert(&self) -> RetValue<u32>;
 
     /// Convert the analog signal to an unsigned 32-bit integer once. But don't return the value
     /// immediatelay via the return value.
@@ -28,7 +28,7 @@ where
     /// the low-level platform initialization code.
     /// The converting value will be transport the interrupt handle function of the MCU, and the
     /// caller should register an event agent to this `AdcCtrl`, see [`super::EventLaunch`]
-    fn async_convert_once(&self) -> RetValue<()>;
+    fn async_convert(&self) -> RetValue<()>;
 
     /// To start the continuous conversion of an ADC.
     ///
@@ -63,7 +63,7 @@ pub trait AdcCtrlEvent
 {
     /// Will be called when the once conversion action has been completed.
     ///
-    /// This function will be called after you call [`AdcCtrl::async_convert_once`], and the
+    /// This function will be called after you call [`AdcCtrl::async_convert`], and the
     /// converted value will be transported via the parameter `_value`.
     fn on_adc_convert_once_complete(&self, _value: u32) {}
 

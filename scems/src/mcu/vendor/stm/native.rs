@@ -46,30 +46,30 @@ impl HAL_StatusTypeDef
     }
 }
 
-impl Into<RetValue<()>> for HAL_StatusTypeDef
+impl From<HAL_StatusTypeDef> for RetValue<()>
 {
-    fn into(self) -> RetValue<()>
+    fn from(status: HAL_StatusTypeDef) -> Self
     {
-        match self
+        match status
         {
-            Self::HAL_OK => Ok(()),
-            Self::HAL_ERROR => Err(ErrValue::Param),
-            Self::HAL_BUSY => Err(ErrValue::Busy),
-            Self::HAL_TIMEOUT => Err(ErrValue::Overtime),
+            HAL_StatusTypeDef::HAL_OK => Ok(()),
+            HAL_StatusTypeDef::HAL_ERROR => Err(ErrValue::Param),
+            HAL_StatusTypeDef::HAL_BUSY => Err(ErrValue::Busy),
+            HAL_StatusTypeDef::HAL_TIMEOUT => Err(ErrValue::Overtime),
         }
     }
 }
 
-impl Into<ErrValue> for HAL_StatusTypeDef
+impl From<HAL_StatusTypeDef> for ErrValue
 {
-    fn into(self) -> ErrValue
+    fn from(value: HAL_StatusTypeDef) -> Self
     {
-        match self
+        match value
         {
-            Self::HAL_OK => ErrValue::None,
-            Self::HAL_ERROR => ErrValue::Param,
-            Self::HAL_BUSY => ErrValue::Busy,
-            Self::HAL_TIMEOUT => ErrValue::Overtime,
+            HAL_StatusTypeDef::HAL_OK => Self::None,
+            HAL_StatusTypeDef::HAL_ERROR => Self::Param,
+            HAL_StatusTypeDef::HAL_BUSY => Self::Busy,
+            HAL_StatusTypeDef::HAL_TIMEOUT => Self::Overtime,
         }
     }
 }

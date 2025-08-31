@@ -84,6 +84,14 @@ pub struct CAN_RxHeaderTypeDef
     pub FilterMatchIndex: u32,
 }
 
+impl From<CAN_RxHeaderTypeDef> for CanMessageHead
+{
+    fn from(value: CAN_RxHeaderTypeDef) -> Self
+    {
+        CanMessageHead { STD_ID: value.StdId, EXT_ID: value.ExtId, IDE: value.IDE, RTR: value.RTR, DLC: value.DLC }
+    }
+}
+
 #[rustfmt::skip]
 #[allow(improper_ctypes)]
 unsafe extern "C" {

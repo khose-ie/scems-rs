@@ -39,8 +39,4 @@ pub struct CanMessageHead
     pub DLC: u32,
 }
 
-#[derive(Default)]
-pub struct CanMessageData
-{
-    pub content: [u8; 8],
-}
+type CanMessageData = [u8; 8];

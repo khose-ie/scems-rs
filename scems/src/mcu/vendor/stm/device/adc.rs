@@ -1,5 +1,3 @@
-use core::mem::transmute;
-
 use crate::common::result::{ErrValue, RetValue};
 use crate::mcu::common::adc::{AdcCtrl, AdcCtrlEvent};
 use crate::mcu::common::EventLaunch;
@@ -46,7 +44,7 @@ impl EventLaunch<dyn AdcCtrlEvent> for Adc
 {
     fn set_event_agent(&mut self, event_handle: &'static dyn AdcCtrlEvent)
     {
-        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn AdcCtrlEvent) });
+        self.event_handle = Some(event_handle);
     }
 
     fn clean_event_agent(&mut self)
@@ -57,7 +55,7 @@ impl EventLaunch<dyn AdcCtrlEvent> for Adc
 
 impl AdcCtrl for Adc
 {
-    fn convert_once(&self) -> RetValue<u32>
+    fn convert(&self) -> RetValue<u32>
     {
         unsafe {
             HAL_ADC_Start(self.handle).ok()?;
@@ -66,7 +64,7 @@ impl AdcCtrl for Adc
         }
     }
 
-    fn async_convert_once(&self) -> RetValue<()>
+    fn async_convert(&self) -> RetValue<()>
     {
         unsafe { HAL_ADC_Start_IT(self.handle).into() }
     }
