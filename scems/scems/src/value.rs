@@ -39,14 +39,17 @@ pub enum ErrValue
     /// The target instance could not be found during the operation.
     InstanceNotFound = 9,
 
+    /// Attempt to crate an unique instance more than once.
+    InstanceDuplicate = 10,
+
     /// The feature includes this operation is not enabled in this distribution.
-    NotInclude = 10,
+    NotInclude = 11,
 
     /// Some must modules of this operation are not available.
-    NotAvailable = 11,
+    NotAvailable = 12,
 
     /// Unknown reason errors.
-    Unknown = 12,
+    Unknown = 13,
 }
 
 /// `RetValue` is common type of return value for scems functions.

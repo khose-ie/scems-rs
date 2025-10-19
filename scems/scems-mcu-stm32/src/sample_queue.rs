@@ -53,7 +53,7 @@ where
                     && data.handle_value().eq(&sample.handle_value())
                     && data.channel_value().eq(&channel)
                 {
-                    return Ok(data);
+                    return Err(ErrValue::InstanceDuplicate);
                 }
             }
             else
