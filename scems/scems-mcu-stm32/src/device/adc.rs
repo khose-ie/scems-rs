@@ -1,3 +1,5 @@
+use core::ptr::NonNull;
+
 use scems::value::{ErrValue, RetValue};
 use scems_mcu::adc::{AdcCtrl, AdcCtrlEvent};
 use scems_mcu::EventLaunch;
@@ -18,20 +20,15 @@ const ADC_DEF_TIMEOUT: u32 = 1000;
 #[derive(Clone, Copy)]
 pub struct Adc
 {
-    handle: *mut ADC_HandleTypeDef,
-    event_handle: Option<*const dyn AdcCtrlEvent>,
+    handle: NonNull<ADC_HandleTypeDef>,
+    event_handle: Option<&'static dyn AdcCtrlEvent>,
 }
 
 impl Adc
 {
     fn new(handle: *mut ADC_HandleTypeDef) -> RetValue<Self>
     {
-        if handle.is_null()
-        {
-            return Err(ErrValue::Param);
-        }
-
-        Ok(Adc { handle, event_handle: None })
+        Ok(Adc { handle: NonNull::new(handle).ok_or(ErrValue::Param)?, event_handle: None })
     }
 }
 
@@ -39,7 +36,7 @@ impl Handle<ADC_HandleTypeDef> for Adc
 {
     fn handle_value(&self) -> *mut ADC_HandleTypeDef
     {
-        self.handle
+        self.handle.as_ptr()
     }
 }
 
@@ -60,26 +57,33 @@ impl AdcCtrl for Adc
 {
     fn convert(&self) -> RetValue<u32>
     {
-        unsafe {
-            HAL_ADC_Start(self.handle).ok()?;
-            HAL_ADC_PollForConversion(self.handle, ADC_DEF_TIMEOUT).ok()?;
-            Ok(HAL_ADC_GetValue(self.handle))
-        }
+        let handle = self.handle.as_ptr();
+
+        unsafe { HAL_ADC_Start(handle).ok()? };
+        unsafe { HAL_ADC_PollForConversion(handle, ADC_DEF_TIMEOUT).ok()? };
+        unsafe { Ok(HAL_ADC_GetValue(handle)) }
     }
 
     fn async_convert(&self) -> RetValue<()>
     {
-        unsafe { HAL_ADC_Start_IT(self.handle).into() }
+        unsafe { HAL_ADC_Start_IT(self.handle.as_ptr()).into() }
     }
 
     fn async_convert_continuous(&self, data: &mut [u32]) -> RetValue<()>
     {
-        unsafe { HAL_ADC_Start_DMA(self.handle, data.as_mut_ptr(), data.len() as u32).into() }
+        unsafe {
+            HAL_ADC_Start_DMA(self.handle.as_ptr(), data.as_mut_ptr(), data.len() as u32).into()
+        }
     }
 
     fn async_terminate_conversion(&self) -> RetValue<()>
     {
-        unsafe { HAL_ADC_Stop_DMA(self.handle).into() }
+        unsafe { HAL_ADC_Stop_DMA(self.handle.as_ptr()).into() }
+    }
+
+    fn value(&self) -> u32
+    {
+        unsafe { HAL_ADC_GetValue(self.handle.as_ptr()) }
     }
 }
 
@@ -104,14 +108,14 @@ impl AdcQueue
     #[allow(static_mut_refs)]
     pub fn clean(sample_handle: *mut ADC_HandleTypeDef)
     {
-        unsafe { ADC_QUEUE.clean(sample_handle) };
+        NonNull::new(sample_handle).map(|handle| unsafe { ADC_QUEUE.clean(handle) });
     }
 
     #[inline]
     #[allow(static_mut_refs)]
     pub fn search(sample_handle: *mut ADC_HandleTypeDef) -> RetValue<&'static Adc>
     {
-        unsafe { ADC_QUEUE.search(sample_handle) }
+        unsafe { ADC_QUEUE.search(NonNull::new(sample_handle).ok_or(ErrValue::Param)?) }
     }
 }
 
@@ -123,12 +127,11 @@ impl AdcQueue
 #[allow(static_mut_refs)]
 pub unsafe extern "C" fn HAL_ADC_ConvCpltCallback(adc: *mut ADC_HandleTypeDef)
 {
-    if let Some(sample) = AdcQueue::search(adc).ok()
+    if let Ok(sample) = AdcQueue::search(adc)
     {
-        if let Some(event_handle) = sample.event_handle
-        {
-            (*event_handle).on_adc_convert_once_complete(HAL_ADC_GetValue(adc));
-        }
+        sample
+            .event_handle
+            .map(|event_handle| event_handle.on_adc_convert_once_complete(HAL_ADC_GetValue(adc)));
     }
 }
 
@@ -140,12 +143,9 @@ pub unsafe extern "C" fn HAL_ADC_ConvCpltCallback(adc: *mut ADC_HandleTypeDef)
 #[allow(static_mut_refs)]
 pub unsafe extern "C" fn HAL_ADC_LevelOutOfWindowCallback(adc: *mut ADC_HandleTypeDef)
 {
-    if let Some(sample) = AdcQueue::search(adc).ok()
+    if let Ok(sample) = AdcQueue::search(adc)
     {
-        if let Some(event_handle) = sample.event_handle
-        {
-            (*event_handle).on_adc_level_out_of_window();
-        }
+        sample.event_handle.map(|event_handle| event_handle.on_adc_level_out_of_window());
     }
 }
 
@@ -153,11 +153,8 @@ pub unsafe extern "C" fn HAL_ADC_LevelOutOfWindowCallback(adc: *mut ADC_HandleTy
 #[allow(static_mut_refs)]
 pub unsafe extern "C" fn HAL_ADC_ErrorCallback(adc: *mut ADC_HandleTypeDef)
 {
-    if let Some(sample) = AdcQueue::search(adc).ok()
+    if let Ok(sample) = AdcQueue::search(adc)
     {
-        if let Some(event_handle) = sample.event_handle
-        {
-            (*event_handle).on_adc_error();
-        }
+        sample.event_handle.map(|event_handle| event_handle.on_adc_error());
     }
 }

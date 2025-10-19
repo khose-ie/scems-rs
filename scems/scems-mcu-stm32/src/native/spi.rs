@@ -4,8 +4,8 @@
 
 use core::ffi::c_void;
 
-use super::{HAL_LockTypeDef, HAL_StatusTypeDef};
 use super::dma::DMA_HandleTypeDef;
+use super::{HAL_LockTypeDef, HAL_StatusTypeDef};
 
 #[repr(C)]
 pub struct SPI_HandleTypeDef

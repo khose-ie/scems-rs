@@ -1,5 +1,5 @@
-use scems::value::RetValue;
 use super::EventLaunch;
+use scems::value::RetValue;
 
 pub type TimBaseDevice = &'static mut dyn TimBaseCtrl;
 

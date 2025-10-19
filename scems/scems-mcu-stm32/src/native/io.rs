@@ -2,6 +2,8 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
+use scems_mcu::io::IoState;
+
 use super::HAL_StatusTypeDef;
 
 #[repr(C)]
@@ -14,6 +16,29 @@ pub enum GPIO_PinState
     GPIO_PIN_SET = 0x01,
 }
 
+impl From<IoState> for GPIO_PinState
+{
+    fn from(value: IoState) -> Self
+    {
+        match value
+        {
+            IoState::Reset => GPIO_PinState::GPIO_PIN_RESET,
+            IoState::Set => GPIO_PinState::GPIO_PIN_SET,
+        }
+    }
+}
+
+impl From<GPIO_PinState> for IoState
+{
+    fn from(value: GPIO_PinState) -> Self
+    {
+        match value
+        {
+            GPIO_PinState::GPIO_PIN_RESET => IoState::Reset,
+            GPIO_PinState::GPIO_PIN_SET => IoState::Set,
+        }
+    }
+}
 #[rustfmt::skip]
 #[allow(improper_ctypes)]
 extern "C" {

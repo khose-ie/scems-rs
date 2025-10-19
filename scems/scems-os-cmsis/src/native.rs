@@ -301,7 +301,12 @@ impl Default for osEventFlagsAttr_t
 {
     fn default() -> Self
     {
-        Self { name: null(), attr_bits: Default::default(), cb_mem: null_mut(), cb_size: Default::default() }
+        Self {
+            name: null(),
+            attr_bits: Default::default(),
+            cb_mem: null_mut(),
+            cb_size: Default::default(),
+        }
     }
 }
 
@@ -338,7 +343,14 @@ impl Default for osMemoryPoolAttr_t
 {
     fn default() -> Self
     {
-        Self { name: null(), attr_bits: 0, cb_mem: null_mut(), cb_size: 0, mp_mem: null_mut(), mp_size: 0 }
+        Self {
+            name: null(),
+            attr_bits: 0,
+            cb_mem: null_mut(),
+            cb_size: 0,
+            mp_mem: null_mut(),
+            mp_size: 0,
+        }
     }
 }
 

@@ -57,8 +57,14 @@ impl ITimer for Timer
     {
         if self.handle.is_null()
         {
-            self.handle =
-                unsafe { osTimerNew(Timer::func, self.mode.into(), self.event_agent_handle.as_void_ptr(), null()) };
+            self.handle = unsafe {
+                osTimerNew(
+                    Timer::func,
+                    self.mode.into(),
+                    self.event_agent_handle.as_void_ptr(),
+                    null(),
+                )
+            };
         }
 
         if self.handle.is_null()

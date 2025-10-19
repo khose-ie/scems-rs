@@ -14,8 +14,10 @@ extern "C" {
 #[allow(static_mut_refs)]
 pub unsafe fn main()
 {
-    let mut example =
-        AdcExample::new(AdcQueue::allocate(&mut hadc1).unwrap(), UartQueue::allocate(&mut huart1).unwrap());
+    let mut example = AdcExample::new(
+        AdcQueue::allocate(&mut hadc1).unwrap(),
+        UartQueue::allocate(&mut huart1).unwrap(),
+    );
 
     loop
     {

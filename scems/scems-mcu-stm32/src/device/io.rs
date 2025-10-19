@@ -1,3 +1,5 @@
+use core::ptr::NonNull;
+
 use scems::value::{ErrValue, RetValue};
 use scems_derive::{EnumAsU16, EnumCount};
 use scems_mcu::io::{IoCtrl, IoCtrlEvent, IoState};
@@ -40,21 +42,16 @@ pub enum GPIO_Pin
 #[derive(Clone, Copy)]
 pub struct Io
 {
-    handle: *mut GPIO_TypeDef,
-    event_handle: Option<*const dyn IoCtrlEvent>,
+    handle: NonNull<GPIO_TypeDef>,
+    event_handle: Option<&'static dyn IoCtrlEvent>,
     pin: GPIO_Pin,
 }
 
 impl Io
 {
-    pub const fn new(handle: *mut GPIO_TypeDef, pin: GPIO_Pin) -> RetValue<Self>
+    pub fn new(handle: *mut GPIO_TypeDef, pin: GPIO_Pin) -> RetValue<Self>
     {
-        if handle.is_null()
-        {
-            return Err(ErrValue::Param);
-        }
-
-        Ok(Io { handle, event_handle: None, pin })
+        Ok(Io { handle: NonNull::new(handle).ok_or(ErrValue::Param)?, event_handle: None, pin })
     }
 }
 
@@ -62,7 +59,7 @@ impl Handle<GPIO_TypeDef> for Io
 {
     fn handle_value(&self) -> *mut GPIO_TypeDef
     {
-        self.handle
+        self.handle.as_ptr()
     }
 }
 
@@ -92,27 +89,17 @@ impl IoCtrl for Io
 {
     fn state(&self) -> IoState
     {
-        match unsafe { HAL_GPIO_ReadPin(self.handle, self.pin.into()) }
-        {
-            GPIO_PinState::GPIO_PIN_RESET => IoState::Reset,
-            GPIO_PinState::GPIO_PIN_SET => IoState::Set,
-        }
+        unsafe { HAL_GPIO_ReadPin(self.handle.as_ptr(), self.pin.into()).into() }
     }
 
     fn set_state(&self, state: IoState)
     {
-        let native_state: GPIO_PinState = match state
-        {
-            IoState::Reset => GPIO_PinState::GPIO_PIN_RESET,
-            IoState::Set => GPIO_PinState::GPIO_PIN_SET,
-        };
-
-        unsafe { HAL_GPIO_WritePin(self.handle, self.pin.into(), native_state) };
+        unsafe { HAL_GPIO_WritePin(self.handle.as_ptr(), self.pin.into(), state.into()) };
     }
 
     fn toggle(&self)
     {
-        unsafe { HAL_GPIO_TogglePin(self.handle, self.pin.into()) };
+        unsafe { HAL_GPIO_TogglePin(self.handle.as_ptr(), self.pin.into()) };
     }
 }
 
@@ -138,14 +125,17 @@ impl IoQueue
     #[allow(static_mut_refs)]
     pub fn clean(sample_handle: *mut GPIO_TypeDef, pin: GPIO_Pin)
     {
-        unsafe { IO_QUEUE.clean_channel(sample_handle, pin as u32) };
+        NonNull::new(sample_handle)
+            .map(|handle| unsafe { IO_QUEUE.clean_channel(handle, pin as u32) });
     }
 
     #[inline]
     #[allow(static_mut_refs)]
     pub fn search(sample_handle: *mut GPIO_TypeDef, pin: GPIO_Pin) -> RetValue<&'static Io>
     {
-        unsafe { IO_QUEUE.search_channel(sample_handle, pin as u32) }
+        unsafe {
+            IO_QUEUE.search_channel(NonNull::new(sample_handle).ok_or(ErrValue::Param)?, pin as u32)
+        }
     }
 }
 
@@ -156,35 +146,26 @@ impl IoQueue
 #[no_mangle]
 pub unsafe extern "C" fn HAL_GPIO_EXTI_Callback(pin: u16)
 {
-    if let Some(handle) = IO_EVENT_QUEUE[pin.trailing_zeros() as usize]
+    if let Some(sample) = IO_EVENT_QUEUE[pin.trailing_zeros() as usize]
     {
-        if let Some(event_handle) = handle.event_handle
-        {
-            (*event_handle).on_io_state_change();
-        }
+        sample.event_handle.map(|event_handle| event_handle.on_io_state_change());
     }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn HAL_GPIO_EXTI_Rising_Callback(pin: u16)
 {
-    if let Some(handle) = IO_EVENT_QUEUE[pin.trailing_zeros() as usize]
+    if let Some(sample) = IO_EVENT_QUEUE[pin.trailing_zeros() as usize]
     {
-        if let Some(event_handle) = handle.event_handle
-        {
-            (*event_handle).on_io_state_change();
-        }
+        sample.event_handle.map(|event_handle| event_handle.on_io_state_change());
     }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn HAL_GPIO_EXTI_Falling_Callback(pin: u16)
 {
-    if let Some(handle) = IO_EVENT_QUEUE[pin.trailing_zeros() as usize]
+    if let Some(sample) = IO_EVENT_QUEUE[pin.trailing_zeros() as usize]
     {
-        if let Some(event_handle) = handle.event_handle
-        {
-            (*event_handle).on_io_state_change();
-        }
+        sample.event_handle.map(|event_handle| event_handle.on_io_state_change());
     }
 }

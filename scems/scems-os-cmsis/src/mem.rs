@@ -360,12 +360,22 @@ where
 
     pub fn iter(&self) -> MemQueueIter<'_, T>
     {
-        MemQueueIter { ptr: self.mem_space, index: 0, end: self.use_num, _marker: core::marker::PhantomData }
+        MemQueueIter {
+            ptr: self.mem_space,
+            index: 0,
+            end: self.use_num,
+            _marker: core::marker::PhantomData,
+        }
     }
 
     pub fn iter_mut(&mut self) -> MemQueueIterMut<'_, T>
     {
-        MemQueueIterMut { ptr: self.mem_space, index: 0, end: self.use_num, _marker: core::marker::PhantomData }
+        MemQueueIterMut {
+            ptr: self.mem_space,
+            index: 0,
+            end: self.use_num,
+            _marker: core::marker::PhantomData,
+        }
     }
 }
 

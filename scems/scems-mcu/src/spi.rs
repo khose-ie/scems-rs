@@ -1,5 +1,5 @@
-use scems::value::RetValue;
 use super::EventLaunch;
+use scems::value::RetValue;
 
 pub type SpiDevice = &'static mut dyn SpiCtrl;
 
@@ -8,11 +8,15 @@ where
     Self: EventLaunch<dyn SpiCtrlEvent>,
 {
     fn transmit(&self, data: &[u8], timeout: u32) -> RetValue<()>;
+
     fn receive(&self, data: &mut [u8], timeout: u32) -> RetValue<()>;
+
     fn transmit_receive(&self, tx_data: &[u8], rx_data: &mut [u8], timeout: u32) -> RetValue<()>;
 
     fn async_transmit(&self, data: &[u8]) -> RetValue<()>;
+
     fn async_receive(&self, data: &mut [u8]) -> RetValue<()>;
+
     fn async_transmit_receive(&self, tx_data: &[u8], rx_data: &mut [u8]) -> RetValue<()>;
 
     fn abort(&self) -> RetValue<()>;

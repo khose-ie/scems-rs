@@ -1,7 +1,7 @@
 //! The common return value type and error kinds list.
 
 /// `ErrValue` includes all kinds of errors' code in scems.
-/// 
+///
 /// Every function in scems which will return a result may has exception situation,
 /// and this exception situation, will return an `ErrValue`.
 /// The coller should get the code, judge it and do the related handle process.
@@ -50,7 +50,7 @@ pub enum ErrValue
 }
 
 /// `RetValue` is common type of return value for scems functions.
-/// 
-/// It is a packed type of RUST `Result<T, E>` type, but specificed the E with ErrValue, 
+///
+/// It is a packed type of RUST `Result<T, E>` type, but specificed the E with ErrValue,
 /// which is also the common error code definition of scems.
 pub type RetValue<T> = core::result::Result<T, ErrValue>;

@@ -1,3 +1,5 @@
+use core::ptr::NonNull;
+
 use scems::value::{ErrValue, RetValue};
 use scems_mcu::can::{CanCtrl, CanCtrlEvent, CanMessage};
 use scems_mcu::EventLaunch;
@@ -17,22 +19,22 @@ pub use crate::native::can::CAN_HandleTypeDef;
 #[derive(Clone, Copy)]
 pub struct Can
 {
-    handle: *mut CAN_HandleTypeDef,
-    event_handle: Option<*const dyn CanCtrlEvent>,
+    handle: NonNull<CAN_HandleTypeDef>,
+    event_handle: Option<&'static dyn CanCtrlEvent>,
     fifo: u32,
-    async_cache: Option<*mut CanMessage>,
+    async_cache: Option<NonNull<CanMessage>>,
 }
 
 impl Can
 {
     fn new(handle: *mut CAN_HandleTypeDef, fifo: u32) -> RetValue<Self>
     {
-        if handle.is_null()
-        {
-            return Err(ErrValue::Param);
-        }
-
-        Ok(Can { handle, event_handle: None, fifo, async_cache: None })
+        Ok(Can {
+            handle: NonNull::new(handle).ok_or(ErrValue::Param)?,
+            event_handle: None,
+            fifo,
+            async_cache: None,
+        })
     }
 }
 
@@ -40,7 +42,7 @@ impl Handle<CAN_HandleTypeDef> for Can
 {
     fn handle_value(&self) -> *mut CAN_HandleTypeDef
     {
-        self.handle
+        self.handle.as_ptr()
     }
 }
 
@@ -61,12 +63,12 @@ impl CanCtrl for Can
 {
     fn activate(&self) -> RetValue<()>
     {
-        unsafe { HAL_CAN_Start(self.handle).into() }
+        unsafe { HAL_CAN_Start(self.handle.as_ptr()).into() }
     }
 
     fn deactivate(&self) -> RetValue<()>
     {
-        unsafe { HAL_CAN_Stop(self.handle).into() }
+        unsafe { HAL_CAN_Stop(self.handle.as_ptr()).into() }
     }
 
     fn transmit(&self, can_message: &CanMessage, timeout: u32) -> RetValue<()>
@@ -82,7 +84,14 @@ impl CanCtrl for Can
 
         loop
         {
-            status = unsafe { HAL_CAN_AddTxMessage(self.handle, &tx_head, &can_message.data, &mut mail_box) };
+            status = unsafe {
+                HAL_CAN_AddTxMessage(
+                    self.handle.as_ptr(),
+                    &tx_head,
+                    &can_message.data,
+                    &mut mail_box,
+                )
+            };
 
             if matches!(status, HAL_StatusTypeDef::HAL_OK)
             {
@@ -106,7 +115,7 @@ impl CanCtrl for Can
 
         loop
         {
-            can_status = unsafe { HAL_CAN_IsTxMessagePending(self.handle, mail_box) };
+            can_status = unsafe { HAL_CAN_IsTxMessagePending(self.handle.as_ptr(), mail_box) };
 
             if can_status == 0
             {
@@ -123,7 +132,7 @@ impl CanCtrl for Can
 
         if can_status != 0
         {
-            unsafe { HAL_CAN_AbortTxRequest(self.handle, mail_box) };
+            unsafe { HAL_CAN_AbortTxRequest(self.handle.as_ptr(), mail_box) };
             return Err(ErrValue::Busy);
         }
 
@@ -140,7 +149,14 @@ impl CanCtrl for Can
 
         loop
         {
-            status = unsafe { HAL_CAN_GetRxMessage(self.handle, self.fifo, &mut rx_head, &mut can_message.data) };
+            status = unsafe {
+                HAL_CAN_GetRxMessage(
+                    self.handle.as_ptr(),
+                    self.fifo,
+                    &mut rx_head,
+                    &mut can_message.data,
+                )
+            };
 
             if matches!(status, HAL_StatusTypeDef::HAL_OK)
             {
@@ -169,17 +185,20 @@ impl CanCtrl for Can
     {
         let mut mail_box: u32 = 0;
         let tx_head = CAN_TxHeaderTypeDef::from(&can_message.head);
-        unsafe { HAL_CAN_AddTxMessage(self.handle, &tx_head, &can_message.data, &mut mail_box).into() }
+        unsafe {
+            HAL_CAN_AddTxMessage(self.handle.as_ptr(), &tx_head, &can_message.data, &mut mail_box)
+                .into()
+        }
     }
 
     fn async_receive(&mut self, can_message: &mut CanMessage)
     {
-        self.async_cache = Some(can_message as *const CanMessage as *mut CanMessage);
+        self.async_cache = Some(NonNull::from(can_message));
     }
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// CAN queue
+// CAN Queue
 /////////////////////////////////////////////////////////////////////////////
 
 static mut CAN_QUEUE: SampleQueue<Can, CAN_HandleTypeDef, CAN_COUNT> = SampleQueue::new();
@@ -190,7 +209,8 @@ impl CanQueue
 {
     #[inline]
     #[allow(static_mut_refs)]
-    pub fn allocate(sample_handle: *mut CAN_HandleTypeDef, fifo: u32) -> RetValue<&'static mut Can>
+    pub fn allocate(sample_handle: *mut CAN_HandleTypeDef, fifo: u32)
+        -> RetValue<&'static mut Can>
     {
         unsafe { CAN_QUEUE.allocate(&Can::new(sample_handle, fifo)?) }
     }
@@ -199,14 +219,21 @@ impl CanQueue
     #[allow(static_mut_refs)]
     pub fn clean(sample_handle: *mut CAN_HandleTypeDef)
     {
-        unsafe { CAN_QUEUE.clean(sample_handle) };
+        NonNull::new(sample_handle).map(|handle| unsafe { CAN_QUEUE.clean(handle) });
     }
 
     #[inline]
     #[allow(static_mut_refs)]
     pub fn search(sample_handle: *mut CAN_HandleTypeDef) -> RetValue<&'static Can>
     {
-        unsafe { CAN_QUEUE.search(sample_handle) }
+        unsafe { CAN_QUEUE.search(NonNull::new(sample_handle).ok_or(ErrValue::Param)?) }
+    }
+
+    #[inline]
+    #[allow(static_mut_refs)]
+    pub fn search_mut(sample_handle: *mut CAN_HandleTypeDef) -> RetValue<&'static mut Can>
+    {
+        unsafe { CAN_QUEUE.search_mut(NonNull::new(sample_handle).ok_or(ErrValue::Param)?) }
     }
 }
 
@@ -242,23 +269,14 @@ impl CanQueue
 #[allow(static_mut_refs)]
 pub unsafe extern "C" fn HAL_CAN_RxFifo0MsgPendingCallback(can: *mut CAN_HandleTypeDef)
 {
-    let mut value = Err(ErrValue::NotAvailable);
-
-    if let Some(sample) = CanQueue::search(can).ok()
+    if let Ok(sample) = CanQueue::search_mut(can)
     {
-        if let Some(async_cache) = sample.async_cache
+        if let Some(mut async_cache) = sample.async_cache
         {
-            value = sample.receive(&mut *async_cache, 0);
-        }
-
-        if !value.is_ok()
-        {
-            return;
-        }
-
-        if let Some(event_handle) = sample.event_handle
-        {
-            (*event_handle).on_can_message_receive();
+            if sample.receive(async_cache.as_mut(), 0).is_ok()
+            {
+                sample.event_handle.map(|event_handle| event_handle.on_can_message_receive());
+            }
         }
     }
 }
@@ -290,11 +308,8 @@ pub unsafe extern "C" fn HAL_CAN_RxFifo1MsgPendingCallback(can: *mut CAN_HandleT
 #[allow(static_mut_refs)]
 pub unsafe extern "C" fn HAL_CAN_ErrorCallback(can: *mut CAN_HandleTypeDef)
 {
-    if let Some(sample) = CanQueue::search(can).ok()
+    if let Ok(sample) = CanQueue::search(can)
     {
-        if let Some(event_handle) = sample.event_handle
-        {
-            (*event_handle).on_can_error();
-        }
+        sample.event_handle.map(|event_handle| event_handle.on_can_error());
     }
 }

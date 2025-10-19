@@ -4,7 +4,9 @@ use scems::value::RetValue;
 
 pub trait ITask
 {
-    fn activate(&mut self, name: &str, stack_size: u32, pritories: TaskPriorities, main: &dyn TaskMain) -> RetValue<()>;
+    fn activate(
+        &mut self, name: &str, stack_size: u32, pritories: TaskPriorities, main: &dyn TaskMain,
+    ) -> RetValue<()>;
     fn deactivate(&mut self);
     fn name(&self) -> &str;
     fn suspand(&self) -> RetValue<()>;
@@ -15,7 +17,8 @@ pub trait ITaskSample<T>
 where
     Self: Deref + DerefMut + AsRef<T> + AsMut<T>,
 {
-    fn activate(&mut self, name: &str, stack_size: u32, priorities: TaskPriorities) -> RetValue<()>;
+    fn activate(&mut self, name: &str, stack_size: u32, priorities: TaskPriorities)
+        -> RetValue<()>;
     fn deactivate(&mut self);
 }
 

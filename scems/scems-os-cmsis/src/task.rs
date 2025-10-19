@@ -47,15 +47,18 @@ impl Drop for Task
 
 impl ITask for Task
 {
-    fn activate(&mut self, name: &str, stack_size: u32, pritories: TaskPriorities, main: &dyn TaskMain)
-        -> RetValue<()>
+    fn activate(
+        &mut self, name: &str, stack_size: u32, pritories: TaskPriorities, main: &dyn TaskMain,
+    ) -> RetValue<()>
     {
         let thread_attr = osThreadAttr_t::new(name, stack_size, pritories);
 
         if self.handle.is_null()
         {
             self.task_main_agent.task_main = Some(main as *const dyn TaskMain as *mut dyn TaskMain);
-            self.handle = unsafe { osThreadNew(Task::main, self.task_main_agent.as_void_ptr(), &thread_attr) };
+            self.handle = unsafe {
+                osThreadNew(Task::main, self.task_main_agent.as_void_ptr(), &thread_attr)
+            };
 
             if self.handle.is_null()
             {
@@ -155,7 +158,8 @@ impl<T> ITaskSample<T> for TaskSample<T>
 where
     T: TaskMain,
 {
-    fn activate(&mut self, name: &str, stack_size: u32, priorities: TaskPriorities) -> RetValue<()>
+    fn activate(&mut self, name: &str, stack_size: u32, priorities: TaskPriorities)
+        -> RetValue<()>
     {
         self.task.activate(name, stack_size, priorities, &self.sample)
     }

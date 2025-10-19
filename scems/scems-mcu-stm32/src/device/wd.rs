@@ -24,4 +24,3 @@ impl WatchDogCtrl for WatchDog
         unsafe { HAL_IWDG_Refresh(self.handle) };
     }
 }
-

@@ -15,7 +15,7 @@
 //! the device according to the argument of handle pointer.
 //! So, that is what the DeviceQueue is.
 
-use core::marker::PhantomData;
+use core::{marker::PhantomData, ptr::NonNull};
 
 use scems::value::{ErrValue, RetValue};
 
@@ -59,39 +59,43 @@ where
             else
             {
                 *sample_one = Some(*sample);
-
-                if let Some(data) = sample_one
-                {
-                    return Ok(data);
-                }
+                return sample_one.as_mut().ok_or(ErrValue::Unknown);
             }
         }
 
         Err(ErrValue::StackOverflow)
     }
 
-    pub fn clean(&mut self, sample_handle: *mut U)
+    pub fn clean(&mut self, sample_handle: NonNull<U>)
     {
         self.clean_channel(sample_handle, u32::MIN);
     }
 
-    pub fn clean_channel(&mut self, sample_handle: *mut U, channel: u32)
+    pub fn clean_channel(&mut self, sample_handle: NonNull<U>, channel: u32)
     {
-        if sample_handle.is_null()
-        {
-            return;
-        }
+        let mut found = false;
 
-        for idx in 0..self.samples.len()
+        for idx in 0..(self.samples.len() - 1)
         {
             if let Some(data) = self.samples[idx].as_ref()
             {
                 if !data.handle_value().is_null()
-                    && data.handle_value().eq(&sample_handle)
+                    && data.handle_value().eq(&sample_handle.as_ptr())
                     && data.channel_value().eq(&channel)
                 {
-                    self.samples[idx] = self.samples[idx + 1];
-                    self.samples[idx + 1] = None;
+                    found = true;
+                }
+
+                if found.eq(&true)
+                {
+                    if idx < (self.samples.len() - 1)
+                    {
+                        self.samples[idx] = self.samples[idx + 1];
+                    }
+                    else
+                    {
+                        self.samples[idx] = None;
+                    }
                 }
             }
             else
@@ -101,24 +105,48 @@ where
         }
     }
 
-    pub fn search(&self, sample_handle: *mut U) -> RetValue<&T>
+    pub fn search(&mut self, sample_handle: NonNull<U>) -> RetValue<&T>
     {
         self.search_channel(sample_handle, u32::MIN)
     }
 
-    pub fn search_channel(&self, sample_handle: *mut U, channel: u32) -> RetValue<&T>
+    pub fn search_channel(&mut self, sample_handle: NonNull<U>, channel: u32) -> RetValue<&T>
     {
-        if sample_handle.is_null()
-        {
-            return Err(ErrValue::Param);
-        }
-
         for sample in self.samples.iter()
         {
             if let Some(data) = sample
             {
                 if !data.handle_value().is_null()
-                    && data.handle_value().eq(&sample_handle)
+                    && data.handle_value().eq(&sample_handle.as_ptr())
+                    && data.channel_value().eq(&channel)
+                {
+                    return Ok(data);
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        Err(ErrValue::InstanceNotFound)
+    }
+
+    pub fn search_mut(&mut self, sample_handle: NonNull<U>) -> RetValue<&mut T>
+    {
+        self.search_mut_channel(sample_handle, u32::MIN)
+    }
+
+    pub fn search_mut_channel(
+        &mut self, sample_handle: NonNull<U>, channel: u32,
+    ) -> RetValue<&mut T>
+    {
+        for sample in self.samples.iter_mut()
+        {
+            if let Some(data) = sample
+            {
+                if !data.handle_value().is_null()
+                    && data.handle_value().eq(&sample_handle.as_ptr())
                     && data.channel_value().eq(&channel)
                 {
                     return Ok(data);

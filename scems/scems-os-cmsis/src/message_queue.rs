@@ -38,12 +38,23 @@ impl IMessageQueue for MessageQueue
 {
     fn launch(&self, message_content: &dyn MessageContent, timeout: u32) -> RetValue<()>
     {
-        unsafe { osMessageQueuePut(self.handle, message_content.as_ptr() as *mut c_void, 0, timeout).into() }
+        unsafe {
+            osMessageQueuePut(self.handle, message_content.as_ptr() as *mut c_void, 0, timeout)
+                .into()
+        }
     }
 
     fn receive(&self, message_content: &mut dyn MessageContent, timeout: u32) -> RetValue<()>
     {
         let mut prio: u8 = 0;
-        unsafe { osMessageQueueGet(self.handle, message_content.as_ptr() as *mut c_void, &mut prio, timeout).into() }
+        unsafe {
+            osMessageQueueGet(
+                self.handle,
+                message_content.as_ptr() as *mut c_void,
+                &mut prio,
+                timeout,
+            )
+            .into()
+        }
     }
 }

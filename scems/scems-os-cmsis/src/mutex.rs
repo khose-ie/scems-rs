@@ -87,7 +87,8 @@ impl<T> IMutexBlock<T> for MutexBlock<T>
         result
     }
 
-    fn attempt_lock_with<R>(&self, time: u32, f: impl FnOnce(&mut T) -> RetValue<R>) -> RetValue<R>
+    fn attempt_lock_with<R>(&self, time: u32, f: impl FnOnce(&mut T) -> RetValue<R>)
+        -> RetValue<R>
     {
         self.mutex.attempt_lock(time)?;
         let mut value = self.value.borrow_mut();

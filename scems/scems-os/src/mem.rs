@@ -4,7 +4,7 @@ use scems::value::RetValue;
 
 pub trait IMemPool<T>
 where
-    T: Copy
+    T: Copy,
 {
     fn handle(&self) -> T;
     fn block_size(&self) -> u32;

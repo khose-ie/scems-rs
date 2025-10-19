@@ -9,10 +9,21 @@ pub trait I2cMemCtrl
 where
     Self: EventLaunch<dyn I2cMemCtrlEvent>,
 {
-    fn mem_write(&self, saddr: u16, maddr: u16, mwide: I2cMemWide, data: &[u8], timeout: u32) -> RetValue<()>;
-    fn mem_read(&self, saddr: u16, maddr: u16, mwide: I2cMemWide, data: &mut [u8], timeout: u32) -> RetValue<()>;
-    fn async_mem_write(&self, saddr: u16, maddr: u16, mwide: I2cMemWide, data: &[u8]) -> RetValue<()>;
-    fn async_mem_read(&self, saddr: u16, maddr: u16, mwide: I2cMemWide, data: &mut [u8]) -> RetValue<()>;
+    fn mem_write(
+        &self, saddr: u16, maddr: u16, mwide: I2cMemWide, data: &[u8], timeout: u32,
+    ) -> RetValue<()>;
+
+    fn mem_read(
+        &self, saddr: u16, maddr: u16, mwide: I2cMemWide, data: &mut [u8], timeout: u32,
+    ) -> RetValue<()>;
+
+    fn async_mem_write(
+        &self, saddr: u16, maddr: u16, mwide: I2cMemWide, data: &[u8],
+    ) -> RetValue<()>;
+
+    fn async_mem_read(
+        &self, saddr: u16, maddr: u16, mwide: I2cMemWide, data: &mut [u8],
+    ) -> RetValue<()>;
 }
 
 pub trait I2cMemCtrlEvent

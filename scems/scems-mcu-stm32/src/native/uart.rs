@@ -4,8 +4,8 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
-use super::{HAL_LockTypeDef, HAL_StatusTypeDef};
 use super::dma::DMA_HandleTypeDef;
+use super::{HAL_LockTypeDef, HAL_StatusTypeDef};
 
 #[repr(C)]
 pub struct UART_HandleTypeDef

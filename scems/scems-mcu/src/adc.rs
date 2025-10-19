@@ -48,6 +48,10 @@ where
     /// when you call function `async_convert_continuous`, will not be updated, but the current
     /// value will not be cleared or changed.
     fn async_terminate_conversion(&self) -> RetValue<()>;
+
+    /// Get the current value of the ADC.
+    /// If only covert onec before, will get the value of last coversition.
+    fn value(&self) -> u32;
 }
 
 /// `AdcCtrlEvent` as the meanings of the word, it is an agent, or the real handler,

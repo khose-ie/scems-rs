@@ -1,4 +1,4 @@
-use core::mem::transmute;
+use core::ptr::NonNull;
 
 use scems::value::{ErrValue, RetValue};
 use scems_mcu::spi::{SpiCtrl, SpiCtrlEvent};
@@ -18,7 +18,7 @@ pub use crate::native::spi::SPI_HandleTypeDef;
 #[derive(Clone, Copy)]
 pub struct Spi
 {
-    handle: *mut SPI_HandleTypeDef,
+    handle: NonNull<SPI_HandleTypeDef>,
     event_handle: Option<*const dyn SpiCtrlEvent>,
 }
 
@@ -26,12 +26,7 @@ impl Spi
 {
     pub fn new(handle: *mut SPI_HandleTypeDef) -> RetValue<Self>
     {
-        if handle.is_null()
-        {
-            return Err(ErrValue::Param);
-        }
-
-        Ok(Spi { handle, event_handle: None })
+        Ok(Spi { handle: NonNull::new(handle).ok_or(ErrValue::Param)?, event_handle: None })
     }
 }
 
@@ -39,7 +34,7 @@ impl Handle<SPI_HandleTypeDef> for Spi
 {
     fn handle_value(&self) -> *mut SPI_HandleTypeDef
     {
-        self.handle
+        self.handle.as_ptr()
     }
 }
 
@@ -47,7 +42,7 @@ impl EventLaunch<dyn SpiCtrlEvent> for Spi
 {
     fn set_event_agent(&mut self, event_handle: &'static dyn SpiCtrlEvent)
     {
-        self.event_handle = Some(unsafe { transmute(event_handle as *const dyn SpiCtrlEvent) });
+        self.event_handle = Some(event_handle);
     }
 
     fn clean_event_agent(&mut self)
@@ -60,42 +55,62 @@ impl SpiCtrl for Spi
 {
     fn transmit(&self, data: &[u8], timeout: u32) -> RetValue<()>
     {
-        unsafe { HAL_SPI_Transmit(self.handle, data.as_ptr(), data.len() as u16, timeout).into() }
+        unsafe {
+            HAL_SPI_Transmit(self.handle.as_ptr(), data.as_ptr(), data.len() as u16, timeout).into()
+        }
     }
 
     fn receive(&self, data: &mut [u8], timeout: u32) -> RetValue<()>
     {
-        unsafe { HAL_SPI_Receive(self.handle, data.as_ptr(), data.len() as u16, timeout).into() }
+        unsafe {
+            HAL_SPI_Receive(self.handle.as_ptr(), data.as_ptr(), data.len() as u16, timeout).into()
+        }
     }
 
     fn transmit_receive(&self, tx_data: &[u8], rx_data: &mut [u8], timeout: u32) -> RetValue<()>
     {
         unsafe {
-            HAL_SPI_TransmitReceive(self.handle, tx_data.as_ptr(), rx_data.as_ptr(), tx_data.len() as u16, timeout)
-                .into()
+            HAL_SPI_TransmitReceive(
+                self.handle.as_ptr(),
+                tx_data.as_ptr(),
+                rx_data.as_ptr(),
+                tx_data.len() as u16,
+                timeout,
+            )
+            .into()
         }
     }
 
     fn async_transmit(&self, data: &[u8]) -> RetValue<()>
     {
-        unsafe { HAL_SPI_Transmit_DMA(self.handle, data.as_ptr(), data.len() as u16).into() }
+        unsafe {
+            HAL_SPI_Transmit_DMA(self.handle.as_ptr(), data.as_ptr(), data.len() as u16).into()
+        }
     }
 
     fn async_receive(&self, data: &mut [u8]) -> RetValue<()>
     {
-        unsafe { HAL_SPI_Receive_DMA(self.handle, data.as_ptr(), data.len() as u16).into() }
+        unsafe {
+            HAL_SPI_Receive_DMA(self.handle.as_ptr(), data.as_ptr(), data.len() as u16).into()
+        }
     }
 
     fn async_transmit_receive(&self, tx_data: &[u8], rx_data: &mut [u8]) -> RetValue<()>
     {
         unsafe {
-            HAL_SPI_TransmitReceive_DMA(self.handle, tx_data.as_ptr(), rx_data.as_ptr(), tx_data.len() as u16).into()
+            HAL_SPI_TransmitReceive_DMA(
+                self.handle.as_ptr(),
+                tx_data.as_ptr(),
+                rx_data.as_ptr(),
+                tx_data.len() as u16,
+            )
+            .into()
         }
     }
 
     fn abort(&self) -> RetValue<()>
     {
-        unsafe { HAL_SPI_Abort_IT(self.handle).into() }
+        unsafe { HAL_SPI_Abort_IT(self.handle.as_ptr()).into() }
     }
 }
 
@@ -120,14 +135,14 @@ impl SpiQueue
     #[allow(static_mut_refs)]
     pub fn clean(sample_handle: *mut SPI_HandleTypeDef)
     {
-        unsafe { SPI_QUEUE.clean(sample_handle) };
+        NonNull::new(sample_handle).map(|handle| unsafe { SPI_QUEUE.clean(handle) });
     }
 
     #[inline]
     #[allow(static_mut_refs)]
     pub fn search(sample_handle: *mut SPI_HandleTypeDef) -> RetValue<&'static Spi>
     {
-        unsafe { SPI_QUEUE.search(sample_handle) }
+        unsafe { SPI_QUEUE.search(NonNull::new(sample_handle).ok_or(ErrValue::Param)?) }
     }
 }
 

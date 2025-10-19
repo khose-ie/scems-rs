@@ -56,7 +56,8 @@ pub fn derive_enum_count(input: TokenStream) -> TokenStream
     let name = &input.ident;
     let data = &input.data;
 
-    let variant_count = if let Data::Enum(DataEnum { variants, .. }) = data { variants.len() } else { 0 };
+    let variant_count =
+        if let Data::Enum(DataEnum { variants, .. }) = data { variants.len() } else { 0 };
 
     let expanded = quote! {
         impl #name
