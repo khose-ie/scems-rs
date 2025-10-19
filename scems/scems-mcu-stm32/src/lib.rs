@@ -11,7 +11,7 @@ pub use device::*;
 const ADC_COUNT: usize = 4;
 const CAN_COUNT: usize = 2;
 const I2C_COUNT: usize = 8;
-const IO_COUNT: usize = 16;
+const IO_COUNT: usize = 32;
 const SPI_COUNT: usize = 8;
 const UART_COUNT: usize = 12;
 
