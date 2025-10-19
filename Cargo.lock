@@ -17,23 +17,26 @@ version = "0.1.0"
 dependencies = [
  "cc",
  "scems",
- "scems-addons",
+ "scems-mcu",
+ "scems-mcu-stm32",
+ "scems-os",
+ "scems-os-cmsis",
 ]
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.94"
+version = "1.0.101"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a31971752e70b8b2686d7e46ec17fb38dad4051d94024c88df49b667caea9c84"
+checksum = "89ae43fd86e4158d6db51ad8e2b80f313af9cc74f5c0e03ccb87de09998732de"
 dependencies = [
  "unicode-ident",
 ]
 
 [[package]]
 name = "quote"
-version = "1.0.40"
+version = "1.0.41"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1885c039570dc00dcb4ff087a89e185fd56bae234ddc7f056a945bf36467248d"
+checksum = "ce25767e7b499d1b604768e7cde645d14cc8584231ea6b295e9c9eb22c02e1d1"
 dependencies = [
  "proc-macro2",
 ]
@@ -41,24 +44,47 @@ dependencies = [
 [[package]]
 name = "scems"
 version = "0.1.0"
+
+[[package]]
+name = "scems-derive"
+version = "0.1.0"
 dependencies = [
- "scems-marco",
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
-name = "scems-addons"
+name = "scems-mcu"
+version = "0.1.0"
+dependencies = [
+ "scems",
+ "scems-derive",
+]
+
+[[package]]
+name = "scems-mcu-stm32"
+version = "0.1.0"
+dependencies = [
+ "scems",
+ "scems-derive",
+ "scems-mcu",
+]
+
+[[package]]
+name = "scems-os"
 version = "0.1.0"
 dependencies = [
  "scems",
 ]
 
 [[package]]
-name = "scems-marco"
+name = "scems-os-cmsis"
 version = "0.1.0"
 dependencies = [
- "proc-macro2",
- "quote",
- "syn",
+ "scems",
+ "scems-derive",
+ "scems-os",
 ]
 
 [[package]]
@@ -69,9 +95,9 @@ checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
 
 [[package]]
 name = "syn"
-version = "2.0.100"
+version = "2.0.106"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b09a44accad81e1ba1cd74a32461ba89dee89095ba17b32f5d03683b1b1fc2a0"
+checksum = "ede7c438028d4436d71104916910f5bb611972c5cfd7f89b8300a8186e6fada6"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -80,6 +106,6 @@ dependencies = [
 
 [[package]]
 name = "unicode-ident"
-version = "1.0.18"
+version = "1.0.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a5f39404a5da50712a4c1eecf25e90dd62b613502b7e925fd4e4d19b5c96512"
+checksum = "f63a545481291138910575129486daeaf8ac54aee4387fe7906919f7830c7d9d"

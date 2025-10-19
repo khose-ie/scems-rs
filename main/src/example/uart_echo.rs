@@ -1,5 +1,5 @@
-use scems::mcu::common::uart::UartDevice;
-use scems::mcu::vendor::stm::uart::{UART_HandleTypeDef, UartQueue};
+use scems_mcu::uart::UartDevice;
+use scems_mcu_stm32::uart::{UART_HandleTypeDef, UartQueue};
 
 #[allow(improper_ctypes)]
 extern "C" {

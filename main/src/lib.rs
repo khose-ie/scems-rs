@@ -1,7 +1,7 @@
 #![no_std]
 
 mod example;
-mod model;
+// mod model;
 
 use core::panic::PanicInfo;
 
@@ -11,7 +11,7 @@ use core::panic::PanicInfo;
 pub unsafe extern "C" fn app_main()
 {
     // model::challen_v2_f429::app_main();
-    example::example();
+    // example::example();
 }
 
 #[panic_handler]

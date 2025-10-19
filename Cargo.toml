@@ -1,12 +1,24 @@
 [workspace]
 resolver = "2"
-members = ["main", "scems", "scems/marco", "scems-addons"]
+members = [
+    "main",
+    "scems/scems",
+    "scems/scems-derive",
+    "scems/scems-mcu",
+    "scems/scems-mcu-stm32",
+    "scems/scems-os",
+    "scems/scems-os-cmsis"
+]
 
 [profile.dev]
 opt-level = 1
 debug = true
 
 [patch.crates-io]
-scems = { path = "scems" }
-scems-marco = { path = "scems/marco" }
-scems-addons = { path = "scems-addons" }
+scems = { path = "scems/scems" }
+scems-derive = { path = "scems/scems-derive" }
+scems-mcu = { path = "scems/scems-mcu" }
+scems-mcu-stm32 = { path = "scems/scems-mcu-stm32" }
+scems-os = { path = "scems/scems-os" }
+scems-os-cmsis = { path = "scems/scems-os-cmsis" }
+# scems-addons = { path = "scems-addons" }

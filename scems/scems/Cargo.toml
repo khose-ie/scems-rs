@@ -1,0 +1,16 @@
+[package]
+name = "scems"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-2.0"
+authors = ["Khose-ie<khose-ie@outlook.com>"]
+description = "Sample Common Embedded Middleware Software - Common Definitions"
+
+[lib]
+name = "scems"
+test = false
+bench = false
+
+[dependencies]
+
+[features]

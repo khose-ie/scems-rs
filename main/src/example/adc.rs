@@ -1,9 +1,9 @@
 use core::fmt::{self, Write};
 
-use scems::mcu::common::adc::AdcDevice;
-use scems::mcu::common::uart::UartDevice;
-use scems::mcu::vendor::stm::adc::{ADC_HandleTypeDef, AdcQueue};
-use scems::mcu::vendor::stm::uart::{UART_HandleTypeDef, UartQueue};
+use scems_mcu::adc::AdcDevice;
+use scems_mcu::uart::UartDevice;
+use scems_mcu_stm32::adc::{ADC_HandleTypeDef, AdcQueue};
+use scems_mcu_stm32::uart::{UART_HandleTypeDef, UartQueue};
 
 #[allow(improper_ctypes)]
 extern "C" {

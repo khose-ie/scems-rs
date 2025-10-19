@@ -1,7 +1,7 @@
-use scems::os::{common::task::TaskMain, vendors::task::TaskSample};
+// use scems::os::{common::task::TaskMain, vendors::task::TaskSample};
 
 mod adc;
-mod io_lamp;
+// mod io_lamp;
 mod uart_echo;
 
 pub unsafe fn example()

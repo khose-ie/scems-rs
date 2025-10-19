@@ -1,5 +1,5 @@
-use scems::mcu::common::io::{IoCtrl, IoDevice, IoState};
-use scems::mcu::vendor::stm::io::{GPIO_Pin, GPIO_TypeDef, IoQueue};
+use scems_mcu::io::{IoCtrl, IoDevice, IoState};
+use scems_mcu_stm32::io::{GPIO_Pin, GPIO_TypeDef, IoQueue};
 
 pub const GPIOC: *mut GPIO_TypeDef = ((0x40000000 + 0x00020000) + 0x0800) as *mut GPIO_TypeDef;
 pub const GPIOH: *mut GPIO_TypeDef = ((0x40000000 + 0x00020000) + 0x1C00) as *mut GPIO_TypeDef;
