@@ -1,9 +1,10 @@
-use core::ops::Not;
+use core::cell::RefCell;
 use core::ptr::null;
 
 use scems::value::ErrValue;
 use scems::value::RetValue;
 use scems_os::mutex::IMutex;
+use scems_os::mutex::IMutexBlock;
 
 use crate::native::*;
 
@@ -17,7 +18,12 @@ impl Mutex
     pub fn new() -> RetValue<Self>
     {
         let handle = unsafe { osMutexNew(null()) };
-        handle.is_null().not().then_some(handle).ok_or(ErrValue::InstanceCreate)?;
+
+        if handle.is_null()
+        {
+            return Err(ErrValue::InstanceCreate);
+        }
+
         Ok(Mutex { handle })
     }
 }
@@ -45,5 +51,49 @@ impl IMutex for Mutex
     fn attempt_lock(&self, time: u32) -> RetValue<()>
     {
         unsafe { osMutexAcquire(self.handle, time).into() }
+    }
+}
+
+pub struct MutexBlock<T>
+{
+    mutex: Mutex,
+    value: RefCell<T>,
+}
+
+impl<T> MutexBlock<T>
+{
+    pub fn new(value: T) -> RetValue<Self>
+    {
+        Ok(MutexBlock { mutex: Mutex::new()?, value: RefCell::new(value) })
+    }
+}
+
+impl<T> IMutexBlock<T> for MutexBlock<T>
+{
+    fn lock(&self, f: impl FnOnce(&mut T))
+    {
+        self.mutex.lock();
+        let mut value = self.value.borrow_mut();
+        f(&mut value);
+        self.mutex.unlock();
+    }
+
+    fn lock_with<R>(&self, f: impl FnOnce(&mut T) -> RetValue<R>) -> RetValue<R>
+    {
+        self.mutex.lock();
+        let mut value = self.value.borrow_mut();
+        let result = f(&mut value);
+        self.mutex.unlock();
+        result
+    }
+
+    fn attempt_lock_with<R>(&self, time: u32, f: impl FnOnce(&mut T) -> RetValue<R>)
+        -> RetValue<R>
+    {
+        self.mutex.attempt_lock(time)?;
+        let mut value = self.value.borrow_mut();
+        let result = f(&mut value);
+        self.mutex.unlock();
+        result
     }
 }
