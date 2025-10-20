@@ -7,10 +7,25 @@ pub trait IMutex
     fn attempt_lock(&self, time: u32) -> RetValue<()>;
 }
 
-pub trait IMutexBlock<T>
+pub trait IMutexSample: IMutex
 {
-    fn lock(&self, f: impl FnOnce(&mut T));
-    fn lock_with<R>(&self, f: impl FnOnce(&mut T) -> RetValue<R>) -> RetValue<R>;
-    fn attempt_lock_with<R>(&self, time: u32, f: impl FnOnce(&mut T) -> RetValue<R>)
-        -> RetValue<R>;
+    fn with_lock<V>(&mut self, f: impl FnOnce(&mut Self) -> RetValue<V>) -> RetValue<V>
+    {
+        self.lock();
+        let value = f(self);
+        self.unlock();
+
+        value
+    }
+
+    fn attempt_with_lock<R>(
+        &mut self, time: u32, f: impl FnOnce(&mut Self) -> RetValue<R>,
+    ) -> RetValue<R>
+    {
+        self.attempt_lock(time)?;
+        let value = f(self);
+        self.unlock();
+
+        value
+    }
 }
