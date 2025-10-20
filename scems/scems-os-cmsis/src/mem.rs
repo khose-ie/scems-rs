@@ -1,5 +1,5 @@
 use core::ffi::c_void;
-use core::ops::{Deref, DerefMut, Index, IndexMut};
+use core::ops::{Deref, DerefMut, Index, IndexMut, Not};
 use core::ptr::{copy, drop_in_place, null, write_bytes};
 use core::slice::{from_raw_parts, from_raw_parts_mut};
 
@@ -35,7 +35,7 @@ impl MemPool
     {
         if block_size > 0
         {
-            if !self.handle.is_null()
+            if self.handle.is_null().not()
             {
                 self.handle = handle;
                 self.block_size = block_size;
@@ -128,7 +128,7 @@ impl<T> Drop for MemBlock<T>
 {
     fn drop(&mut self)
     {
-        if !self.mem_space.is_null()
+        if self.mem_space.is_null().not()
         {
             unsafe { drop_in_place(self.mem_space) };
             unsafe { MemPool::mfree(size_of::<T>() as u32, self.mem_space.cast()) };
@@ -174,7 +174,7 @@ impl<T> IMemBlock<T> for MemBlock<T>
 {
     fn set(&mut self, value: T)
     {
-        if !self.mem_space.is_null()
+        if self.mem_space.is_null().not()
         {
             unsafe { *self.mem_space = value };
         }
@@ -182,7 +182,7 @@ impl<T> IMemBlock<T> for MemBlock<T>
 
     fn clean(&mut self)
     {
-        if !self.mem_space.is_null()
+        if self.mem_space.is_null().not()
         {
             unsafe { drop_in_place(self.mem_space) };
             unsafe { write_bytes(self.mem_space, 0, size_of::<T>()) };
@@ -216,7 +216,7 @@ impl<T> Drop for MemBlockHeap<T>
 {
     fn drop(&mut self)
     {
-        if !self.mem_space.is_null()
+        if self.mem_space.is_null().not()
         {
             unsafe { drop_in_place(self.mem_space) };
             unsafe { MemHeap::free(self.mem_space as *mut c_void) };
@@ -246,7 +246,7 @@ impl<T> IMemBlockHeap<T> for MemBlockHeap<T>
 {
     fn set(&mut self, value: T)
     {
-        if !self.mem_space.is_null()
+        if self.mem_space.is_null().not()
         {
             unsafe { drop_in_place(self.mem_space) };
             unsafe { *self.mem_space = value };
@@ -255,7 +255,7 @@ impl<T> IMemBlockHeap<T> for MemBlockHeap<T>
 
     fn clean(&mut self)
     {
-        if !self.mem_space.is_null()
+        if self.mem_space.is_null().not()
         {
             unsafe { drop_in_place(self.mem_space) };
             unsafe { write_bytes(self.mem_space, 0, size_of::<T>()) };
@@ -316,7 +316,7 @@ impl<const N: usize> IMemCache<N> for MemCache<N>
 {
     fn set(&mut self, value: &[u8])
     {
-        if !self.mem_space.is_null()
+        if self.mem_space.is_null().not()
         {
             unsafe { self.mem_space.copy_from(value.as_ptr(), value.len()) };
         }
@@ -324,7 +324,7 @@ impl<const N: usize> IMemCache<N> for MemCache<N>
 
     fn fill(&mut self, value: u8, size: usize)
     {
-        if !self.mem_space.is_null()
+        if self.mem_space.is_null().not()
         {
             unsafe { write_bytes(self.mem_space, value, size) };
         }
@@ -332,7 +332,7 @@ impl<const N: usize> IMemCache<N> for MemCache<N>
 
     fn clean(&mut self)
     {
-        if !self.mem_space.is_null()
+        if self.mem_space.is_null().not()
         {
             unsafe { write_bytes(self.mem_space, 0, self.size) };
         }

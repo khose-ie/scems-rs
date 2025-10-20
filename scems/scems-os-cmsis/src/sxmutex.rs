@@ -1,4 +1,4 @@
-use core::ptr::null;
+use core::{ops::Not, ptr::null};
 
 use scems::value::{ErrValue, RetValue};
 use scems_os::sxmutex::ISxMutex;
@@ -21,12 +21,7 @@ impl SxMutex
     pub fn new() -> RetValue<Self>
     {
         let handle = unsafe { osMutexNew(null()) };
-
-        if handle.is_null()
-        {
-            return Err(ErrValue::InstanceCreate);
-        }
-
+        handle.is_null().not().then_some(handle).ok_or(ErrValue::InstanceCreate)?;
         Ok(SxMutex { handle, in_keep: false, request_keep: false, involve_num: 0 })
     }
 }

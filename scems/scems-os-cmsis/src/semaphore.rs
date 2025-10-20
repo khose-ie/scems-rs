@@ -1,4 +1,4 @@
-use core::ptr::null;
+use core::{ops::Not, ptr::null};
 
 use scems::value::{ErrValue, RetValue};
 use scems_os::semaphore::ISemaphore;
@@ -15,10 +15,7 @@ impl Semaphore
     pub fn new(max_count: u32) -> RetValue<Self>
     {
         let handle = unsafe { osSemaphoreNew(max_count, 0, null()) };
-        if handle.is_null()
-        {
-            return Err(ErrValue::InstanceCreate);
-        }
+        handle.is_null().not().then_some(handle).ok_or(ErrValue::InstanceCreate)?;
         Ok(Semaphore { handle })
     }
 }

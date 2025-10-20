@@ -1,4 +1,4 @@
-use core::ptr::null;
+use core::{ops::Not, ptr::null};
 
 use scems::value::{ErrValue, RetValue};
 use scems_os::events::IEvents;
@@ -15,12 +15,7 @@ impl Events
     pub fn new() -> RetValue<Self>
     {
         let handle = unsafe { osEventFlagsNew(null()) };
-
-        if handle.is_null()
-        {
-            return Err(ErrValue::InstanceCreate);
-        }
-
+        handle.is_null().not().then_some(handle).ok_or(ErrValue::InstanceCreate)?;
         Ok(Events { handle })
     }
 }

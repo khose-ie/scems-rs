@@ -1,13 +1,9 @@
-use core::ffi::c_void;
-use core::ffi::CStr;
-use core::ops::Deref;
-use core::ops::DerefMut;
+use core::ffi::{c_void, CStr};
+use core::ops::{Deref, DerefMut, Not};
 use core::ptr::null;
 
-use scems::value::ErrValue;
-use scems::value::RetValue;
-use scems_os::task::ITaskSample;
-use scems_os::task::{ITask, TaskMain, TaskPriorities};
+use scems::value::{ErrValue, RetValue};
+use scems_os::task::{ITask, ITaskSample, TaskMain, TaskPriorities};
 
 use crate::native::*;
 
@@ -38,7 +34,7 @@ impl Drop for Task
 {
     fn drop(&mut self)
     {
-        if !self.handle.is_null()
+        if self.handle.is_null().not()
         {
             unsafe { osThreadTerminate(self.handle) };
         }
@@ -71,7 +67,7 @@ impl ITask for Task
 
     fn deactivate(&mut self)
     {
-        if !self.handle.is_null()
+        if self.handle.is_null().not()
         {
             unsafe { osThreadTerminate(self.handle) };
             self.handle = null();

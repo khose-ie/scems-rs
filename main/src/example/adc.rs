@@ -1,15 +1,20 @@
 use core::fmt::{self, Write};
+use core::ptr::NonNull;
 
-use scems_mcu::adc::AdcDevice;
+use scems_mcu::adc::{AdcCtrl, AdcCtrlEvent, AdcDevice};
 use scems_mcu::uart::UartDevice;
-use scems_mcu_stm32::adc::{ADC_HandleTypeDef, AdcQueue};
+use scems_mcu::EventLaunch;
+use scems_mcu_stm32::adc::{ADC_HandleTypeDef, Adc, AdcQueue};
 use scems_mcu_stm32::uart::{UART_HandleTypeDef, UartQueue};
+use scems_mcu_stm32::Handle;
 
 #[allow(improper_ctypes)]
 extern "C" {
     static mut huart1: UART_HandleTypeDef;
     static mut hadc1: ADC_HandleTypeDef;
 }
+
+static mut ABC: Option<AdcExample> = None;
 
 #[allow(static_mut_refs)]
 pub unsafe fn main()
@@ -18,6 +23,16 @@ pub unsafe fn main()
         AdcQueue::allocate(&mut hadc1).unwrap(),
         UartQueue::allocate(&mut huart1).unwrap(),
     );
+
+    example.ena();
+
+    let mut a = AdcQueue::search_mut(&mut hadc1).unwrap();
+
+    if let Some(abc) = &mut ABC
+    {
+        a.set_event_agent(abc);
+    }
+    a.set_event_agent(ABC.as_mut().unwrap());
 
     loop
     {
@@ -38,6 +53,12 @@ impl AdcExample
         AdcExample { adc, log }
     }
 
+    pub fn ena(&mut self)
+    {
+        NonNull::new(self as *mut AdcExample)
+            .map(|a| self.adc.set_event_agent(unsafe { a.as_ref() }));
+    }
+
     pub fn tick(&mut self)
     {
         let value = self.adc.convert();
@@ -56,3 +77,5 @@ impl Write for AdcExample
         self.log.transmit(s.as_bytes(), 1000).map_err(|_| fmt::Error)
     }
 }
+
+impl AdcCtrlEvent for AdcExample {}

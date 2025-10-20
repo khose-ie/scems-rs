@@ -1,5 +1,6 @@
 use core::ffi::c_void;
 use core::mem::transmute;
+use core::ops::Not;
 use core::ptr::null;
 
 use scems::value::ErrValue;
@@ -44,10 +45,7 @@ impl Drop for Timer
 {
     fn drop(&mut self)
     {
-        if !self.handle.is_null()
-        {
-            unsafe { osTimerDelete(self.handle) };
-        }
+        self.handle.is_null().not().then(|| unsafe { osTimerDelete(self.handle) });
     }
 }
 
@@ -77,7 +75,7 @@ impl ITimer for Timer
 
     fn stop(&mut self)
     {
-        if !self.handle.is_null()
+        if self.handle.is_null().not()
         {
             unsafe { osTimerStop(self.handle) };
         }

@@ -15,7 +15,9 @@
 //! the device according to the argument of handle pointer.
 //! So, that is what the DeviceQueue is.
 
-use core::{marker::PhantomData, ptr::NonNull};
+use core::marker::PhantomData;
+use core::ops::Not;
+use core::ptr::NonNull;
 
 use scems::value::{ErrValue, RetValue};
 
@@ -49,7 +51,7 @@ where
         {
             if let Some(data) = sample_one
             {
-                if !data.handle_value().is_null()
+                if data.handle_value().is_null().not()
                     && data.handle_value().eq(&sample.handle_value())
                     && data.channel_value().eq(&channel)
                 {
@@ -79,7 +81,7 @@ where
         {
             if let Some(data) = self.samples[idx].as_ref()
             {
-                if !data.handle_value().is_null()
+                if data.handle_value().is_null().not()
                     && data.handle_value().eq(&sample_handle.as_ptr())
                     && data.channel_value().eq(&channel)
                 {
@@ -116,7 +118,7 @@ where
         {
             if let Some(data) = sample
             {
-                if !data.handle_value().is_null()
+                if data.handle_value().is_null().not()
                     && data.handle_value().eq(&sample_handle.as_ptr())
                     && data.channel_value().eq(&channel)
                 {
@@ -145,7 +147,7 @@ where
         {
             if let Some(data) = sample
             {
-                if !data.handle_value().is_null()
+                if data.handle_value().is_null().not()
                     && data.handle_value().eq(&sample_handle.as_ptr())
                     && data.channel_value().eq(&channel)
                 {

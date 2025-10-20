@@ -153,7 +153,7 @@ impl UartCtrlEvent for SerialTerminal
 
 //             if let Ok(event) = self.events.receive(EVENT_ALL, RX_TIMEOUT)
 //             {
-//                 if !event.eq(&EVENT_RX_COMPLETE)
+//                 if event.eq(&EVENT_RX_COMPLETE).not()
 //                 {
 //                     continue;
 //                 }
