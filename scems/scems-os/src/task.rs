@@ -1,31 +1,4 @@
-use core::ops::{Deref, DerefMut};
-
 use scems::value::RetValue;
-
-pub trait ITask
-{
-    fn activate(
-        &mut self, name: &str, stack_size: u32, pritories: TaskPriorities, main: &dyn TaskMain,
-    ) -> RetValue<()>;
-    fn deactivate(&mut self);
-    fn name(&self) -> &str;
-    fn suspand(&self) -> RetValue<()>;
-    fn resume(&self) -> RetValue<()>;
-}
-
-pub trait ITaskSample<T>
-where
-    Self: Deref + DerefMut + AsRef<T> + AsMut<T>,
-{
-    fn activate(&mut self, name: &str, stack_size: u32, priorities: TaskPriorities)
-        -> RetValue<()>;
-    fn deactivate(&mut self);
-}
-
-pub trait TaskMain
-{
-    fn main(&mut self);
-}
 
 #[repr(C)]
 pub enum TaskPriorities
@@ -38,4 +11,63 @@ pub enum TaskPriorities
     High,
     Privilege,
     RealTime,
+}
+
+pub trait ITaskMain
+{
+    fn main(&mut self);
+}
+
+pub trait ITask
+{
+    fn activate(
+        &mut self, name: &str, stack_size: u32, pritories: TaskPriorities, main: &dyn ITaskMain,
+    ) -> RetValue<()>;
+    fn deactivate(&mut self);
+    fn name(&self) -> &str;
+    fn suspand(&self) -> RetValue<()>;
+    fn resume(&self) -> RetValue<()>;
+}
+
+pub struct TaskSample<T, S>
+where
+    T: Sized + ITask,
+    S: Sized + ITaskMain,
+{
+    task: T,
+    sample: S,
+}
+
+impl<T: ITask, S: ITaskMain> TaskSample<T, S>
+{
+    pub const fn new(task: T, sample: S) -> Self
+    {
+        Self { task, sample }
+    }
+
+    pub fn initialize(&mut self, name: &str, stack_size: u32,  priority: TaskPriorities) -> RetValue<()>
+    {
+        self.task.activate(name, stack_size, priority, &self.sample)
+    }
+
+    pub fn finalize(&mut self)
+    {
+        self.task.deactivate();
+    }
+}
+
+impl<T: ITask, S: ITaskMain> AsRef<S> for TaskSample<T, S>
+{
+    fn as_ref(&self) -> &S
+    {
+        &self.sample
+    }
+}
+
+impl<T: ITask, S: ITaskMain> AsMut<S> for TaskSample<T, S>
+{
+    fn as_mut(&mut self) -> &mut S
+    {
+        &mut self.sample
+    }
 }
