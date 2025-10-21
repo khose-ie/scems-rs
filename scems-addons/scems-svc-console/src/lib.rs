@@ -1,6 +1,9 @@
+#![no_std]
+
 mod dispartches;
 pub mod native;
 pub mod terminal;
+// pub mod console;
 
 use core::fmt::Arguments;
 
