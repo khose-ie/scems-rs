@@ -89,6 +89,8 @@ impl ITask for Task
     }
 }
 
+/// Create a agent class to pack the pointer of `dyn ITaskMain`.
+/// Because the fat pointer `dyn ITaskMain` can be set to C function as thin pointer.
 struct TaskMainAgent
 {
     task_main: Option<*mut dyn ITaskMain>,
