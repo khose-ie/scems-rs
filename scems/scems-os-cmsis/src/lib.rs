@@ -16,36 +16,41 @@ pub mod sxmutex;
 pub mod task;
 pub mod timer;
 
-use scems_os::kernel::IKernel;
+use scems_os::{kernel::IKernel, OS};
 
 pub const COMMON_TASK_TICK: u32 = 500;
 
-#[inline]
-pub fn delay(time: u32)
-{
-    kernel::Kernel::delay(time);
-}
+pub struct CMSISOS;
 
-#[inline]
-pub fn delay_interval(time: u32)
+impl OS for CMSISOS
 {
-    kernel::Kernel::delay_interval(time);
-}
+    type Events = events::Events;
 
-#[inline]
-pub fn systick_value() -> u32
-{
-    kernel::Kernel::systick_value()
-}
+    type MessageQueue = message_queue::MessageQueue;
 
-#[inline]
-pub fn cede()
-{
-    kernel::Kernel::cede();
-}
+    type Mutex = mutex::Mutex;
 
-#[inline]
-pub fn exit()
-{
-    kernel::Kernel::exit();
+    type Semaphore = semaphore::Semaphore;
+
+    type Task = task::Task;
+
+    type Timer = timer::Timer;
+
+    #[inline]
+    fn delay(time: u32)
+    {
+        kernel::Kernel::delay(time);
+    }
+
+    #[inline]
+    fn systick() -> u32
+    {
+        kernel::Kernel::systick_value()
+    }
+
+    #[inline]
+    fn switch_out()
+    {
+        kernel::Kernel::cede();
+    }
 }

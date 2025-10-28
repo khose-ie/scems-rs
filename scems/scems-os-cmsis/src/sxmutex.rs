@@ -2,9 +2,10 @@ use core::{ops::Not, ptr::null};
 
 use scems::value::{ErrValue, RetValue};
 use scems_os::sxmutex::ISxMutex;
+use scems_os::OS;
 
-use super::delay;
 use crate::native::*;
+use crate::CMSISOS;
 
 const WAIT_TIME: u32 = 10;
 
@@ -43,14 +44,14 @@ impl ISxMutex for SxMutex
         while self.in_keep || self.request_keep
         {
             unsafe { osMutexRelease(self.handle) };
-            delay(WAIT_TIME);
+            CMSISOS::delay(WAIT_TIME);
             unsafe { osMutexAcquire(self.handle, osWaitForever) };
         }
 
         while self.involve_num == 0xFF
         {
             unsafe { osMutexRelease(self.handle) };
-            delay(WAIT_TIME);
+            CMSISOS::delay(WAIT_TIME);
             unsafe { osMutexAcquire(self.handle, osWaitForever) };
         }
 
@@ -84,7 +85,7 @@ impl ISxMutex for SxMutex
         while self.request_keep
         {
             unsafe { osMutexRelease(self.handle) };
-            delay(WAIT_TIME);
+            CMSISOS::delay(WAIT_TIME);
             unsafe { osMutexAcquire(self.handle, osWaitForever) };
         }
 
@@ -93,7 +94,7 @@ impl ISxMutex for SxMutex
         while self.in_keep
         {
             unsafe { osMutexRelease(self.handle) };
-            delay(WAIT_TIME);
+            CMSISOS::delay(WAIT_TIME);
             unsafe { osMutexAcquire(self.handle, osWaitForever) };
         }
 

@@ -1,3 +1,5 @@
+use core::cell::RefCell;
+
 use scems::value::RetValue;
 
 /// The trait to specific the standard method of an OS mutex.
@@ -18,31 +20,29 @@ where
     S: Sized,
 {
     mutex: M,
-    sample: S,
+    sample: RefCell<S>,
 }
 
 impl<M: IMutex, S> MutexSample<M, S>
 {
-    pub fn new(mutex: M, sample: S) -> Self
+    pub const fn new(mutex: M, sample: S) -> Self
     {
-        Self { mutex, sample }
+        Self { mutex, sample: RefCell::new(sample) }
     }
 
-    pub fn lock_with<T>(&mut self, f: impl FnOnce(&mut S) -> RetValue<T>) -> RetValue<T>
+    pub fn lock<T>(&self, f: impl FnOnce(&mut S) -> RetValue<T>) -> RetValue<T>
     {
         self.mutex.lock();
-        let value = f(&mut self.sample);
+        let value = f(&mut self.sample.borrow_mut());
         self.mutex.unlock();
 
         value
     }
 
-    pub fn attempt_lock_with<T>(
-        &mut self, time: u32, f: impl FnOnce(&mut S) -> RetValue<T>,
-    ) -> RetValue<T>
+    pub fn attempt_lock<T>(&self, time: u32, f: impl FnOnce(&mut S) -> RetValue<T>) -> RetValue<T>
     {
         self.mutex.attempt_lock(time)?;
-        let value = f(&mut self.sample);
+        let value = f(&mut self.sample.borrow_mut());
         self.mutex.unlock();
 
         value
@@ -50,11 +50,11 @@ impl<M: IMutex, S> MutexSample<M, S>
 
     pub fn samples(&self) -> &S
     {
-        &self.sample
+        unsafe { &*self.sample.as_ptr() }
     }
 
     pub fn samples_mut(&mut self) -> &mut S
     {
-        &mut self.sample
+        self.sample.get_mut()
     }
 }
