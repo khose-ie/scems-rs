@@ -1,8 +1,6 @@
 use super::EventLaunch;
 use scems::value::RetValue;
 
-pub type CanDevice = &'static mut dyn CanCtrl;
-
 pub trait CanCtrl
 where
     Self: EventLaunch<dyn CanCtrlEvent>,
@@ -40,3 +38,32 @@ pub struct CanMessageHead
 }
 
 type CanMessageData = [u8; 8];
+
+pub struct CanDevice
+{
+    instance: *mut dyn CanCtrl,
+}
+
+impl CanDevice
+{
+    pub const fn new(instance: &'static mut dyn CanCtrl) -> Self
+    {
+        Self { instance }
+    }
+}
+
+impl AsRef<dyn CanCtrl> for CanDevice
+{
+    fn as_ref(&self) -> &'static dyn CanCtrl
+    {
+        unsafe { &*self.instance }
+    }
+}
+
+impl AsMut<dyn CanCtrl> for CanDevice
+{
+    fn as_mut(&mut self) -> &'static mut dyn CanCtrl
+    {
+        unsafe { &mut *self.instance }
+    }
+}

@@ -3,8 +3,6 @@
 use super::EventLaunch;
 use scems::value::RetValue;
 
-pub type UartDevice = &'static mut dyn UartCtrl;
-
 /// A common trait to control UART peripheral, with functions to let the UART to do
 /// some basic actions.
 ///
@@ -135,4 +133,33 @@ pub trait UartCtrlEvent
 
     /// This function will be called when the UART peripheral has some errors.
     fn on_uart_error(&self) {}
+}
+
+pub struct UartDevice
+{
+    uart: *mut dyn UartCtrl,
+}
+
+impl UartDevice
+{
+    pub const fn new(uart: &'static mut dyn UartCtrl) -> Self
+    {
+        Self { uart }
+    }
+}
+
+impl AsRef<dyn UartCtrl> for UartDevice
+{
+    fn as_ref(&self) -> &'static dyn UartCtrl
+    {
+        unsafe { &*self.uart }
+    }
+}
+
+impl AsMut<dyn UartCtrl> for UartDevice
+{
+    fn as_mut(&mut self) -> &'static mut dyn UartCtrl
+    {
+        unsafe { &mut *self.uart }
+    }
 }

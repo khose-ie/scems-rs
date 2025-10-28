@@ -1,8 +1,6 @@
 use super::EventLaunch;
 use scems::value::RetValue;
 
-pub type SpiDevice = &'static mut dyn SpiCtrl;
-
 pub trait SpiCtrl
 where
     Self: EventLaunch<dyn SpiCtrlEvent>,
@@ -29,4 +27,33 @@ pub trait SpiCtrlEvent
     fn on_spi_tx_rx_complete(&self) {}
     fn on_spi_abort_complete(&self) {}
     fn on_spi_error(&self) {}
+}
+
+pub struct SpiDevice
+{
+    instance: *mut dyn SpiCtrl,
+}
+
+impl SpiDevice
+{
+    pub const fn new(instance: &'static mut dyn SpiCtrl) -> Self
+    {
+        Self { instance }
+    }
+}
+
+impl AsRef<dyn SpiCtrl> for SpiDevice
+{
+    fn as_ref(&self) -> &'static dyn SpiCtrl
+    {
+        unsafe { &*self.instance }
+    }
+}
+
+impl AsMut<dyn SpiCtrl> for SpiDevice
+{
+    fn as_mut(&mut self) -> &'static mut dyn SpiCtrl
+    {
+        unsafe { &mut *self.instance }
+    }
 }

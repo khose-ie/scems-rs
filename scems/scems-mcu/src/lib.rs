@@ -15,7 +15,7 @@ pub mod wd;
 /// All types in this trait has combined with peripheral trait.
 /// So, when you want to define a components with some peripherals, you can only set this trait as
 /// the only one trait bound.
-pub trait Mcu
+pub trait MCU
 {
     type Adc: adc::AdcCtrl;
     type Can: can::CanCtrl;
@@ -31,6 +31,7 @@ pub trait Mcu
     type WatchDog: wd::WatchDogCtrl;
 
     fn tick_value() -> u32;
+    fn sleep(time: u32);
 }
 
 /// `EventLaunch` is a trait that the peripheral trait who implements this trait means that it can

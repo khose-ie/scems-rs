@@ -4,8 +4,6 @@ use scems::value::RetValue;
 
 use super::EventLaunch;
 
-pub type AdcDevice = &'static mut dyn AdcCtrl;
-
 /// `AdcCtrl` is the common trait for ADC peripheral, provides the interface functions to operate the
 /// ADC.
 ///
@@ -78,4 +76,33 @@ pub trait AdcCtrlEvent
 
     /// Will be called when the ADC peripheral has some errors.
     fn on_adc_error(&self) {}
+}
+
+pub struct AdcDevice
+{
+    instance: *mut dyn AdcCtrl,
+}
+
+impl AdcDevice
+{
+    pub const fn new(instance: &'static mut dyn AdcCtrl) -> Self
+    {
+        Self { instance }
+    }
+}
+
+impl AsRef<dyn AdcCtrl> for AdcDevice
+{
+    fn as_ref(&self) -> &'static dyn AdcCtrl
+    {
+        unsafe { &*self.instance }
+    }
+}
+
+impl AsMut<dyn AdcCtrl> for AdcDevice
+{
+    fn as_mut(&mut self) -> &'static mut dyn AdcCtrl
+    {
+        unsafe { &mut *self.instance }
+    }
 }

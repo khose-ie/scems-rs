@@ -4,7 +4,7 @@ mod device;
 mod native;
 mod sample_queue;
 
-use scems_mcu::Mcu;
+use scems_mcu::MCU;
 
 pub use device::*;
 
@@ -17,7 +17,7 @@ const UART_COUNT: usize = 12;
 
 pub struct STM32;
 
-impl Mcu for STM32
+impl MCU for STM32
 {
     type Adc = device::adc::Adc;
     type Can = device::can::Can;
@@ -35,5 +35,10 @@ impl Mcu for STM32
     fn tick_value() -> u32
     {
         unsafe { native::HAL_GetTick() }
+    }
+
+    fn sleep(time: u32)
+    {
+        unsafe { native::HAL_Delay(time) };
     }
 }

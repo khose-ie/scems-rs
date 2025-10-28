@@ -6,8 +6,6 @@ use scems_derive::EnumAsU32;
 
 use super::EventLaunch;
 
-pub type IoDevice = &'static mut dyn IoCtrl;
-
 /// Trait providing operations of an GPIO_TypeDef pin.
 pub trait IoCtrl
 where
@@ -38,4 +36,33 @@ pub enum IoState
 
     /// High level, the value is `1`.
     Set = 1,
+}
+
+pub struct IoDevice
+{
+    instance: *mut dyn IoCtrl,
+}
+
+impl IoDevice
+{
+    pub const fn new(instance: &'static mut dyn IoCtrl) -> Self
+    {
+        Self { instance }
+    }
+}
+
+impl AsRef<dyn IoCtrl> for IoDevice
+{
+    fn as_ref(&self) -> &'static dyn IoCtrl
+    {
+        unsafe { &*self.instance }
+    }
+}
+
+impl AsMut<dyn IoCtrl> for IoDevice
+{
+    fn as_mut(&mut self) -> &'static mut dyn IoCtrl
+    {
+        unsafe { &mut *self.instance }
+    }
 }

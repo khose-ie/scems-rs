@@ -78,4 +78,5 @@ impl From<HAL_StatusTypeDef> for ErrValue
 #[allow(improper_ctypes)]
 unsafe extern "C" {
     pub fn HAL_GetTick() -> u32;
+    pub fn HAL_Delay(Delay: u32);
 }

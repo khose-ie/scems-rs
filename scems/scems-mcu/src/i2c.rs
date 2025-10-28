@@ -3,8 +3,6 @@ use scems_derive::{EnumAsU16, EnumAsU8};
 
 use super::EventLaunch;
 
-pub type I2cMemDevice = &'static mut dyn I2cMemCtrl;
-
 pub trait I2cMemCtrl
 where
     Self: EventLaunch<dyn I2cMemCtrlEvent>,
@@ -49,8 +47,6 @@ pub enum I2cDirection
     Transmit = 1,
 }
 
-pub type I2cMasterDevice = &'static mut dyn I2cMasterCtrl;
-
 pub trait I2cMasterCtrl
 where
     Self: EventLaunch<dyn I2cMasterCtrlEvent>,
@@ -67,8 +63,6 @@ pub trait I2cMasterCtrlEvent
     fn on_i2c_master_rx_complete(&self) {}
     fn on_i2c_master_error(&self) {}
 }
-
-pub type I2cSlaveDevice = &'static mut dyn I2cSlaveCtrl;
 
 pub trait I2cSlaveCtrl
 where
@@ -88,4 +82,91 @@ pub trait I2cSlaveCtrlEvent
     fn on_i2c_slave_selected(&self, _direction: I2cDirection, _address: u16) {}
     fn on_i2c_slave_listen_complete(&self) {}
     fn on_i2c_slave_error(&self) {}
+}
+
+pub struct I2cMemDevice
+{
+    instance: *mut dyn I2cMemCtrl,
+}
+
+impl I2cMemDevice
+{
+    pub const fn new(instance: &'static mut dyn I2cMemCtrl) -> Self
+    {
+        Self { instance }
+    }
+}
+
+impl AsRef<dyn I2cMemCtrl> for I2cMemDevice
+{
+    fn as_ref(&self) -> &'static dyn I2cMemCtrl
+    {
+        unsafe { &*self.instance }
+    }
+}
+
+impl AsMut<dyn I2cMemCtrl> for I2cMemDevice
+{
+    fn as_mut(&mut self) -> &'static mut dyn I2cMemCtrl
+    {
+        unsafe { &mut *self.instance }
+    }
+}
+
+pub struct I2cMasterDevice
+{
+    instance: *mut dyn I2cMasterCtrl,
+}
+
+impl I2cMasterDevice
+{
+    pub const fn new(instance: &'static mut dyn I2cMasterCtrl) -> Self
+    {
+        Self { instance }
+    }
+}
+
+impl AsRef<dyn I2cMasterCtrl> for I2cMasterDevice
+{
+    fn as_ref(&self) -> &'static dyn I2cMasterCtrl
+    {
+        unsafe { &*self.instance }
+    }
+}
+
+impl AsMut<dyn I2cMasterCtrl> for I2cMasterDevice
+{
+    fn as_mut(&mut self) -> &'static mut dyn I2cMasterCtrl
+    {
+        unsafe { &mut *self.instance }
+    }
+}
+
+pub struct I2cSlaveDevice
+{
+    instance: *mut dyn I2cSlaveCtrl,
+}
+
+impl I2cSlaveDevice
+{
+    pub const fn new(instance: &'static mut dyn I2cSlaveCtrl) -> Self
+    {
+        Self { instance }
+    }
+}
+
+impl AsRef<dyn I2cSlaveCtrl> for I2cSlaveDevice
+{
+    fn as_ref(&self) -> &'static dyn I2cSlaveCtrl
+    {
+        unsafe { &*self.instance }
+    }
+}
+
+impl AsMut<dyn I2cSlaveCtrl> for I2cSlaveDevice
+{
+    fn as_mut(&mut self) -> &'static mut dyn I2cSlaveCtrl
+    {
+        unsafe { &mut *self.instance }
+    }
 }
