@@ -1,5 +1,6 @@
 use core::cell::RefCell;
 
+use alloc::vec::Vec;
 use scems::value::{ErrValue, RetValue};
 use scems_mcu::uart::UartDevice;
 use scems_os::events::IEvents;
@@ -10,14 +11,13 @@ use crate::ConsoleCommandsExecute;
 use crate::ConsoleCommandsParser;
 
 const EVT_CMD_RX: u32 = 0x01;
-const QUEUE_SIZE: usize = 16;
 
 pub struct ConsoleCommandsDispatchCore<O>
 where
     O: OS,
 {
     cache: RefCell<ConsoleCache>,
-    executor_queue: [Option<&'static dyn ConsoleCommandsExecute>; QUEUE_SIZE],
+    executor_queue: Vec<Option<&'static dyn ConsoleCommandsExecute>>,
     dispatch_event: O::Events,
 }
 
@@ -29,7 +29,7 @@ where
     {
         Self {
             cache: RefCell::new(ConsoleCache::new()),
-            executor_queue: [None; QUEUE_SIZE],
+            executor_queue: Vec::new(),
             dispatch_event: event,
         }
     }
@@ -57,7 +57,7 @@ where
         let mut commands = ConsoleCommandsParser::new(cache.as_bytes());
         let executor = commands.next()?;
 
-        for slot in self.executor_queue
+        for slot in self.executor_queue.iter()
         {
             if let Some(x) = slot
             {
