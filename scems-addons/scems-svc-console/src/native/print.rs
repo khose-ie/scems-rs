@@ -3,7 +3,7 @@ use core::fmt::Write;
 use scems::value::RetValue;
 use scems_mcu::uart::UartDevice;
 
-use crate::console::cache::ConsoleCache;
+use crate::native::cache::ConsoleCache;
 
 pub struct ConsolePrintCore
 {

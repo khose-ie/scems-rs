@@ -2,8 +2,8 @@
 
 extern crate alloc;
 
-mod console;
+mod native;
 
-pub use console::ConsoleCommandsExecute;
-pub use console::ConsoleCommandsParser;
-pub use console::ConsoleService;
+pub use native::NativeConsoleCommandsExecute;
+pub use native::NativeConsoleCommandsParser;
+pub use native::NativeConsoleService;

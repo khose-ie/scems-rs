@@ -6,9 +6,9 @@ use scems_mcu::uart::UartDevice;
 use scems_os::events::IEvents;
 use scems_os::OS;
 
-use crate::console::cache::ConsoleCache;
-use crate::ConsoleCommandsExecute;
-use crate::ConsoleCommandsParser;
+use crate::native::cache::ConsoleCache;
+use crate::NativeConsoleCommandsExecute;
+use crate::NativeConsoleCommandsParser;
 
 const EVT_CMD_RX: u32 = 0x01;
 
@@ -17,7 +17,7 @@ where
     O: OS,
 {
     cache: RefCell<ConsoleCache>,
-    executor_queue: Vec<Option<&'static dyn ConsoleCommandsExecute>>,
+    executor_queue: Vec<Option<&'static dyn NativeConsoleCommandsExecute>>,
     dispatch_event: O::Events,
 }
 
@@ -34,7 +34,9 @@ where
         }
     }
 
-    pub fn submit_executor(&mut self, exe: &'static dyn ConsoleCommandsExecute) -> RetValue<()>
+    pub fn submit_executor(
+        &mut self, exe: &'static dyn NativeConsoleCommandsExecute,
+    ) -> RetValue<()>
     {
         for exec in self.executor_queue.iter_mut()
         {
@@ -54,7 +56,7 @@ where
         self.dispatch_event.receive(EVT_CMD_RX, O::WAIT_FOREVER).or(Err(ErrValue::Overtime))?;
 
         let cache = self.cache.borrow();
-        let mut commands = ConsoleCommandsParser::new(cache.as_bytes());
+        let mut commands = NativeConsoleCommandsParser::new(cache.as_bytes());
         let executor = commands.next()?;
 
         for slot in self.executor_queue.iter()

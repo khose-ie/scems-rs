@@ -5,14 +5,17 @@ use scems_os::mutex::MutexSample;
 use scems_os::task::ITaskMain;
 use scems_os::OS;
 
-use crate::console::dispatch::ConsoleCommandsDispatchCore;
-use crate::console::print::ConsolePrintCore;
+use crate::native::dispatch::ConsoleCommandsDispatchCore;
+use crate::native::print::ConsolePrintCore;
 
 mod cache;
 mod dispatch;
+mod execute;
 mod print;
 
-pub struct ConsoleService<O>
+pub use crate::native::execute::NativeConsoleCommandsExecute;
+
+pub struct NativeConsoleService<O>
 where
     O: OS,
 {
@@ -21,7 +24,7 @@ where
     printer: MutexSample<O::Mutex, ConsolePrintCore>,
 }
 
-impl<O> ConsoleService<O>
+impl<O> NativeConsoleService<O>
 where
     O: OS,
 {
@@ -34,21 +37,21 @@ where
         }
     }
 
-    pub fn initialize(&'static self, level: LevelFilter) -> RetValue<()>
+    pub fn initialize(instance: &'static Self, level: LevelFilter) -> RetValue<()>
     {
         log::set_max_level(level);
-        log::set_logger(self).or(Err(ErrValue::InstanceDuplicate))
+        log::set_logger(instance).or(Err(ErrValue::InstanceDuplicate))
     }
 
     pub fn submit_commands_executor(
-        &mut self, exe: &'static dyn ConsoleCommandsExecute,
+        &mut self, exe: &'static dyn NativeConsoleCommandsExecute,
     ) -> RetValue<()>
     {
         self.dispatcher.submit_executor(exe)
     }
 }
 
-impl<O> ITaskMain for ConsoleService<O>
+impl<O> ITaskMain for NativeConsoleService<O>
 where
     O: Sized + OS,
 {
@@ -62,7 +65,7 @@ where
     }
 }
 
-impl<O> UartCtrlEvent for ConsoleService<O>
+impl<O> UartCtrlEvent for NativeConsoleService<O>
 where
     O: Sized + OS,
 {
@@ -78,11 +81,11 @@ where
     }
 }
 
-unsafe impl<O> Send for ConsoleService<O> where O: OS {}
+unsafe impl<O> Send for NativeConsoleService<O> where O: OS {}
 
-unsafe impl<O> Sync for ConsoleService<O> where O: OS {}
+unsafe impl<O> Sync for NativeConsoleService<O> where O: OS {}
 
-impl<O> Log for ConsoleService<O>
+impl<O> Log for NativeConsoleService<O>
 where
     O: OS,
 {
@@ -95,19 +98,19 @@ where
     fn log(&self, record: &log::Record)
     {
         #[allow(unused_must_use)]
-        self.printer.attempt_lock(100, |core| core.writes(&self.serial_port, record));
+        self.printer.lock_then_with(|core| core.writes(&self.serial_port, record));
     }
 
     fn flush(&self) {}
 }
 
-pub struct ConsoleCommandsParser<'a>
+pub struct NativeConsoleCommandsParser<'a>
 {
     cmds: &'a [u8],
     position: usize,
 }
 
-impl<'a> ConsoleCommandsParser<'a>
+impl<'a> NativeConsoleCommandsParser<'a>
 {
     pub fn new(cmds: &'a [u8]) -> Self
     {
@@ -148,10 +151,4 @@ impl<'a> ConsoleCommandsParser<'a>
     {
         &self.cmds[self.position..]
     }
-}
-
-pub trait ConsoleCommandsExecute
-{
-    fn name(&self) -> &str;
-    fn execute_commands(&self, commands: &mut ConsoleCommandsParser);
 }
