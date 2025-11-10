@@ -67,7 +67,7 @@ impl ITimer for Timer
 
         if self.handle.is_null()
         {
-            return Err(ErrValue::InstanceCreate);
+            return Err(ErrValue::InstanceCreateFailure);
         }
 
         unsafe { osTimerStart(self.handle, times).into() }

@@ -1,4 +1,5 @@
-use core::{fmt::Write, ops::DerefMut};
+use core::fmt::Write;
+use core::ops::DerefMut;
 
 use alloc::boxed::Box;
 
@@ -20,12 +21,12 @@ impl ConsoleCache
         &self.data[..self.length]
     }
 
-    pub fn as_mut_bytes(&mut self) -> &mut [u8]
+    pub fn as_bytes_mut(&mut self) -> &mut [u8]
     {
         self.data.deref_mut()
     }
 
-    pub fn clean_up(&mut self)
+    pub fn clean(&mut self)
     {
         self.data.fill(0);
         self.length = 0;

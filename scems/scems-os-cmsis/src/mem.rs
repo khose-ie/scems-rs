@@ -66,7 +66,7 @@ impl MemSpace
 
             if self.mem[idx].handle.is_null()
             {
-                return Err(ErrValue::InstanceCreate);
+                return Err(ErrValue::InstanceCreateFailure);
             }
         }
 
@@ -94,7 +94,7 @@ impl MemSpace
             }
         }
 
-        Err(ErrValue::MemAlloc)
+        Err(ErrValue::MemAllocFailure)
     }
 }
 

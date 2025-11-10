@@ -8,6 +8,8 @@ members = [
     "scems/scems-mcu-stm32",
     "scems/scems-os",
     "scems/scems-os-cmsis",
+    "scems-addons/scems-svc",
+    "scems-addons/scems-svc-alive",
     "scems-addons/scems-svc-console"
 ]
 
@@ -22,4 +24,6 @@ scems-mcu = { path = "scems/scems-mcu" }
 scems-mcu-stm32 = { path = "scems/scems-mcu-stm32" }
 scems-os = { path = "scems/scems-os" }
 scems-os-cmsis = { path = "scems/scems-os-cmsis" }
+scems-svc = { path = "scems-addons/scems-svc" }
+scems-svc-alive = { path = "scems-addons/scems-svc-alive" }
 scems-svc-console = { path = "scems-addons/scems-svc-console" }

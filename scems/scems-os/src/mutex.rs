@@ -30,31 +30,36 @@ impl<M: IMutex, S> MutexSample<M, S>
         Self { mutex, sample: RefCell::new(sample) }
     }
 
-    pub fn lock<T>(&self, f: impl FnOnce(&mut S) -> RetValue<T>) -> RetValue<T>
+    pub fn lock_then(&self, f: impl FnOnce(&mut S)) -> RetValue<()>
     {
-        self.mutex.lock();
-        let value = f(&mut self.sample.borrow_mut());
+        self.mutex.attempt_lock(1000)?;
+        f(&mut *self.sample.try_borrow_mut()?);
+        self.mutex.unlock();
+        Ok(())
+    }
+
+    pub fn lock_then_with<T>(&self, f: impl FnOnce(&mut S) -> RetValue<T>) -> RetValue<T>
+    {
+        self.mutex.attempt_lock(1000)?;
+        let value = f(&mut *self.sample.try_borrow_mut()?);
         self.mutex.unlock();
 
         value
     }
 
-    pub fn attempt_lock<T>(&self, time: u32, f: impl FnOnce(&mut S) -> RetValue<T>) -> RetValue<T>
+    pub unsafe fn no_lock_then(&self, f: impl FnOnce(&mut S)) -> RetValue<()>
     {
-        self.mutex.attempt_lock(time)?;
-        let value = f(&mut self.sample.borrow_mut());
-        self.mutex.unlock();
-
-        value
+        f(&mut *self.sample.try_borrow_mut()?);
+        Ok(())
     }
 
-    pub fn samples(&self) -> &S
+    pub unsafe fn no_lock_then_with<T>(&self, f: impl FnOnce(&mut S) -> RetValue<T>)
+        -> RetValue<T>
     {
-        unsafe { &*self.sample.as_ptr() }
-    }
-
-    pub fn samples_mut(&mut self) -> &mut S
-    {
-        self.sample.get_mut()
+        f(&mut *self.sample.try_borrow_mut()?)
     }
 }
+
+unsafe impl<M, S> Send for MutexSample<M, S> where M: IMutex {}
+
+unsafe impl<M, S> Sync for MutexSample<M, S> where M: IMutex {}

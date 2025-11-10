@@ -135,7 +135,7 @@ impl UartQueue
 {
     #[inline]
     #[allow(static_mut_refs)]
-    pub fn allocate(sample_handle: *mut UART_HandleTypeDef) -> RetValue<&'static mut Uart>
+    pub fn alloc(sample_handle: *mut UART_HandleTypeDef) -> RetValue<&'static mut Uart>
     {
         unsafe { UART_QUEUE.allocate(&Uart::new(sample_handle)?) }
     }

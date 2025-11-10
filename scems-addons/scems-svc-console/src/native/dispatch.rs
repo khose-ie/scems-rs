@@ -4,70 +4,62 @@ use alloc::vec::Vec;
 use scems::value::{ErrValue, RetValue};
 use scems_mcu::uart::UartDevice;
 use scems_os::events::IEvents;
+use scems_os::mem::SafeVec;
+use scems_os::mutex::MutexSample;
 use scems_os::OS;
 
 use crate::native::cache::ConsoleCache;
-use crate::NativeConsoleCommandsExecute;
-use crate::NativeConsoleCommandsParser;
+use crate::ConsoleCommands;
+use crate::ConsoleExecute;
 
 const EVT_CMD_RX: u32 = 0x01;
 
-pub struct ConsoleCommandsDispatchCore<O>
+pub struct ConsoleDispatchCore<O>
 where
     O: OS,
 {
     cache: RefCell<ConsoleCache>,
-    executor_queue: Vec<Option<&'static dyn NativeConsoleCommandsExecute>>,
+    exe_queue: MutexSample<O::Mutex, Vec<&'static dyn ConsoleExecute>>,
     dispatch_event: O::Events,
 }
 
-impl<O> ConsoleCommandsDispatchCore<O>
+impl<O> ConsoleDispatchCore<O>
 where
     O: OS,
 {
-    pub fn new(event: O::Events) -> Self
+    pub fn new(event: O::Events, mutex: O::Mutex) -> Self
     {
         Self {
             cache: RefCell::new(ConsoleCache::new()),
-            executor_queue: Vec::new(),
+            exe_queue: MutexSample::new(mutex, Vec::new()),
             dispatch_event: event,
         }
     }
 
-    pub fn submit_executor(
-        &mut self, exe: &'static dyn NativeConsoleCommandsExecute,
-    ) -> RetValue<()>
+    pub fn search_exe(
+        queue: &mut Vec<&'static dyn ConsoleExecute>, exe_name: &[u8],
+    ) -> Option<&'static dyn ConsoleExecute>
     {
-        for exec in self.executor_queue.iter_mut()
-        {
-            if let None = *exec
-            {
-                *exec = Some(exe);
-                return Ok(());
-            }
-        }
-
-        Err(ErrValue::StackOverflow)
+        queue.iter().find(|x| x.exe_name().as_bytes().eq(exe_name)).map(|x| *x)
     }
 
-    pub fn dispatch(&mut self, serial_port: &UartDevice) -> RetValue<()>
+    pub fn accept_dispatch(&self, exe: &'static dyn ConsoleExecute) -> RetValue<()>
     {
-        serial_port.as_ref().async_receive(self.cache.borrow_mut().as_mut_bytes())?;
+        self.exe_queue.lock_then_with(|x| x.attempt_push(exe))
+    }
+
+    pub fn wait_and_dispatch(&self, serial_port: &UartDevice) -> RetValue<()>
+    {
+        serial_port.as_ref().async_receive(self.cache.borrow_mut().as_bytes_mut())?;
         self.dispatch_event.receive(EVT_CMD_RX, O::WAIT_FOREVER).or(Err(ErrValue::Overtime))?;
 
         let cache = self.cache.borrow();
-        let mut commands = NativeConsoleCommandsParser::new(cache.as_bytes());
-        let executor = commands.next()?;
+        let mut commands = ConsoleCommands::new(cache.as_bytes());
+        let exe_name = commands.next().ok_or(ErrValue::FormatFaliure)?;
 
-        for slot in self.executor_queue.iter()
-        {
-            if let Some(x) = slot
-            {
-                x.name().as_bytes().eq(executor).then(|| x.execute_commands(&mut commands));
-            }
-        }
-
-        Ok(())
+        self.exe_queue
+            .lock_then_with(|x| Self::search_exe(x, exe_name).ok_or(ErrValue::InstanceNotFound))
+            .and_then(|x| x.exe_with_cmds(&mut commands))
     }
 
     pub fn set_dispatch_signal(&self, len: usize)

@@ -57,7 +57,7 @@ impl ITask for Task
 
             if self.handle.is_null()
             {
-                return Err(ErrValue::InstanceCreate);
+                return Err(ErrValue::InstanceCreateFailure);
             }
         }
 

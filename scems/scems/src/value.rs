@@ -1,5 +1,7 @@
 //! The common return value type and error kinds list.
 
+use core::cell::BorrowMutError;
+
 /// `ErrValue` includes all kinds of errors' code in scems.
 ///
 /// Every function in scems which will return a result may has exception situation,
@@ -31,10 +33,10 @@ pub enum ErrValue
     NullReference = 6,
 
     /// Memory allocation failed during the operation.
-    MemAlloc = 7,
+    MemAllocFailure = 7,
 
     /// Create some sub instance failed during the operation.
-    InstanceCreate = 8,
+    InstanceCreateFailure = 8,
 
     /// The target instance could not be found during the operation.
     InstanceNotFound = 9,
@@ -42,14 +44,29 @@ pub enum ErrValue
     /// Attempt to crate an unique instance more than once.
     InstanceDuplicate = 10,
 
+    /// The instance is in use and could not borrow it.
+    InstanceInUse = 11,
+
     /// The feature includes this operation is not enabled in this distribution.
-    NotInclude = 11,
+    NotInclude = 12,
 
     /// Some must modules of this operation are not available.
-    NotAvailable = 12,
+    NotAvailable = 13,
+
+    /// Get an error when try to format a string for a series bytes.
+    FormatFaliure = 14,
 
     /// Unknown reason errors.
-    Unknown = 13,
+    Unknown = 15,
+}
+
+impl From<BorrowMutError> for ErrValue
+{
+    /// When occur the `BorrowMutError`, it could be covert to `ErrValue::InstanceInUse`.
+    fn from(_: BorrowMutError) -> Self
+    {
+        ErrValue::InstanceInUse
+    }
 }
 
 /// `RetValue` is common type of return value for scems functions.

@@ -111,7 +111,7 @@ impl Into<ErrValue> for osStatus_t
             Self::osErrorTimeout => ErrValue::Busy,
             Self::osErrorResource => ErrValue::Overtime,
             Self::osErrorParameter => ErrValue::Param,
-            Self::osErrorNoMemory => ErrValue::MemAlloc,
+            Self::osErrorNoMemory => ErrValue::MemAllocFailure,
             Self::osErrorISR => ErrValue::Permission,
             Self::osStatusReserved => ErrValue::Unknown,
         }

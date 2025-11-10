@@ -15,7 +15,7 @@ impl Events
     pub fn new() -> RetValue<Self>
     {
         let handle = unsafe { osEventFlagsNew(null()) };
-        handle.is_null().not().then_some(handle).ok_or(ErrValue::InstanceCreate)?;
+        handle.is_null().not().then_some(handle).ok_or(ErrValue::InstanceCreateFailure)?;
         Ok(Events { handle })
     }
 }

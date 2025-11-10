@@ -22,11 +22,15 @@ name = "main"
 version = "0.1.0"
 dependencies = [
  "cc",
+ "log",
  "scems",
  "scems-mcu",
  "scems-mcu-stm32",
  "scems-os",
  "scems-os-cmsis",
+ "scems-svc",
+ "scems-svc-alive",
+ "scems-svc-console",
 ]
 
 [[package]]
@@ -94,6 +98,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "scems-svc"
+version = "0.1.0"
+dependencies = [
+ "log",
+ "scems",
+ "scems-mcu",
+ "scems-os",
+]
+
+[[package]]
+name = "scems-svc-alive"
+version = "0.1.0"
+dependencies = [
+ "log",
+ "scems",
+ "scems-mcu",
+ "scems-os",
+]
+
+[[package]]
 name = "scems-svc-console"
 version = "0.1.0"
 dependencies = [
@@ -101,6 +125,7 @@ dependencies = [
  "scems",
  "scems-mcu",
  "scems-os",
+ "scems-svc",
 ]
 
 [[package]]

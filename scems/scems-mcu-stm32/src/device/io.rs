@@ -116,7 +116,7 @@ impl IoQueue
 {
     #[inline]
     #[allow(static_mut_refs)]
-    pub fn allocate(sample_handle: *mut GPIO_TypeDef, pin: GPIO_Pin) -> RetValue<&'static mut Io>
+    pub fn alloc(sample_handle: *mut GPIO_TypeDef, pin: GPIO_Pin) -> RetValue<&'static mut Io>
     {
         unsafe { IO_QUEUE.allocate_channel(&Io::new(sample_handle, pin)?, pin as u32) }
     }

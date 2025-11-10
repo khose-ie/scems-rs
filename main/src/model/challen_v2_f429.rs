@@ -1,55 +1,70 @@
-use scems::common::log::LogLevel;
-use scems::info;
-use scems::mcu::vendor::stm::uart::{UART_HandleTypeDef, UartQueue};
-use scems::os::vendors::cmsis::osMemoryPoolId_t;
-use scems::os::vendors::mem::{assign_mem_pool, MemPool};
-use scems::os::vendors::task::TaskSample;
-use scems_addons::service::console::terminal::SerialTerminal;
-use scems_addons::service::console::{Console, ConsoleService};
+use log::{info, LevelFilter};
+use scems::value::{ErrValue, RetValue};
+use scems_mcu_stm32::{
+    uart::{UART_HandleTypeDef, UartQueue},
+    wd::{IWDG_HandleTypeDef, WatchDog, WatchDogQueue},
+};
+use scems_os::task::TaskSample;
+use scems_os_cmsis::{events::Events, mutex::Mutex, task::Task, CMSISOS};
+use scems_svc_alive::{AliveWatchService, NativeAliveWatch};
+use scems_svc_console::{ConsoleService, NativeConsole};
 
 #[allow(improper_ctypes)]
 extern "C" {
     static mut huart1: UART_HandleTypeDef;
-    static mem_pool0: osMemoryPoolId_t;
-    static mem_pool0_block_size: u32;
-    static mem_pool1: osMemoryPoolId_t;
-    static mem_pool1_block_size: u32;
-    static mem_pool2: osMemoryPoolId_t;
-    static mem_pool2_block_size: u32;
-    static mem_pool3: osMemoryPoolId_t;
-    static mem_pool3_block_size: u32;
-    static mem_pool4: osMemoryPoolId_t;
-    static mem_pool4_block_size: u32;
+    static mut hwdt1: IWDG_HandleTypeDef;
+    // static mem_pool0: osMemoryPoolId_t;
+    // static mem_pool0_block_size: u32;
+    // static mem_pool1: osMemoryPoolId_t;
+    // static mem_pool1_block_size: u32;
+    // static mem_pool2: osMemoryPoolId_t;
+    // static mem_pool2_block_size: u32;
+    // static mem_pool3: osMemoryPoolId_t;
+    // static mem_pool3_block_size: u32;
+    // static mem_pool4: osMemoryPoolId_t;
+    // static mem_pool4_block_size: u32;
 }
 
-static mut CONSOLE_SERVICE: Option<TaskSample<ConsoleService>> = None;
+static mut SVC_CONSOLE: Option<TaskSample<Task, NativeConsole<CMSISOS>>> = None;
+static mut SVC_ALIVE: Option<TaskSample<Task, NativeAliveWatch<CMSISOS>>> = None;
 
 #[allow(static_mut_refs)]
-pub unsafe fn app_main()
+pub unsafe fn app_main() -> RetValue<()>
 {
     initialize_mem_pools();
 
-    CONSOLE_SERVICE = Some(TaskSample::new(ConsoleService::new().unwrap()));
-    let console_service = CONSOLE_SERVICE.as_mut().unwrap();
+    SVC_CONSOLE = Some(TaskSample::new(
+        Task::new(),
+        NativeConsole::new(
+            UartQueue::alloc(&mut huart1)?,
+            Events::new()?,
+            Mutex::new()?,
+            Mutex::new()?,
+        ),
+    ));
 
-    console_service
-        .assign_serial_terminal(SerialTerminal::new(UartQueue::allocate(&mut huart1).unwrap()).unwrap())
-        .unwrap();
-    scems::common::log::assign_stream(console_service.as_mut());
-    scems::common::log::set_level(LogLevel::Debug);
+    SVC_CONSOLE.as_ref().map(|x| ConsoleService::initialize(x.as_ref(), LevelFilter::Info));
+
+    SVC_ALIVE = Some(TaskSample::new(
+        Task::new(),
+        NativeAliveWatch::new(WatchDogQueue::alloc(&mut hwdt1)?, Mutex::new()?, 300)?,
+    ));
+
+    SVC_ALIVE.as_ref().map(|x| AliveWatchService::initialize(x.as_ref()));
 
     info!("     ___  ___ ___ _ __ ___  ___ \r");
     info!("    / __|/ __/ _ \\ '_ ` _ \\/ __|\r");
     info!("    \\__ \\ (_|  __/ | | | | \\__ \\\r");
     info!("    |___/\\___\\___|_| |_| |_|___/\r");
     info!("");
+    Ok(())
 }
 
 pub unsafe fn initialize_mem_pools()
 {
-    assign_mem_pool(&MemPool::from(mem_pool0, mem_pool0_block_size)).unwrap();
-    assign_mem_pool(&MemPool::from(mem_pool1, mem_pool1_block_size)).unwrap();
-    assign_mem_pool(&MemPool::from(mem_pool2, mem_pool2_block_size)).unwrap();
-    assign_mem_pool(&MemPool::from(mem_pool3, mem_pool3_block_size)).unwrap();
-    assign_mem_pool(&MemPool::from(mem_pool4, mem_pool4_block_size)).unwrap();
+    // assign_mem_pool(&MemPool::from(mem_pool0, mem_pool0_block_size)).unwrap();
+    // assign_mem_pool(&MemPool::from(mem_pool1, mem_pool1_block_size)).unwrap();
+    // assign_mem_pool(&MemPool::from(mem_pool2, mem_pool2_block_size)).unwrap();
+    // assign_mem_pool(&MemPool::from(mem_pool3, mem_pool3_block_size)).unwrap();
+    // assign_mem_pool(&MemPool::from(mem_pool4, mem_pool4_block_size)).unwrap();
 }

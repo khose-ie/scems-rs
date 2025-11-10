@@ -99,7 +99,7 @@ impl AdcQueue
 {
     #[inline]
     #[allow(static_mut_refs)]
-    pub fn allocate(sample_handle: *mut ADC_HandleTypeDef) -> RetValue<&'static mut Adc>
+    pub fn alloc(sample_handle: *mut ADC_HandleTypeDef) -> RetValue<&'static mut Adc>
     {
         unsafe { ADC_QUEUE.allocate(&Adc::new(sample_handle)?) }
     }

@@ -1,0 +1,21 @@
+[package]
+name = "scems-svc-alive"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-2.0"
+authors = ["Khose-ie<khose-ie@outlook.com>"]
+description = "Sample Common Embedded Middleware Software - Alive Keep Service."
+
+[lib]
+name = "scems_svc_alive"
+test = false
+bench = false
+
+[dependencies]
+scems = "0.1.0"
+scems-mcu = "0.1.0"
+scems-os = "0.1.0"
+log = "0.4"
+
+[features]
+os-async = []

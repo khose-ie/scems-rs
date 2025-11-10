@@ -1,7 +1,7 @@
 #![no_std]
 
-mod example;
-// mod model;
+// mod example;
+mod model;
 
 use core::panic::PanicInfo;
 
@@ -10,7 +10,8 @@ use core::panic::PanicInfo;
 #[allow(static_mut_refs)]
 pub unsafe extern "C" fn app_main()
 {
-    // model::challen_v2_f429::app_main();
+    #[allow(unused_must_use)]
+    model::challen_v2_f429::app_main();
     // example::example();
 }
 

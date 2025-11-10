@@ -15,7 +15,7 @@ impl Semaphore
     pub fn new(max_count: u32) -> RetValue<Self>
     {
         let handle = unsafe { osSemaphoreNew(max_count, 0, null()) };
-        handle.is_null().not().then_some(handle).ok_or(ErrValue::InstanceCreate)?;
+        handle.is_null().not().then_some(handle).ok_or(ErrValue::InstanceCreateFailure)?;
         Ok(Semaphore { handle })
     }
 }

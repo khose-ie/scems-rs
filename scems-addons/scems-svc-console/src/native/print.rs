@@ -1,32 +1,37 @@
 use core::fmt::Write;
 
-use scems::value::RetValue;
+use scems::value::{ErrValue, RetValue};
 use scems_mcu::uart::UartDevice;
+use scems_os::{mutex::MutexSample, OS};
 
 use crate::native::cache::ConsoleCache;
 
-pub struct ConsolePrintCore
+pub struct ConsolePrintCore<O>
+where
+    O: OS,
 {
-    cache: ConsoleCache,
+    cache: MutexSample<O::Mutex, ConsoleCache>,
 }
 
-impl ConsolePrintCore
+impl<O> ConsolePrintCore<O>
+where
+    O: OS,
 {
-    pub fn new() -> Self
+    pub fn new(mutex: O::Mutex) -> Self
     {
-        Self { cache: ConsoleCache::new() }
+        Self { cache: MutexSample::new(mutex, ConsoleCache::new()) }
     }
 
-    pub fn writes(&mut self, serial_port: &UartDevice, record: &log::Record) -> RetValue<()>
+    #[rustfmt::skip]
+    pub fn writes(&self, serial_port: &UartDevice, record: &log::Record) -> RetValue<()>
     {
-        self.cache.clean_up();
+        self.cache.lock_then_with(|x|
+        { 
+            x.clean();
 
-        if let Ok(()) = write!(self.cache, "[{:>5}] {}\n", record.level(), record.args())
-        {
-            #[allow(unused_must_use)]
-            serial_port.as_ref().transmit(self.cache.as_bytes(), 100)?;
-        }
-
-        Ok(())
+            writeln!(x, "[{:>5}] {}", record.level(), record.args())
+                .map_err(|_| ErrValue::FormatFaliure)
+                .and_then(|()| serial_port.as_ref().transmit(x.as_bytes(), 100))
+        })
     }
 }

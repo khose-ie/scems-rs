@@ -126,7 +126,7 @@ impl SpiQueue
 {
     #[inline]
     #[allow(static_mut_refs)]
-    pub fn allocate(sample_handle: *mut SPI_HandleTypeDef) -> RetValue<&'static mut Spi>
+    pub fn alloc(sample_handle: *mut SPI_HandleTypeDef) -> RetValue<&'static mut Spi>
     {
         unsafe { SPI_QUEUE.allocate(&Spi::new(sample_handle)?) }
     }

@@ -1,57 +1,53 @@
-use log::{LevelFilter, Log};
-use scems::value::{ErrValue, RetValue};
+use log::Log;
+use scems::value::RetValue;
 use scems_mcu::uart::{UartCtrl, UartCtrlEvent, UartDevice};
-use scems_os::mutex::MutexSample;
 use scems_os::task::ITaskMain;
 use scems_os::OS;
 
-use crate::native::dispatch::ConsoleCommandsDispatchCore;
+use crate::native::dispatch::ConsoleDispatchCore;
 use crate::native::print::ConsolePrintCore;
+use crate::{Console, ConsoleExecute};
 
 mod cache;
 mod dispatch;
-mod execute;
 mod print;
 
-pub use crate::native::execute::NativeConsoleCommandsExecute;
-
-pub struct NativeConsoleService<O>
+pub struct NativeConsole<O>
 where
     O: OS,
 {
     serial_port: UartDevice,
-    dispatcher: ConsoleCommandsDispatchCore<O>,
-    printer: MutexSample<O::Mutex, ConsolePrintCore>,
+    dispatcher: ConsoleDispatchCore<O>,
+    printer: ConsolePrintCore<O>,
 }
 
-impl<O> NativeConsoleService<O>
+impl<O> NativeConsole<O>
 where
     O: OS,
 {
-    pub fn new(uart: &'static mut dyn UartCtrl, events: O::Events, mutex: O::Mutex) -> Self
+    pub fn new(
+        uart: &'static mut dyn UartCtrl, events: O::Events, mutex1: O::Mutex, mutex2: O::Mutex,
+    ) -> Self
     {
         Self {
             serial_port: UartDevice::new(uart),
-            dispatcher: ConsoleCommandsDispatchCore::new(events),
-            printer: MutexSample::new(mutex, ConsolePrintCore::new()),
+            dispatcher: ConsoleDispatchCore::new(events, mutex1),
+            printer: ConsolePrintCore::new(mutex2),
         }
-    }
-
-    pub fn initialize(instance: &'static Self, level: LevelFilter) -> RetValue<()>
-    {
-        log::set_max_level(level);
-        log::set_logger(instance).or(Err(ErrValue::InstanceDuplicate))
-    }
-
-    pub fn submit_commands_executor(
-        &mut self, exe: &'static dyn NativeConsoleCommandsExecute,
-    ) -> RetValue<()>
-    {
-        self.dispatcher.submit_executor(exe)
     }
 }
 
-impl<O> ITaskMain for NativeConsoleService<O>
+impl<O> Console for NativeConsole<O>
+where
+    O: OS,
+{
+    fn accept_dispatch(&self, exe: &'static dyn ConsoleExecute) -> RetValue<()>
+    {
+        self.dispatcher.accept_dispatch(exe)
+    }
+}
+
+impl<O> ITaskMain for NativeConsole<O>
 where
     O: Sized + OS,
 {
@@ -60,12 +56,12 @@ where
         loop
         {
             #[allow(unused_must_use)]
-            self.dispatcher.dispatch(&self.serial_port);
+            self.dispatcher.wait_and_dispatch(&self.serial_port);
         }
     }
 }
 
-impl<O> UartCtrlEvent for NativeConsoleService<O>
+impl<O> UartCtrlEvent for NativeConsole<O>
 where
     O: Sized + OS,
 {
@@ -81,11 +77,11 @@ where
     }
 }
 
-unsafe impl<O> Send for NativeConsoleService<O> where O: OS {}
+unsafe impl<O> Send for NativeConsole<O> where O: OS {}
 
-unsafe impl<O> Sync for NativeConsoleService<O> where O: OS {}
+unsafe impl<O> Sync for NativeConsole<O> where O: OS {}
 
-impl<O> Log for NativeConsoleService<O>
+impl<O> Log for NativeConsole<O>
 where
     O: OS,
 {
@@ -98,57 +94,8 @@ where
     fn log(&self, record: &log::Record)
     {
         #[allow(unused_must_use)]
-        self.printer.lock_then_with(|core| core.writes(&self.serial_port, record));
+        self.printer.writes(&self.serial_port, record);
     }
 
     fn flush(&self) {}
-}
-
-pub struct NativeConsoleCommandsParser<'a>
-{
-    cmds: &'a [u8],
-    position: usize,
-}
-
-impl<'a> NativeConsoleCommandsParser<'a>
-{
-    pub fn new(cmds: &'a [u8]) -> Self
-    {
-        Self { cmds, position: 0 }
-    }
-
-    pub fn next(&mut self) -> RetValue<&'a [u8]>
-    {
-        let mut pos = self.position;
-
-        while pos < self.cmds.len()
-            && (self.cmds[pos] == b' ' || self.cmds[pos] == b'\r' || self.cmds[pos] == b'\n')
-        {
-            pos += 1;
-        }
-
-        if pos >= self.cmds.len() as usize
-        {
-            return Err(ErrValue::StackOverflow);
-        }
-
-        let start = pos;
-
-        while pos < self.cmds.len()
-            && self.cmds[pos] != b' '
-            && self.cmds[pos] != b'\r'
-            && self.cmds[pos] != b'\n'
-        {
-            pos += 1;
-        }
-
-        self.position = pos;
-
-        Ok(&self.cmds[start..pos])
-    }
-
-    pub fn residual(&self) -> &[u8]
-    {
-        &self.cmds[self.position..]
-    }
 }

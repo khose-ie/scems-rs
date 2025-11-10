@@ -22,7 +22,7 @@ impl SxMutex
     pub fn new() -> RetValue<Self>
     {
         let handle = unsafe { osMutexNew(null()) };
-        handle.is_null().not().then_some(handle).ok_or(ErrValue::InstanceCreate)?;
+        handle.is_null().not().then_some(handle).ok_or(ErrValue::InstanceCreateFailure)?;
         Ok(SxMutex { handle, in_keep: false, request_keep: false, involve_num: 0 })
     }
 }

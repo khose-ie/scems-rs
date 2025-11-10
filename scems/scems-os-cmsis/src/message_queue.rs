@@ -16,7 +16,7 @@ impl MessageQueue
     pub fn new(message_count: u32, message_size: u32) -> RetValue<Self>
     {
         let handle = unsafe { osMessageQueueNew(message_count, message_size, null()) };
-        handle.is_null().not().then_some(handle).ok_or(ErrValue::InstanceCreate)?;
+        handle.is_null().not().then_some(handle).ok_or(ErrValue::InstanceCreateFailure)?;
         Ok(MessageQueue { handle })
     }
 }

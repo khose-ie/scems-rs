@@ -209,7 +209,7 @@ impl CanQueue
 {
     #[inline]
     #[allow(static_mut_refs)]
-    pub fn allocate(sample_handle: *mut CAN_HandleTypeDef, fifo: u32)
+    pub fn alloc(sample_handle: *mut CAN_HandleTypeDef, fifo: u32)
         -> RetValue<&'static mut Can>
     {
         unsafe { CAN_QUEUE.allocate(&Can::new(sample_handle, fifo)?) }
