@@ -1,5 +1,8 @@
 use log::{info, LevelFilter};
-use scems::value::{ErrValue, RetValue};
+use scems::{
+    cell::StaticCell,
+    value::{ErrValue, RetValue},
+};
 use scems_mcu_stm32::{
     uart::{UART_HandleTypeDef, UartQueue},
     wd::{IWDG_HandleTypeDef, WatchDog, WatchDogQueue},
@@ -25,43 +28,26 @@ extern "C" {
     // static mem_pool4_block_size: u32;
 }
 
-static mut SVC_CONSOLE: Option<TaskSample<Task, NativeConsole<CMSISOS>>> = None;
-static mut SVC_ALIVE: Option<TaskSample<Task, NativeAliveWatch<CMSISOS>>> = None;
+static mut SVC_CONSOLE: StaticCell<TaskSample<Task, NativeConsole<CMSISOS>>> = StaticCell::new();
+static mut SVC_ALIVE: StaticCell<TaskSample<Task, NativeAliveWatch<CMSISOS>>> = StaticCell::new();
 
 #[allow(static_mut_refs)]
 pub unsafe fn app_main() -> RetValue<()>
 {
     initialize_mem_pools();
 
-    SVC_CONSOLE = Some(TaskSample::new(
-        Task::new(),
-        NativeConsole::new(
-            UartQueue::alloc(&mut huart1)?,
-            Events::new()?,
-            Mutex::new()?,
-            Mutex::new()?,
-        ),
-    ));
+    #[rustfmt::skip]
+    SVC_CONSOLE
+        .set(TaskSample::new(Task::new(),
+                             NativeConsole::new(UartQueue::alloc(&mut huart1)?, Events::new()?,
+                                                Mutex::new()?, Mutex::new()?)))
+        .and_then(|x| ConsoleService::initialize(x.as_ref(), LevelFilter::Info))?;
 
-    let a = SVC_CONSOLE.insert(TaskSample::new(
-        Task::new(),
-        NativeConsole::new(
-            UartQueue::alloc(&mut huart1)?,
-            Events::new()?,
-            Mutex::new()?,
-            Mutex::new()?,
-        ),
-    ));
-
-    SVC_CONSOLE.as_ref().map(|x| ConsoleService::initialize(x.as_ref(), LevelFilter::Info) );
-
-
-    SVC_ALIVE = Some(TaskSample::new(
-        Task::new(),
-        NativeAliveWatch::new(WatchDogQueue::alloc(&mut hwdt1)?, Mutex::new()?, 300)?,
-    ));
-
-    SVC_ALIVE.as_ref().map(|x| AliveWatchService::initialize(x.as_ref()));
+    #[rustfmt::skip]
+    SVC_ALIVE
+        .set(TaskSample::new(Task::new(),
+                             NativeAliveWatch::new(WatchDogQueue::alloc(&mut hwdt1)?, Mutex::new()?, 300)?))
+        .and_then(|x| AliveWatchService::initialize(x.as_ref()))?;
 
     info!("     ___  ___ ___ _ __ ___  ___ \r");
     info!("    / __|/ __/ _ \\ '_ ` _ \\/ __|\r");
