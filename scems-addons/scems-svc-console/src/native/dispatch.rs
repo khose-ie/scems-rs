@@ -1,6 +1,7 @@
 use core::cell::RefCell;
 
 use alloc::vec::Vec;
+use log::warn;
 use scems::value::{ErrValue, RetValue};
 use scems_mcu::uart::UartDevice;
 use scems_os::events::IEvents;
@@ -9,6 +10,7 @@ use scems_os::mutex::MutexSample;
 use scems_os::OS;
 
 use crate::native::cache::ConsoleCache;
+use crate::svc::CS;
 use crate::ConsoleCommands;
 use crate::ConsoleExecute;
 
@@ -60,6 +62,7 @@ where
         self.exe_queue
             .lock_then_with(|x| Self::search_exe(x, exe_name).ok_or(ErrValue::InstanceNotFound))
             .and_then(|x| x.exe_with_cmds(&mut commands))
+            .inspect_err(|_| warn!("{CS} Can't recognize the inputed command."))
     }
 
     pub fn set_dispatch_signal(&self, len: usize)

@@ -3,6 +3,8 @@ use scems::value::{ErrValue, RetValue};
 
 use crate::Console;
 
+pub const CS: &str = "<ConsoleService>";
+
 static mut SVC: Option<&'static dyn Console> = None;
 
 pub struct ConsoleService;
