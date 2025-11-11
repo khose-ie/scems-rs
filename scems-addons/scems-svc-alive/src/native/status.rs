@@ -1,3 +1,8 @@
+use log::error;
+use scems::value::{ErrValue, RetValue};
+
+use crate::svc::AWS;
+
 pub struct AliveStatus<'a>
 {
     name: &'a str,
@@ -27,8 +32,13 @@ impl<'a> AliveStatus<'a>
         self.alive_tick = tick;
     }
 
-    pub fn is_alive(&self, tick: u32, max_time: u32) -> bool
+    pub fn check_alive(&self, tick: u32, max_time: u32) -> RetValue<()>
     {
-        tick - self.alive_tick > max_time
+        let past = tick - self.alive_tick;
+
+        (past > max_time)
+            .then_some(())
+            .ok_or(ErrValue::Overtime)
+            .inspect_err(|_| error!("{AWS} {} is near death over {}", self.name, past))
     }
 }

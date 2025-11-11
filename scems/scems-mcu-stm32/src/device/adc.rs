@@ -108,7 +108,7 @@ impl AdcQueue
     #[allow(static_mut_refs)]
     pub fn clean(sample_handle: *mut ADC_HandleTypeDef)
     {
-        NonNull::new(sample_handle).map(|handle| unsafe { ADC_QUEUE.clean(handle) });
+        NonNull::new(sample_handle).inspect(|handle| unsafe { ADC_QUEUE.clean(*handle) });
     }
 
     #[inline]
@@ -131,7 +131,7 @@ pub unsafe extern "C" fn HAL_ADC_ConvCpltCallback(adc: *mut ADC_HandleTypeDef)
     {
         sample
             .event_handle
-            .map(|event_handle| event_handle.on_adc_convert_once_complete(HAL_ADC_GetValue(adc)));
+            .inspect(|event_handle| event_handle.on_adc_convert_once_complete(HAL_ADC_GetValue(adc)));
     }
 }
 
@@ -145,7 +145,7 @@ pub unsafe extern "C" fn HAL_ADC_LevelOutOfWindowCallback(adc: *mut ADC_HandleTy
 {
     if let Ok(sample) = AdcQueue::search(adc)
     {
-        sample.event_handle.map(|event_handle| event_handle.on_adc_level_out_of_window());
+        sample.event_handle.inspect(|event_handle| event_handle.on_adc_level_out_of_window());
     }
 }
 
@@ -155,6 +155,6 @@ pub unsafe extern "C" fn HAL_ADC_ErrorCallback(adc: *mut ADC_HandleTypeDef)
 {
     if let Ok(sample) = AdcQueue::search(adc)
     {
-        sample.event_handle.map(|event_handle| event_handle.on_adc_error());
+        sample.event_handle.inspect(|event_handle| event_handle.on_adc_error());
     }
 }

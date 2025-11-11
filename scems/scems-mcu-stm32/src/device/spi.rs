@@ -135,7 +135,7 @@ impl SpiQueue
     #[allow(static_mut_refs)]
     pub fn clean(sample_handle: *mut SPI_HandleTypeDef)
     {
-        NonNull::new(sample_handle).map(|handle| unsafe { SPI_QUEUE.clean(handle) });
+        NonNull::new(sample_handle).inspect(|handle| unsafe { SPI_QUEUE.clean(*handle) });
     }
 
     #[inline]

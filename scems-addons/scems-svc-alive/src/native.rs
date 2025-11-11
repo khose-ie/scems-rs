@@ -3,6 +3,7 @@ mod status;
 
 use core::marker::PhantomData;
 
+use log::error;
 use scems::value::RetValue;
 use scems_mcu::wd::WatchDogDevice;
 use scems_os::mutex::MutexSample;
@@ -11,6 +12,7 @@ use scems_os::OS;
 
 use crate::alive::{AliveWatch, AliveWatchHandle};
 use crate::native::queue::AliveWatchQueue;
+use crate::svc::AWS;
 
 pub struct NativeAliveWatch<'a, O>
 where
@@ -52,19 +54,19 @@ where
 
     fn watch_back(&self, handle: AliveWatchHandle) -> RetValue<()>
     {
-        self.watch_queue.lock_then(|x| x[*handle].set_enable(true))
+        self.watch_queue.lock_then(|x| x[handle].set_enable(true))
     }
 
     fn stop_watch(&self, handle: AliveWatchHandle) -> RetValue<()>
     {
-        self.watch_queue.lock_then(|x| x[*handle].set_enable(false))
+        self.watch_queue.lock_then(|x| x[handle].set_enable(false))
     }
 
     fn update_alive_state(&self, handle: AliveWatchHandle)
     {
         #[allow(unused_must_use)]
         unsafe {
-            self.watch_queue.no_lock_then(|x| x[*handle].update_tick(O::systick()))
+            self.watch_queue.no_lock_then(|x| x[handle].update_tick(O::systick()))
         };
     }
 }
@@ -86,7 +88,10 @@ where
             #[allow(unused_must_use)]
             self.watch_queue
                 .lock_then_with(|x| x.check_alive_time(O::systick(), self.cycle_time))
-                .map(|()| self.device.refresh());
+                .inspect(|()| self.device.refresh())
+                .inspect_err(|_| {
+                    error!("{AWS} At least one task near death, don't refresh Watch Dog.")
+                });
         }
     }
 }

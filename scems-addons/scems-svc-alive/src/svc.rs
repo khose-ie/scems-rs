@@ -4,6 +4,8 @@ use crate::alive::AliveWatch;
 
 static mut SVC: Option<&'static dyn AliveWatch> = None;
 
+pub const AWS: &str = "<AliveWatchService>";
+
 pub struct AliveWatchService;
 
 impl AliveWatchService

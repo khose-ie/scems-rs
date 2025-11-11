@@ -1,3 +1,5 @@
+use core::ops::{Deref, DerefMut};
+
 use scems::value::RetValue;
 
 #[repr(C)]
@@ -45,7 +47,9 @@ impl<T: ITask, S: ITaskMain> TaskSample<T, S>
         Self { task, sample }
     }
 
-    pub fn initialize(&mut self, name: &str, stack_size: u32,  priority: TaskPriorities) -> RetValue<()>
+    pub fn initialize(
+        &mut self, name: &str, stack_size: u32, priority: TaskPriorities,
+    ) -> RetValue<()>
     {
         self.task.activate(name, stack_size, priority, &self.sample)
     }
@@ -53,6 +57,24 @@ impl<T: ITask, S: ITaskMain> TaskSample<T, S>
     pub fn finalize(&mut self)
     {
         self.task.deactivate();
+    }
+}
+
+impl<T: ITask, S: ITaskMain> Deref for TaskSample<T, S>
+{
+    type Target = S;
+
+    fn deref(&self) -> &Self::Target
+    {
+        &self.sample
+    }
+}
+
+impl<T: ITask, S: ITaskMain> DerefMut for TaskSample<T, S>
+{
+    fn deref_mut(&mut self) -> &mut Self::Target
+    {
+        &mut self.sample
     }
 }
 

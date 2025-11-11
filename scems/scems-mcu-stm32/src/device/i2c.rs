@@ -366,7 +366,7 @@ impl I2cQueue
     #[allow(static_mut_refs)]
     pub fn clean(sample_handle: *mut I2C_HandleTypeDef)
     {
-        NonNull::new(sample_handle).map(|handle| unsafe { I2C_QUEUE.clean(handle) });
+        NonNull::new(sample_handle).inspect(|handle| unsafe { I2C_QUEUE.clean(*handle) });
     }
 
     #[inline]
@@ -420,12 +420,12 @@ impl I2cQueue
 /////////////////////////////////////////////////////////////////////////////
 
 #[no_mangle]
-#[allow(static_mut_refs)]
+// #[allow(static_mut_refs)]
 pub unsafe extern "C" fn HAL_I2C_MasterTxCpltCallback(i2c: *mut I2C_HandleTypeDef)
 {
     if let Ok(sample) = I2cQueue::search_master(i2c)
     {
-        sample.event_handle.map(|event_handle| event_handle.on_i2c_master_tx_complete());
+        sample.event_handle.inspect(|event_handle| event_handle.on_i2c_master_tx_complete());
     }
 }
 
@@ -435,7 +435,7 @@ pub unsafe extern "C" fn HAL_I2C_MasterRxCpltCallback(i2c: *mut I2C_HandleTypeDe
 {
     if let Ok(sample) = I2cQueue::search_master(i2c)
     {
-        sample.event_handle.map(|event_handle| event_handle.on_i2c_master_rx_complete());
+        sample.event_handle.inspect(|event_handle| event_handle.on_i2c_master_rx_complete());
     }
 }
 
@@ -445,7 +445,7 @@ pub unsafe extern "C" fn HAL_I2C_SlaveTxCpltCallback(i2c: *mut I2C_HandleTypeDef
 {
     if let Ok(sample) = I2cQueue::search_slave(i2c)
     {
-        sample.event_handle.map(|event_handle| event_handle.on_i2c_slave_tx_complete());
+        sample.event_handle.inspect(|event_handle| event_handle.on_i2c_slave_tx_complete());
     }
 }
 
@@ -455,7 +455,7 @@ pub unsafe extern "C" fn HAL_I2C_SlaveRxCpltCallback(i2c: *mut I2C_HandleTypeDef
 {
     if let Ok(sample) = I2cQueue::search_slave(i2c)
     {
-        sample.event_handle.map(|event_handle| event_handle.on_i2c_slave_rx_complete());
+        sample.event_handle.inspect(|event_handle| event_handle.on_i2c_slave_rx_complete());
     }
 }
 
@@ -467,7 +467,7 @@ pub unsafe extern "C" fn HAL_I2C_AddrCallback(
 {
     if let Ok(sample) = I2cQueue::search_slave(i2c)
     {
-        sample.event_handle.map(|event_handle| {
+        sample.event_handle.inspect(|event_handle| {
             event_handle.on_i2c_slave_selected(transfer_direction.into(), addr_match_code)
         });
     }
@@ -479,7 +479,7 @@ pub unsafe extern "C" fn HAL_I2C_ListenCpltCallback(i2c: *mut I2C_HandleTypeDef)
 {
     if let Ok(sample) = I2cQueue::search_slave(i2c)
     {
-        sample.event_handle.map(|event_handle| event_handle.on_i2c_slave_listen_complete());
+        sample.event_handle.inspect(|event_handle| event_handle.on_i2c_slave_listen_complete());
     }
 }
 
@@ -489,7 +489,7 @@ pub unsafe extern "C" fn HAL_I2C_MemTxCpltCallback(i2c: *mut I2C_HandleTypeDef)
 {
     if let Ok(sample) = I2cQueue::search_mem(i2c)
     {
-        sample.event_handle.map(|event_handle| event_handle.on_i2c_mem_write_complete());
+        sample.event_handle.inspect(|event_handle| event_handle.on_i2c_mem_write_complete());
     }
 }
 
@@ -499,7 +499,7 @@ pub unsafe extern "C" fn HAL_I2C_MemRxCpltCallback(i2c: *mut I2C_HandleTypeDef)
 {
     if let Ok(sample) = I2cQueue::search_mem(i2c)
     {
-        sample.event_handle.map(|event_handle| event_handle.on_i2c_mem_read_complete());
+        sample.event_handle.inspect(|event_handle| event_handle.on_i2c_mem_read_complete());
     }
 }
 
@@ -514,21 +514,21 @@ pub unsafe extern "C" fn HAL_I2C_ErrorCallback(i2c: *mut I2C_HandleTypeDef)
         {
             if let Ok(sample) = I2cQueue::search_master(i2c)
             {
-                sample.event_handle.map(|event_handle| event_handle.on_i2c_master_error());
+                sample.event_handle.inspect(|event_handle| event_handle.on_i2c_master_error());
             }
         }
         HAL_I2C_ModeTypeDef::Slave =>
         {
             if let Ok(sample) = I2cQueue::search_slave(i2c)
             {
-                sample.event_handle.map(|event_handle| event_handle.on_i2c_slave_error());
+                sample.event_handle.inspect(|event_handle| event_handle.on_i2c_slave_error());
             }
         }
         HAL_I2C_ModeTypeDef::Mem =>
         {
             if let Ok(sample) = I2cQueue::search_mem(i2c)
             {
-                sample.event_handle.map(|event_handle| event_handle.on_i2c_mem_error());
+                sample.event_handle.inspect(|event_handle| event_handle.on_i2c_mem_error());
             }
         }
     }

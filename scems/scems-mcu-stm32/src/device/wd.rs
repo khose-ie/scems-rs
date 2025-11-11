@@ -54,7 +54,7 @@ impl WatchDogQueue
     #[allow(static_mut_refs)]
     pub fn clean(sample_handle: *mut IWDG_HandleTypeDef)
     {
-        NonNull::new(sample_handle).map(|handle| unsafe { WD_QUEUE.clean(handle) });
+        NonNull::new(sample_handle).inspect(|handle| unsafe { WD_QUEUE.clean(*handle) });
     }
 
     #[inline]

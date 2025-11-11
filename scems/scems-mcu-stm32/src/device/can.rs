@@ -219,7 +219,7 @@ impl CanQueue
     #[allow(static_mut_refs)]
     pub fn clean(sample_handle: *mut CAN_HandleTypeDef)
     {
-        NonNull::new(sample_handle).map(|handle| unsafe { CAN_QUEUE.clean(handle) });
+        NonNull::new(sample_handle).inspect(|handle| unsafe { CAN_QUEUE.clean(*handle) });
     }
 
     #[inline]
@@ -275,7 +275,7 @@ pub unsafe extern "C" fn HAL_CAN_RxFifo0MsgPendingCallback(can: *mut CAN_HandleT
         {
             if sample.receive(async_cache.as_mut(), 0).is_ok()
             {
-                sample.event_handle.map(|event_handle| event_handle.on_can_message_receive());
+                sample.event_handle.inspect(|event_handle| event_handle.on_can_message_receive());
             }
         }
     }
@@ -310,6 +310,6 @@ pub unsafe extern "C" fn HAL_CAN_ErrorCallback(can: *mut CAN_HandleTypeDef)
 {
     if let Ok(sample) = CanQueue::search(can)
     {
-        sample.event_handle.map(|event_handle| event_handle.on_can_error());
+        sample.event_handle.inspect(|event_handle| event_handle.on_can_error());
     }
 }

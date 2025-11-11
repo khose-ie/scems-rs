@@ -126,7 +126,7 @@ impl IoQueue
     pub fn clean(sample_handle: *mut GPIO_TypeDef, pin: GPIO_Pin)
     {
         NonNull::new(sample_handle)
-            .map(|handle| unsafe { IO_QUEUE.clean_channel(handle, pin as u32) });
+            .inspect(|handle| unsafe { IO_QUEUE.clean_channel(*handle, pin as u32) });
     }
 
     #[inline]
@@ -148,7 +148,7 @@ pub unsafe extern "C" fn HAL_GPIO_EXTI_Callback(pin: u16)
 {
     if let Some(sample) = IO_EVENT_QUEUE[pin.trailing_zeros() as usize]
     {
-        sample.event_handle.map(|event_handle| event_handle.on_io_state_change());
+        sample.event_handle.inspect(|event_handle| event_handle.on_io_state_change());
     }
 }
 
@@ -157,7 +157,7 @@ pub unsafe extern "C" fn HAL_GPIO_EXTI_Rising_Callback(pin: u16)
 {
     if let Some(sample) = IO_EVENT_QUEUE[pin.trailing_zeros() as usize]
     {
-        sample.event_handle.map(|event_handle| event_handle.on_io_state_change());
+        sample.event_handle.inspect(|event_handle| event_handle.on_io_state_change());
     }
 }
 
@@ -166,6 +166,6 @@ pub unsafe extern "C" fn HAL_GPIO_EXTI_Falling_Callback(pin: u16)
 {
     if let Some(sample) = IO_EVENT_QUEUE[pin.trailing_zeros() as usize]
     {
-        sample.event_handle.map(|event_handle| event_handle.on_io_state_change());
+        sample.event_handle.inspect(|event_handle| event_handle.on_io_state_change());
     }
 }

@@ -144,7 +144,7 @@ impl UartQueue
     #[allow(static_mut_refs)]
     pub fn clean(sample_handle: *mut UART_HandleTypeDef)
     {
-        NonNull::new(sample_handle).map(|handle| unsafe { UART_QUEUE.clean(handle) });
+        NonNull::new(sample_handle).inspect(|handle| unsafe { UART_QUEUE.clean(*handle) });
     }
 
     #[inline]
@@ -165,7 +165,7 @@ pub unsafe extern "C" fn HAL_UART_TxCpltCallback(uart: *mut UART_HandleTypeDef)
 {
     if let Ok(sample) = UartQueue::search(uart)
     {
-        sample.event_handle.map(|event_handle| event_handle.on_uart_tx_complete());
+        sample.event_handle.inspect(|event_handle| event_handle.on_uart_tx_complete());
     }
 }
 
@@ -178,7 +178,7 @@ pub unsafe extern "C" fn HAL_UART_RxCpltCallback(uart: *mut UART_HandleTypeDef)
 {
     if let Ok(sample) = UartQueue::search(uart)
     {
-        sample.event_handle.map(|event_handle| event_handle.on_uart_rx_size_complete());
+        sample.event_handle.inspect(|event_handle| event_handle.on_uart_rx_size_complete());
     }
 }
 
@@ -191,7 +191,7 @@ pub unsafe extern "C" fn HAL_UART_ErrorCallback(uart: *mut UART_HandleTypeDef)
 {
     if let Ok(sample) = UartQueue::search(uart)
     {
-        sample.event_handle.map(|event_handle| event_handle.on_uart_error());
+        sample.event_handle.inspect(|event_handle| event_handle.on_uart_error());
     }
 }
 
@@ -201,7 +201,7 @@ pub unsafe extern "C" fn HAL_UART_AbortCpltCallback(uart: *mut UART_HandleTypeDe
 {
     if let Ok(sample) = UartQueue::search(uart)
     {
-        sample.event_handle.map(|event_handle| event_handle.on_uart_abort_complete());
+        sample.event_handle.inspect(|event_handle| event_handle.on_uart_abort_complete());
     }
 }
 
@@ -217,6 +217,6 @@ pub unsafe extern "C" fn HAL_UARTEx_RxEventCallback(uart: *mut UART_HandleTypeDe
 {
     if let Ok(sample) = UartQueue::search(uart)
     {
-        sample.event_handle.map(|event_handle| event_handle.on_uart_rx_complete(size as u32));
+        sample.event_handle.inspect(|event_handle| event_handle.on_uart_rx_complete(size as u32));
     }
 }

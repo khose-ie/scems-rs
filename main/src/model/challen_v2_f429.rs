@@ -43,7 +43,18 @@ pub unsafe fn app_main() -> RetValue<()>
         ),
     ));
 
-    SVC_CONSOLE.as_ref().map(|x| ConsoleService::initialize(x.as_ref(), LevelFilter::Info));
+    let a = SVC_CONSOLE.insert(TaskSample::new(
+        Task::new(),
+        NativeConsole::new(
+            UartQueue::alloc(&mut huart1)?,
+            Events::new()?,
+            Mutex::new()?,
+            Mutex::new()?,
+        ),
+    ));
+
+    SVC_CONSOLE.as_ref().map(|x| ConsoleService::initialize(x.as_ref(), LevelFilter::Info) );
+
 
     SVC_ALIVE = Some(TaskSample::new(
         Task::new(),
