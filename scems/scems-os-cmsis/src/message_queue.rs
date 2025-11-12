@@ -11,16 +11,6 @@ pub struct MessageQueue
     handle: osMessageQueueId_t,
 }
 
-impl MessageQueue
-{
-    pub fn new(message_count: u32, message_size: u32) -> RetValue<Self>
-    {
-        let handle = unsafe { osMessageQueueNew(message_count, message_size, null()) };
-        handle.is_null().not().then_some(handle).ok_or(ErrValue::InstanceCreateFailure)?;
-        Ok(MessageQueue { handle })
-    }
-}
-
 impl Drop for MessageQueue
 {
     fn drop(&mut self)
@@ -31,6 +21,13 @@ impl Drop for MessageQueue
 
 impl IMessageQueue for MessageQueue
 {
+    fn new(message_count: u32, message_size: u32) -> RetValue<Self>
+    {
+        let handle = unsafe { osMessageQueueNew(message_count, message_size, null()) };
+        handle.is_null().not().then_some(handle).ok_or(ErrValue::InstanceCreateFailure)?;
+        Ok(MessageQueue { handle })
+    }
+
     fn launch(&self, content: &dyn MessageContent, timeout: u32) -> RetValue<()>
     {
         unsafe {

@@ -10,16 +10,6 @@ pub struct Events
     handle: osEventFlagsId_t,
 }
 
-impl Events
-{
-    pub fn new() -> RetValue<Self>
-    {
-        let handle = unsafe { osEventFlagsNew(null()) };
-        handle.is_null().not().then_some(handle).ok_or(ErrValue::InstanceCreateFailure)?;
-        Ok(Events { handle })
-    }
-}
-
 impl Drop for Events
 {
     fn drop(&mut self)
@@ -30,6 +20,13 @@ impl Drop for Events
 
 impl IEvents for Events
 {
+    fn new() -> RetValue<Self>
+    {
+        let handle = unsafe { osEventFlagsNew(null()) };
+        handle.is_null().not().then_some(handle).ok_or(ErrValue::InstanceCreateFailure)?;
+        Ok(Events { handle })
+    }
+
     fn launch(&self, events: u32) -> RetValue<()>
     {
         if events & osFlagsError != 0

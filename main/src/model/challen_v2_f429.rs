@@ -1,14 +1,12 @@
-use log::{info, LevelFilter};
-use scems::{
-    cell::StaticCell,
-    value::{ErrValue, RetValue},
-};
-use scems_mcu_stm32::{
-    uart::{UART_HandleTypeDef, UartQueue},
-    wd::{IWDG_HandleTypeDef, WatchDog, WatchDogQueue},
-};
-use scems_os::task::TaskSample;
-use scems_os_cmsis::{events::Events, mutex::Mutex, task::Task, CMSISOS};
+use log::info;
+use log::LevelFilter;
+use scems::cell::StaticCell;
+use scems::value::RetValue;
+use scems_mcu_stm32::uart::{UART_HandleTypeDef, UartQueue};
+use scems_mcu_stm32::wd::{IWDG_HandleTypeDef, WatchDogQueue};
+use scems_os::task::{TaskPriorities, TaskSample};
+use scems_os_cmsis::task::Task;
+use scems_os_cmsis::CMSISOS;
 use scems_svc_alive::{AliveWatchService, NativeAliveWatch};
 use scems_svc_console::{ConsoleService, NativeConsole};
 
@@ -36,17 +34,16 @@ pub unsafe fn app_main() -> RetValue<()>
 {
     initialize_mem_pools();
 
-    #[rustfmt::skip]
+    // #[rustfmt::skip]
     SVC_CONSOLE
-        .set(TaskSample::new(Task::new(),
-                             NativeConsole::new(UartQueue::alloc(&mut huart1)?, Events::new()?,
-                                                Mutex::new()?, Mutex::new()?)))
+        .set(TaskSample::new(NativeConsole::new(UartQueue::alloc(&mut huart1)?)?)?)
+        .and_then(|x| x.active("ConsoleService", 1024, TaskPriorities::Normal))
         .and_then(|x| ConsoleService::initialize(x.as_ref(), LevelFilter::Info))?;
 
-    #[rustfmt::skip]
+    // #[rustfmt::skip]
     SVC_ALIVE
-        .set(TaskSample::new(Task::new(),
-                             NativeAliveWatch::new(WatchDogQueue::alloc(&mut hwdt1)?, Mutex::new()?, 300)?))
+        .set(TaskSample::new(NativeAliveWatch::new(WatchDogQueue::alloc(&mut hwdt1)?, 300)?)?)
+        .and_then(|x| x.active("AliveWatchService", 1024, TaskPriorities::High))
         .and_then(|x| AliveWatchService::initialize(x.as_ref()))?;
 
     info!("     ___  ___ ___ _ __ ___  ___ \r");

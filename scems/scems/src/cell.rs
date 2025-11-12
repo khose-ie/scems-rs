@@ -24,7 +24,7 @@ impl<T> StaticCell<T>
             .map_err(|_| ErrValue::InstanceDuplicate)?;
 
         unsafe { (*self.value.get()).write(v) };
-        Ok(unsafe { (*self.value.get()).assume_init_ref() })
+        Ok(unsafe { (*self.value.get()).assume_init_mut() })
     }
 
     pub fn get(&self) -> Option<&'static T>

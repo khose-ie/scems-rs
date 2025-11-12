@@ -17,9 +17,9 @@ impl<O> ConsolePrintCore<O>
 where
     O: OS,
 {
-    pub fn new(mutex: O::Mutex) -> Self
+    pub fn new() -> RetValue<Self>
     {
-        Self { cache: MutexSample::new(mutex, ConsoleCache::new()) }
+        Ok(Self { cache: MutexSample::new(ConsoleCache::new())? })
     }
 
     #[rustfmt::skip]

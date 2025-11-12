@@ -12,16 +12,6 @@ pub struct Mutex
     handle: osMutexId_t,
 }
 
-impl Mutex
-{
-    pub fn new() -> RetValue<Self>
-    {
-        let handle = unsafe { osMutexNew(null()) };
-        handle.is_null().not().then_some(handle).ok_or(ErrValue::InstanceCreateFailure)?;
-        Ok(Mutex { handle })
-    }
-}
-
 impl Drop for Mutex
 {
     fn drop(&mut self)
@@ -32,6 +22,13 @@ impl Drop for Mutex
 
 impl IMutex for Mutex
 {
+    fn new() -> RetValue<Self>
+    {
+        let handle = unsafe { osMutexNew(null()) };
+        handle.is_null().not().then_some(handle).ok_or(ErrValue::InstanceCreateFailure)?;
+        Ok(Mutex { handle })
+    }
+
     fn lock(&self)
     {
         unsafe { osMutexAcquire(self.handle, osWaitForever) };

@@ -6,6 +6,7 @@ use scems::value::RetValue;
 /// Should be implemented by the real OS interfaces.
 pub trait IMutex
 {
+    fn new() -> RetValue<Self> where Self: Sized;
     fn lock(&self);
     fn unlock(&self);
     fn attempt_lock(&self, time: u32) -> RetValue<()>;
@@ -25,9 +26,9 @@ where
 
 impl<M: IMutex, S> MutexSample<M, S>
 {
-    pub const fn new(mutex: M, sample: S) -> Self
+    pub fn new(sample: S) -> RetValue<Self>
     {
-        Self { mutex, sample: RefCell::new(sample) }
+        Ok(Self { mutex: M::new()?, sample: RefCell::new(sample) })
     }
 
     pub fn lock_then(&self, f: impl FnOnce(&mut S)) -> RetValue<()>

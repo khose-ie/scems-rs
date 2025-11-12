@@ -1,3 +1,4 @@
+use core::cell::RefCell;
 use core::ops::{Deref, DerefMut};
 
 use scems::value::RetValue;
@@ -22,10 +23,13 @@ pub trait ITaskMain
 
 pub trait ITask
 {
-    fn activate(
-        &mut self, name: &str, stack_size: u32, pritories: TaskPriorities, main: &dyn ITaskMain,
+    fn new() -> RetValue<Self>
+    where
+        Self: Sized;
+    fn active(
+        &mut self, name: &str, stack: u32, priorities: TaskPriorities, main: &dyn ITaskMain,
     ) -> RetValue<()>;
-    fn deactivate(&mut self);
+    fn set_priorities(&mut self, pritories: TaskPriorities) -> RetValue<&mut Self>;
     fn name(&self) -> &str;
     fn suspand(&self) -> RetValue<()>;
     fn resume(&self) -> RetValue<()>;
@@ -36,27 +40,36 @@ where
     T: Sized + ITask,
     S: Sized + ITaskMain,
 {
-    task: T,
+    task: RefCell<T>,
     sample: S,
 }
 
 impl<T: ITask, S: ITaskMain> TaskSample<T, S>
 {
-    pub const fn new(task: T, sample: S) -> Self
+    pub fn new(sample: S) -> RetValue<Self>
     {
-        Self { task, sample }
+        Ok(Self { task: RefCell::new(T::new()?), sample })
     }
 
-    pub fn initialize(
-        &mut self, name: &str, stack_size: u32, priority: TaskPriorities,
-    ) -> RetValue<()>
+    pub fn active(&self, name: &str, stack: u32, priorities: TaskPriorities) -> RetValue<&Self>
     {
-        self.task.activate(name, stack_size, priority, &self.sample)
+        #[allow(unused_must_use)]
+        self.task.try_borrow_mut().map(|mut x| x.active(name, stack, priorities, &self.sample))?;
+        Ok(self)
     }
 
-    pub fn finalize(&mut self)
+    pub fn active_back(&self) -> RetValue<&Self>
     {
-        self.task.deactivate();
+        #[allow(unused_must_use)]
+        self.task.try_borrow_mut().map(|x| x.resume())?;
+        Ok(self)
+    }
+
+    pub fn deactive(&self) -> RetValue<&Self>
+    {
+        #[allow(unused_must_use)]
+        self.task.try_borrow_mut().map(|x| x.suspand())?;
+        Ok(self)
     }
 }
 

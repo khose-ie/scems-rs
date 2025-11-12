@@ -1,5 +1,4 @@
 use core::ffi::{c_void, CStr};
-use core::ops::Not;
 use core::ptr::null;
 
 use scems::value::{ErrValue, RetValue};
@@ -15,11 +14,6 @@ pub struct Task
 
 impl Task
 {
-    pub const fn new() -> Self
-    {
-        Task { handle: null(), main_agent: TaskMainAgent::new() }
-    }
-
     #[allow(static_mut_refs)]
     pub unsafe fn main(argument: *mut c_void)
     {
@@ -34,43 +28,38 @@ impl Drop for Task
 {
     fn drop(&mut self)
     {
-        if self.handle.is_null().not()
-        {
-            unsafe { osThreadTerminate(self.handle) };
-        }
+        (!self.handle.is_null()).then_some(self.handle).map(|x| unsafe { osThreadTerminate(x) });
     }
 }
 
 impl ITask for Task
 {
-    fn activate(
-        &mut self, name: &str, stack_size: u32, pritories: TaskPriorities, main: &dyn ITaskMain,
+    fn new() -> RetValue<Self>
+    where
+        Self: Sized,
+    {
+        Ok(Task { handle: null(), main_agent: TaskMainAgent::new() })
+    }
+
+    fn active(
+        &mut self, name: &str, stack: u32, pritories: TaskPriorities, main: &dyn ITaskMain,
     ) -> RetValue<()>
     {
-        let thread_attr = osThreadAttr_t::new(name, stack_size, pritories);
+        let attr = osThreadAttr_t::new(name, stack, pritories);
 
         if self.handle.is_null()
         {
-            self.main_agent.task_main = Some(main as *const dyn ITaskMain as *mut dyn ITaskMain);
-            self.handle =
-                unsafe { osThreadNew(Task::main, self.main_agent.as_void_ptr(), &thread_attr) };
-
-            if self.handle.is_null()
-            {
-                return Err(ErrValue::InstanceCreateFailure);
-            }
+            self.main_agent.set_main(main);
+            self.handle = unsafe { osThreadNew(Task::main, self.main_agent.as_void_ptr(), &attr) };
         }
 
-        Ok(())
+        (!self.handle.is_null()).then_some(()).ok_or(ErrValue::InstanceCreateFailure)
     }
 
-    fn deactivate(&mut self)
+    fn set_priorities(&mut self, pritories: TaskPriorities) -> RetValue<&mut Self>
     {
-        if self.handle.is_null().not()
-        {
-            unsafe { osThreadTerminate(self.handle) };
-            self.handle = null();
-        }
+        RetValue::from(unsafe { osThreadSetPriority(self.handle, pritories.into()).into() })?;
+        Ok(self)
     }
 
     fn name(&self) -> &str
@@ -101,6 +90,11 @@ impl TaskMainAgent
     pub const fn new() -> Self
     {
         TaskMainAgent { task_main: None }
+    }
+
+    pub fn set_main(&mut self, main: &dyn ITaskMain)
+    {
+        self.task_main = Some(main as *const dyn ITaskMain as *mut dyn ITaskMain);
     }
 
     pub fn as_void_ptr(&self) -> *mut c_void

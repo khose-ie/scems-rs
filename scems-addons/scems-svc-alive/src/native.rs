@@ -28,12 +28,12 @@ impl<'a, O> NativeAliveWatch<'a, O>
 where
     O: OS,
 {
-    pub fn new(device: WatchDogDevice, mutex: O::Mutex, cycle_time: u32) -> RetValue<Self>
+    pub fn new(device: WatchDogDevice, cycle_time: u32) -> RetValue<Self>
     {
         Ok(Self {
             device,
             cycle_time,
-            watch_queue: MutexSample::new(mutex, AliveWatchQueue::new()?),
+            watch_queue: MutexSample::new(AliveWatchQueue::new()?)?,
             _marker: PhantomData,
         })
     }

@@ -29,13 +29,13 @@ impl<O> ConsoleDispatchCore<O>
 where
     O: OS,
 {
-    pub fn new(event: O::Events, mutex: O::Mutex) -> Self
+    pub fn new() -> RetValue<Self>
     {
-        Self {
+        Ok(Self {
             cache: RefCell::new(ConsoleCache::new()),
-            exe_queue: MutexSample::new(mutex, Vec::new()),
-            dispatch_event: event,
-        }
+            exe_queue: MutexSample::new(Vec::new())?,
+            dispatch_event: O::Events::new()?,
+        })
     }
 
     pub fn search_exe(

@@ -25,15 +25,13 @@ impl<O> NativeConsole<O>
 where
     O: OS,
 {
-    pub fn new(
-        uart: &'static mut dyn UartCtrl, events: O::Events, mutex1: O::Mutex, mutex2: O::Mutex,
-    ) -> Self
+    pub fn new(uart: &'static mut dyn UartCtrl) -> RetValue<Self>
     {
-        Self {
+        Ok(Self {
             serial_port: UartDevice::new(uart),
-            dispatcher: ConsoleDispatchCore::new(events, mutex1),
-            printer: ConsolePrintCore::new(mutex2),
-        }
+            dispatcher: ConsoleDispatchCore::new()?,
+            printer: ConsolePrintCore::new()?,
+        })
     }
 }
 
