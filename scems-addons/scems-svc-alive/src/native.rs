@@ -8,25 +8,25 @@ use scems::value::RetValue;
 use scems_mcu::wd::WatchDogDevice;
 use scems_os::mutex::MutexSample;
 use scems_os::task::ITaskMain;
-use scems_os::OS;
+use scems_os::RTOS;
 
 use crate::alive::{AliveWatch, AliveWatchHandle};
 use crate::native::queue::AliveWatchQueue;
 use crate::svc::AWS;
 
-pub struct NativeAliveWatch<'a, O>
+pub struct NativeAliveWatch<'a, OS>
 where
-    O: OS,
+    OS: RTOS,
 {
     device: WatchDogDevice,
     cycle_time: u32,
-    watch_queue: MutexSample<O::Mutex, AliveWatchQueue<'a>>,
-    _marker: PhantomData<O>,
+    watch_queue: MutexSample<OS, AliveWatchQueue<'a>>,
+    _marker: PhantomData<OS>,
 }
 
-impl<'a, O> NativeAliveWatch<'a, O>
+impl<'a, OS> NativeAliveWatch<'a, OS>
 where
-    O: OS,
+    OS: RTOS,
 {
     pub fn new(device: WatchDogDevice, cycle_time: u32) -> RetValue<Self>
     {
@@ -39,59 +39,58 @@ where
     }
 }
 
-unsafe impl<'a, O> Send for NativeAliveWatch<'a, O> where O: OS {}
+unsafe impl<'a, OS> Send for NativeAliveWatch<'a, OS> where OS: RTOS {}
 
-unsafe impl<'a, O> Sync for NativeAliveWatch<'a, O> where O: OS {}
+unsafe impl<'a, OS> Sync for NativeAliveWatch<'a, OS> where OS: RTOS {}
 
-impl<'a, O> AliveWatch for NativeAliveWatch<'a, O>
+impl<'a, OS> AliveWatch for NativeAliveWatch<'a, OS>
 where
-    O: OS,
+    OS: RTOS,
 {
     fn watch(&self, name: &'static str) -> RetValue<AliveWatchHandle>
     {
-        Ok(AliveWatchHandle::new(self.watch_queue.lock_then_with(|x| x.attempt_push::<O>(name))?))
+        Ok(AliveWatchHandle::new(
+            self.watch_queue.attempt_lock_then(|x| x.attempt_push::<OS>(name))?,
+        ))
     }
 
     fn watch_back(&self, handle: AliveWatchHandle) -> RetValue<()>
     {
-        self.watch_queue.lock_then(|x| x[handle].set_enable(true))
+        self.watch_queue.attempt_lock()?[handle].set_enable(true);
+        Ok(())
     }
 
     fn stop_watch(&self, handle: AliveWatchHandle) -> RetValue<()>
     {
-        self.watch_queue.lock_then(|x| x[handle].set_enable(false))
+        self.watch_queue.attempt_lock()?[handle].set_enable(false);
+        Ok(())
     }
 
     fn update_alive_state(&self, handle: AliveWatchHandle)
     {
-        #[allow(unused_must_use)]
-        unsafe {
-            self.watch_queue.no_lock_then(|x| x[handle].update_tick(O::systick()))
-        };
+        self.watch_queue.lock()[handle].update_tick(OS::systick());
     }
 }
 
-impl<'a, O> ITaskMain for NativeAliveWatch<'a, O>
+impl<'a, OS> ITaskMain for NativeAliveWatch<'a, OS>
 where
-    O: OS,
+    OS: RTOS,
 {
     fn main(&mut self)
     {
         #[allow(unused_must_use)]
-        self.watch_queue.lock_then(|x| x.update_all_ticks(O::systick()));
+        self.watch_queue.lock().update_all_ticks(OS::systick());
         self.device.refresh();
 
         loop
         {
-            O::delay(self.cycle_time);
+            OS::delay(self.cycle_time);
 
             #[allow(unused_must_use)]
             self.watch_queue
-                .lock_then_with(|x| x.check_alive_time(O::systick(), self.cycle_time))
+                .attempt_lock_then(|x| x.check_alive_time(OS::systick(), self.cycle_time))
                 .inspect(|()| self.device.refresh())
-                .inspect_err(|_| {
-                    error!("{AWS} At least one task near death, don't refresh Watch Dog.")
-                });
+                .inspect_err(|_| error!("{AWS} Some tasks near death, don't refresh Watch Dog."));
         }
     }
 }

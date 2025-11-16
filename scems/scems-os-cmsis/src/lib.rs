@@ -16,13 +16,13 @@ pub mod sxmutex;
 pub mod task;
 pub mod timer;
 
-use scems_os::{kernel::IKernel, OS};
+use scems_os::{kernel::IKernel, RTOS};
 
 pub const COMMON_TASK_TICK: u32 = 500;
 
 pub struct CMSISOS;
 
-impl OS for CMSISOS
+impl RTOS for CMSISOS
 {
     type Events = events::Events;
 

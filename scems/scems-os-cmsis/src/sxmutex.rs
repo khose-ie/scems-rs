@@ -2,7 +2,7 @@ use core::{ops::Not, ptr::null};
 
 use scems::value::{ErrValue, RetValue};
 use scems_os::sxmutex::ISxMutex;
-use scems_os::OS;
+use scems_os::RTOS;
 
 use crate::native::*;
 use crate::CMSISOS;

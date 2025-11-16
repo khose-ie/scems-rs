@@ -2,7 +2,7 @@ use log::Log;
 use scems::value::RetValue;
 use scems_mcu::uart::{UartCtrl, UartCtrlEvent, UartDevice};
 use scems_os::task::ITaskMain;
-use scems_os::OS;
+use scems_os::RTOS;
 
 use crate::native::dispatch::ConsoleDispatchCore;
 use crate::native::print::ConsolePrintCore;
@@ -12,18 +12,18 @@ mod cache;
 mod dispatch;
 mod print;
 
-pub struct NativeConsole<O>
+pub struct NativeConsole<OS>
 where
-    O: OS,
+    OS: RTOS,
 {
     serial_port: UartDevice,
-    dispatcher: ConsoleDispatchCore<O>,
-    printer: ConsolePrintCore<O>,
+    dispatcher: ConsoleDispatchCore<OS>,
+    printer: ConsolePrintCore<OS>,
 }
 
-impl<O> NativeConsole<O>
+impl<OS> NativeConsole<OS>
 where
-    O: OS,
+    OS: RTOS,
 {
     pub fn new(uart: &'static mut dyn UartCtrl) -> RetValue<Self>
     {
@@ -35,9 +35,9 @@ where
     }
 }
 
-impl<O> Console for NativeConsole<O>
+impl<OS> Console for NativeConsole<OS>
 where
-    O: OS,
+    OS: RTOS,
 {
     fn accept_dispatch(&self, exe: &'static dyn ConsoleExecute) -> RetValue<()>
     {
@@ -45,9 +45,9 @@ where
     }
 }
 
-impl<O> ITaskMain for NativeConsole<O>
+impl<OS> ITaskMain for NativeConsole<OS>
 where
-    O: Sized + OS,
+    OS: Sized + RTOS,
 {
     fn main(&mut self)
     {
@@ -59,9 +59,9 @@ where
     }
 }
 
-impl<O> UartCtrlEvent for NativeConsole<O>
+impl<OS> UartCtrlEvent for NativeConsole<OS>
 where
-    O: Sized + OS,
+    OS: Sized + RTOS,
 {
     fn on_uart_rx_complete(&self, size: u32)
     {
@@ -75,13 +75,13 @@ where
     }
 }
 
-unsafe impl<O> Send for NativeConsole<O> where O: OS {}
+unsafe impl<OS> Send for NativeConsole<OS> where OS: RTOS {}
 
-unsafe impl<O> Sync for NativeConsole<O> where O: OS {}
+unsafe impl<OS> Sync for NativeConsole<OS> where OS: RTOS {}
 
-impl<O> Log for NativeConsole<O>
+impl<OS> Log for NativeConsole<OS>
 where
-    O: OS,
+    OS: RTOS,
 {
     #[allow(unused_variables)]
     fn enabled(&self, metadata: &log::Metadata) -> bool

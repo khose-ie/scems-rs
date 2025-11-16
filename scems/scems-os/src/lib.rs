@@ -12,7 +12,7 @@ pub mod sxmutex;
 pub mod task;
 pub mod timer;
 
-pub trait OS
+pub trait RTOS
 {
     const WAIT_NO: u32 = 0;
     const WAIT_100MS: u32 = 0;

@@ -3,7 +3,7 @@ use core::ops::{Index, IndexMut};
 use alloc::vec::Vec;
 use scems::value::{ErrValue, RetValue};
 use scems_os::mem::SafeVec;
-use scems_os::OS;
+use scems_os::RTOS;
 
 use crate::native::status::AliveStatus;
 use crate::AliveWatchHandle;
@@ -20,15 +20,15 @@ impl<'a> AliveWatchQueue<'a>
         Ok(Self { queue: Vec::attempt_new()? })
     }
 
-    pub fn attempt_push<O>(&mut self, name: &'a str) -> RetValue<usize>
+    pub fn attempt_push<OS>(&mut self, name: &'a str) -> RetValue<usize>
     where
-        O: OS,
+        OS: RTOS,
     {
         (!self.queue.iter().any(|x| x.name() == name))
             .then_some(())
             .ok_or(ErrValue::InstanceDuplicate)?;
 
-        self.queue.attempt_push(AliveStatus::new(name, O::systick()))?;
+        self.queue.attempt_push(AliveStatus::new(name, OS::systick()))?;
         Ok(self.queue.len() - 1)
     }
 
