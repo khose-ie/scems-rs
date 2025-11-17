@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use core::ffi::{c_char, c_void, CStr};
 use core::ptr::{null, null_mut};
 

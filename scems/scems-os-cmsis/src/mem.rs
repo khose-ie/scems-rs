@@ -1,4 +1,4 @@
-use core::alloc::GlobalAlloc;
+use core::alloc::{GlobalAlloc, Layout};
 use core::ffi::c_void;
 use core::ops::Not;
 use core::ptr::{null, null_mut};
@@ -6,6 +6,8 @@ use core::ptr::{null, null_mut};
 use scems::value::{ErrValue, RetValue};
 
 use crate::native::*;
+
+const MEM_POOL_NUM: usize = 4;
 
 pub struct MemZone
 {
@@ -36,88 +38,63 @@ impl MemBlock
     {
         Self { handle: null(), block_count: 0, block_size: 0 }
     }
+
+    pub fn create_pool(&mut self, count: u32, size: u32, address: &'static [u8]) -> RetValue<()>
+    {
+        let mut attribute = osMemoryPoolAttr_t::default();
+
+        attribute.mp_mem = address.as_ptr() as *mut c_void;
+        attribute.mp_size = count * size;
+
+        self.block_count = count;
+        self.block_size = size;
+
+        self.handle = unsafe { osMemoryPoolNew(count, size, &attribute) };
+        self.handle.is_null().not().then_some(()).ok_or(ErrValue::MemAllocFailure)
+    }
 }
 
 struct MemSpace
 {
-    mem: [MemBlock; 4],
+    mem: [MemBlock; MEM_POOL_NUM],
 }
 
 impl MemSpace
 {
     pub const fn new() -> Self
     {
-        Self { mem: [MemBlock::new(); 4] }
+        Self { mem: [MemBlock::new(); MEM_POOL_NUM] }
     }
 
-    pub fn initialize(&mut self, mem: &[MemZone; 4]) -> RetValue<()>
+    pub fn initialize(&mut self, mem: &[MemZone; MEM_POOL_NUM]) -> RetValue<()>
     {
-        let mut attribute = osMemoryPoolAttr_t::default();
-
-        for idx in 0..4
+        for (i, zone) in mem.iter().enumerate()
         {
-            attribute.mp_mem = mem[idx].address.as_ptr() as *mut c_void;
-            attribute.mp_size = mem[idx].block_count * mem[idx].block_size;
-
-            self.mem[idx].block_count = mem[idx].block_count;
-            self.mem[idx].block_size = mem[idx].block_size;
-            self.mem[idx].handle =
-                unsafe { osMemoryPoolNew(mem[idx].block_count, mem[idx].block_size, &attribute) };
-
-            if self.mem[idx].handle.is_null()
-            {
-                return Err(ErrValue::InstanceCreateFailure);
-            }
+            self.mem[i].create_pool(zone.block_count, zone.block_size, zone.address)?;
         }
 
         Ok(())
-    }
-
-    pub fn finalize(&mut self)
-    {
-        for mem in self.mem.iter()
-        {
-            if mem.handle.is_null().not()
-            {
-                unsafe { osMemoryPoolDelete(mem.handle) };
-            }
-        }
-    }
-
-    pub fn choose_block(&self, size: u32) -> RetValue<osMemoryPoolId_t>
-    {
-        for mem in self.mem.iter()
-        {
-            if size <= mem.block_size
-            {
-                return Ok(mem.handle);
-            }
-        }
-
-        Err(ErrValue::MemAllocFailure)
     }
 }
 
 unsafe impl GlobalAlloc for MemSpace
 {
-    unsafe fn alloc(&self, layout: core::alloc::Layout) -> *mut u8
+    unsafe fn alloc(&self, layout: Layout) -> *mut u8
     {
-        if let Ok(mp) = self.choose_block(layout.size() as u32)
-        {
-            osMemoryPoolAlloc(mp, 100) as *mut u8
-        }
-        else
-        {
-            null_mut()
-        }
+        self.mem
+            .iter()
+            .find(|mem| layout.size() <= mem.block_size as usize)
+            .map(|mem| unsafe { osMemoryPoolAlloc(mem.handle, 100) as *mut u8 })
+            .unwrap_or(null_mut())
     }
 
+    /// Deallocate the memory block pointed to by `ptr` with the given `layout`.
     unsafe fn dealloc(&self, ptr: *mut u8, layout: core::alloc::Layout)
     {
-        if let Ok(mp) = self.choose_block(layout.size() as u32)
-        {
-            osMemoryPoolFree(mp, ptr as *mut c_void);
-        }
+        self.mem
+            .iter()
+            .find(|mem| layout.size() <= mem.block_size as usize)
+            .map(|mem| unsafe { osMemoryPoolFree(mem.handle, ptr as *mut c_void) });
     }
 }
 
@@ -129,5 +106,7 @@ static mut MEM_SPACE: MemSpace = MemSpace::new();
 pub fn initialize_mem_space(mem: &[MemZone; 4]) -> RetValue<()>
 {
     #[allow(static_mut_refs)]
-    unsafe { MEM_SPACE.initialize(mem) }
+    unsafe {
+        MEM_SPACE.initialize(mem)
+    }
 }
