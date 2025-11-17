@@ -4,25 +4,11 @@ use core::ops::Not;
 use core::ptr::{null, null_mut};
 
 use scems::value::{ErrValue, RetValue};
+use scems_os::mem::IMemZone;
 
 use crate::native::*;
 
 const MEM_POOL_NUM: usize = 4;
-
-pub struct MemZone
-{
-    block_count: u32,
-    block_size: u32,
-    address: &'static [u8],
-}
-
-impl MemZone
-{
-    pub const fn new(block_count: u32, block_size: u32, address: &'static [u8]) -> Self
-    {
-        Self { block_count, block_size, address }
-    }
-}
 
 #[derive(Clone, Copy)]
 struct MemBlock
@@ -66,11 +52,14 @@ impl MemSpace
         Self { mem: [MemBlock::new(); MEM_POOL_NUM] }
     }
 
-    pub fn initialize(&mut self, mem: &[MemZone; MEM_POOL_NUM]) -> RetValue<()>
+    pub fn initialize(&mut self, mem: [&dyn IMemZone; MEM_POOL_NUM]) -> RetValue<()>
     {
         for (i, zone) in mem.iter().enumerate()
         {
-            self.mem[i].create_pool(zone.block_count, zone.block_size, zone.address)?;
+            if zone.block_count() != 0 && zone.block_size() != 0
+            {
+                self.mem[i].create_pool(zone.block_count(), zone.block_size(), zone.address())?;
+            }
         }
 
         Ok(())
@@ -83,7 +72,7 @@ unsafe impl GlobalAlloc for MemSpace
     {
         self.mem
             .iter()
-            .find(|mem| layout.size() <= mem.block_size as usize)
+            .find(|mem| mem.block_count != 0 && layout.size() <= mem.block_size as usize)
             .map(|mem| unsafe { osMemoryPoolAlloc(mem.handle, 100) as *mut u8 })
             .unwrap_or(null_mut())
     }
@@ -93,7 +82,7 @@ unsafe impl GlobalAlloc for MemSpace
     {
         self.mem
             .iter()
-            .find(|mem| layout.size() <= mem.block_size as usize)
+            .find(|mem| mem.block_count != 0 && layout.size() <= mem.block_size as usize)
             .map(|mem| unsafe { osMemoryPoolFree(mem.handle, ptr as *mut c_void) });
     }
 }
@@ -103,7 +92,7 @@ static mut MEM_SPACE: MemSpace = MemSpace::new();
 
 /// The public function to initialize the global mem space for alloc feature.
 /// It can register max 4 mem zones as the mem pool with different block size.
-pub fn initialize_mem_space(mem: &[MemZone; 4]) -> RetValue<()>
+pub fn initialize_mem_space(mem: [&dyn IMemZone; MEM_POOL_NUM]) -> RetValue<()>
 {
     #[allow(static_mut_refs)]
     unsafe {

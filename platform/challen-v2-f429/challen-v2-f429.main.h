@@ -1,17 +1,6 @@
 #ifndef __CHALLEN_V2_F429_MAIN_H__
 #define __CHALLEN_V2_F429_MAIN_H__
 
-#define MEM_POOL0_BLOCK_SIZE (64)
-#define MEM_POOL0_BLOCK_NUM  (32 * 16)
-#define MEM_POOL1_BLOCK_SIZE (256)
-#define MEM_POOL1_BLOCK_NUM  (32 * 4)
-#define MEM_POOL2_BLOCK_SIZE (512)
-#define MEM_POOL2_BLOCK_NUM  (32 * 2)
-#define MEM_POOL3_BLOCK_SIZE (1024)
-#define MEM_POOL3_BLOCK_NUM  (16)
-#define MEM_POOL4_BLOCK_SIZE (4096)
-#define MEM_POOL4_BLOCK_NUM  (4)
-
 extern void AppMain(void);
 
 #endif /* __CHALLEN_V2_F429_MAIN_H__ */
