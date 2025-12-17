@@ -5,7 +5,7 @@ use core::ptr::{null, null_mut};
 
 use scems::value::{ErrValue, RetValue};
 use scems_derive::EnumAsI32;
-use scems_os::task::TaskPriorities;
+use scems_os::task::TaskPriority;
 use scems_os::timer::TimerMode;
 
 /// Timeout value.
@@ -203,20 +203,20 @@ pub enum osPriority_t
     osPriorityReserved = 0x7FFFFFFF,
 }
 
-impl From<TaskPriorities> for osPriority_t
+impl From<TaskPriority> for osPriority_t
 {
-    fn from(value: TaskPriorities) -> Self
+    fn from(value: TaskPriority) -> Self
     {
         match value
         {
-            TaskPriorities::None => osPriority_t::osPriorityNone,
-            TaskPriorities::Idle => osPriority_t::osPriorityIdle,
-            TaskPriorities::Base => osPriority_t::osPriorityLow,
-            TaskPriorities::Low => osPriority_t::osPriorityBelowNormal,
-            TaskPriorities::Normal => osPriority_t::osPriorityNormal,
-            TaskPriorities::High => osPriority_t::osPriorityAboveNormal,
-            TaskPriorities::Privilege => osPriority_t::osPriorityHigh,
-            TaskPriorities::RealTime => osPriority_t::osPriorityRealtime,
+            TaskPriority::None => osPriority_t::osPriorityNone,
+            TaskPriority::Idle => osPriority_t::osPriorityIdle,
+            TaskPriority::Base => osPriority_t::osPriorityLow,
+            TaskPriority::Low => osPriority_t::osPriorityBelowNormal,
+            TaskPriority::Normal => osPriority_t::osPriorityNormal,
+            TaskPriority::High => osPriority_t::osPriorityAboveNormal,
+            TaskPriority::Privilege => osPriority_t::osPriorityHigh,
+            TaskPriority::RealTime => osPriority_t::osPriorityRealtime,
         }
     }
 }
@@ -263,7 +263,7 @@ pub struct osThreadAttr_t
 
 impl osThreadAttr_t
 {
-    pub fn new(name: &str, stack_size: u32, priority: TaskPriorities) -> Self
+    pub fn new(name: &str, stack_size: u32, priority: TaskPriority) -> Self
     {
         let name = unsafe { CStr::from_bytes_with_nul_unchecked(name.as_bytes()) };
 

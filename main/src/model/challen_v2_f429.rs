@@ -5,7 +5,7 @@ use scems::value::RetValue;
 use scems_mcu_stm32::uart::{UART_HandleTypeDef, UartQueue};
 use scems_mcu_stm32::wd::{IWDG_HandleTypeDef, WatchDogQueue};
 use scems_os::mem::MemZone;
-use scems_os::task::{TaskPriorities, TaskSample};
+use scems_os::task::{TaskPriority, TaskSample};
 use scems_os_cmsis::mem::initialize_mem_space;
 use scems_os_cmsis::task::Task;
 use scems_os_cmsis::CMSISOS;
@@ -33,12 +33,12 @@ pub unsafe fn app_main() -> RetValue<()>
 
     SVC_ALIVE
         .set(TaskSample::new(NativeAliveWatch::new(WatchDogQueue::alloc(&mut hwdt1)?, 300)?)?)
-        .and_then(|x| x.active("AliveWatchService", 1024, TaskPriorities::High))
+        .and_then(|x| x.active("AliveWatchService", 1024, TaskPriority::High))
         .and_then(|x| AliveWatchService::initialize(x.as_ref()))?;
 
     SVC_CONSOLE
         .set(TaskSample::new(NativeConsole::new(UartQueue::alloc(&mut huart1)?)?)?)
-        .and_then(|x| x.active("ConsoleService", 1024, TaskPriorities::Normal))
+        .and_then(|x| x.active("ConsoleService", 1024, TaskPriority::Normal))
         .and_then(|x| ConsoleService::initialize(x.as_ref(), LevelFilter::Info))?;
 
     app_print_trademark();

@@ -2,7 +2,7 @@ use core::ffi::{c_void, CStr};
 use core::ptr::null;
 
 use scems::value::{ErrValue, RetValue};
-use scems_os::task::{ITask, ITaskMain, TaskPriorities};
+use scems_os::task::{ITask, ITaskMain, TaskPriority};
 
 use crate::native::*;
 
@@ -41,8 +41,18 @@ impl ITask for Task
         Ok(Task { handle: null(), main_agent: TaskMainAgent::new() })
     }
 
+    fn exit()
+    {
+        unsafe { osThreadExit() };
+    }
+
+    fn switch_to_next()
+    {
+        unsafe { osThreadYield() };
+    }
+
     fn active(
-        &mut self, name: &str, stack: u32, pritories: TaskPriorities, main: &dyn ITaskMain,
+        &mut self, name: &str, stack: u32, pritories: TaskPriority, main: &dyn ITaskMain,
     ) -> RetValue<()>
     {
         let attr = osThreadAttr_t::new(name, stack, pritories);
@@ -56,7 +66,12 @@ impl ITask for Task
         (!self.handle.is_null()).then_some(()).ok_or(ErrValue::InstanceCreateFailure)
     }
 
-    fn set_priorities(&mut self, pritories: TaskPriorities) -> RetValue<&mut Self>
+    fn priority(&self) -> TaskPriority
+    {
+        todo!()
+    }
+
+    fn set_priority(&mut self, pritories: TaskPriority) -> RetValue<&mut Self>
     {
         RetValue::from(unsafe { osThreadSetPriority(self.handle, pritories.into()).into() })?;
         Ok(self)
@@ -67,7 +82,7 @@ impl ITask for Task
         unsafe { CStr::from_ptr(osThreadGetName(self.handle)).to_str().unwrap_or_default() }
     }
 
-    fn suspand(&self) -> RetValue<()>
+    fn suspend(&self) -> RetValue<()>
     {
         unsafe { osThreadSuspend(self.handle).into() }
     }

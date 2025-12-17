@@ -5,7 +5,7 @@ use core::ptr::null;
 
 use scems::value::ErrValue;
 use scems::value::RetValue;
-use scems_os::timer::TimerEventAgent;
+use scems_os::timer::TimerEvent;
 use scems_os::timer::{ITimer, TimerMode};
 
 use crate::native::*;
@@ -14,24 +14,24 @@ pub struct Timer
 {
     handle: osEventFlagsId_t,
     mode: TimerMode,
-    event_agent_handle: TimerEventAgentHandle,
+    event_agent_handle: TimerEventHandle,
 }
 
 impl Timer
 {
-    pub const fn new(mode: TimerMode, event_agent: &dyn TimerEventAgent) -> Self
+    pub const fn new(mode: TimerMode, event_agent: &dyn TimerEvent) -> Self
     {
         Timer {
             handle: null(),
             mode,
-            event_agent_handle: TimerEventAgentHandle::from(unsafe { transmute(event_agent) }),
+            event_agent_handle: TimerEventHandle::from(unsafe { transmute(event_agent) }),
         }
     }
 
     #[allow(static_mut_refs)]
     pub unsafe fn func(argument: *mut c_void)
     {
-        if let Some(event_agent) = (argument as *mut TimerEventAgentHandle).as_mut()
+        if let Some(event_agent) = (argument as *mut TimerEventHandle).as_mut()
         {
             if let Some(event_agent) = event_agent.event_agent()
             {
@@ -92,19 +92,19 @@ impl ITimer for Timer
     }
 }
 
-struct TimerEventAgentHandle
+struct TimerEventHandle
 {
-    event_agent: *mut dyn TimerEventAgent,
+    event_agent: *mut dyn TimerEvent,
 }
 
-impl TimerEventAgentHandle
+impl TimerEventHandle
 {
-    pub const fn from(event_agent: &dyn TimerEventAgent) -> Self
+    pub const fn from(event_agent: &dyn TimerEvent) -> Self
     {
         Self { event_agent: unsafe { transmute(event_agent) } }
     }
 
-    pub const fn event_agent(&self) -> Option<*const dyn TimerEventAgent>
+    pub const fn event_agent(&self) -> Option<*const dyn TimerEvent>
     {
         if self.event_agent.is_null()
         {
@@ -118,6 +118,6 @@ impl TimerEventAgentHandle
 
     pub const fn as_void_ptr(&self) -> *mut c_void
     {
-        self as *const TimerEventAgentHandle as *mut c_void
+        self as *const TimerEventHandle as *mut c_void
     }
 }

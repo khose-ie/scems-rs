@@ -28,7 +28,7 @@ impl<'a> AliveWatchQueue<'a>
             .then_some(())
             .ok_or(ErrValue::InstanceDuplicate)?;
 
-        self.queue.attempt_push(AliveStatus::new(name, OS::systick()))?;
+        self.queue.attempt_push(AliveStatus::new(name, OS::ostick()))?;
         Ok(self.queue.len() - 1)
     }
 

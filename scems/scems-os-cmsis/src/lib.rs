@@ -6,7 +6,6 @@
 mod native;
 
 pub mod events;
-pub mod kernel;
 pub mod mem;
 pub mod message_queue;
 pub mod mutex;
@@ -15,7 +14,8 @@ pub mod sxmutex;
 pub mod task;
 pub mod timer;
 
-use scems_os::{kernel::IKernel, RTOS};
+use crate::native::*;
+use scems_os::RTOS;
 
 pub const COMMON_TASK_TICK: u32 = 500;
 
@@ -38,18 +38,18 @@ impl RTOS for CMSISOS
     #[inline]
     fn delay(time: u32)
     {
-        kernel::Kernel::delay(time);
+        unsafe { osDelay(time) };
     }
 
     #[inline]
-    fn systick() -> u32
+    fn delay_interval(time: u32)
     {
-        kernel::Kernel::systick_value()
+        unsafe { osDelayUntil(time) };
     }
 
     #[inline]
-    fn switch_out()
+    fn ostick() -> u32
     {
-        kernel::Kernel::cede();
+        unsafe { osKernelGetTickCount() }
     }
 }
