@@ -9,6 +9,6 @@
         "challen-v2-f429"
     ],
     "rust-analyzer.cargo.target": "thumbv7em-none-eabihf",
-    "cmake.sourceDirectory": "platform/challen-v2-f429",
+    "cmake.sourceDirectory": "${workspaceFolder}/platform/challen-v2-f429",
     "cortex-debug.variableUseNaturalFormat": true
 }
