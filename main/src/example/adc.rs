@@ -1,12 +1,12 @@
 use core::fmt::{self, Write};
 use core::ptr::NonNull;
 
-use scems_mcu::adc::{AdcCtrl, AdcCtrlEvent, AdcDevice};
-use scems_mcu::uart::UartDevice;
-use scems_mcu::EventLaunch;
-use scems_mcu_stm32::adc::{ADC_HandleTypeDef, Adc, AdcQueue};
-use scems_mcu_stm32::uart::{UART_HandleTypeDef, UartQueue};
-use scems_mcu_stm32::Handle;
+use sces_mcu::adc::{AdcCtrl, AdcCtrlEvent, AdcDevice};
+use sces_mcu::uart::UartDevice;
+use sces_mcu::EventLaunch;
+use sces_mcu_stm32::adc::{ADC_HandleTypeDef, Adc, AdcQueue};
+use sces_mcu_stm32::uart::{UART_HandleTypeDef, UartQueue};
+use sces_mcu_stm32::Handle;
 
 #[allow(improper_ctypes)]
 extern "C" {

@@ -1,3 +1,3 @@
-# SCEMS
+# SCES - Simple Construction of Embedded Software
 
-SCEMS, the Sample Common Embedded Middleware Software is a sample and common library for embedded software to use RUST.
+SCES, the Simple Construction of Embedded Software is a sample and common library for embedded software to use RUST.

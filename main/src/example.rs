@@ -1,4 +1,4 @@
-// use scems::os::{common::task::TaskMain, vendors::task::TaskSample};
+// use sces::os::{common::task::TaskMain, vendors::task::TaskSample};
 
 mod adc;
 // mod io_lamp;

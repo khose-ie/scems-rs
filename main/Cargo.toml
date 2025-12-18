@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 license = "GPL-2.0"
 authors = ["Khose-ie<khose-ie@outlook.com>"]
-description = "The example main crate for scems."
+description = "The example main crate for sces."
 
 [lib]
 name = "main"
@@ -14,14 +14,14 @@ bench = false
 
 [dependencies]
 log = "0.4"
-scems = "0.1.0"
-scems-mcu = "0.1.0"
-scems-mcu-stm32 = "0.1.0"
-scems-os = "0.1.0"
-scems-os-cmsis = "0.1.0"
-scems-svc = "0.1.0"
-scems-svc-alive = "0.1.0"
-scems-svc-console = "0.1.0"
+sces = "0.1.0"
+sces-mcu = "0.1.0"
+sces-mcu-stm32 = "0.1.0"
+sces-os = "0.1.0"
+sces-os-cmsis = "0.1.0"
+sces-svc = "0.1.0"
+sces-svc-alive = "0.1.0"
+sces-svc-console = "0.1.0"
 
 [build-dependencies]
 cc = "1.0"

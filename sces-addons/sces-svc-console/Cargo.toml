@@ -1,0 +1,19 @@
+[package]
+name = "sces-svc-console"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-2.0"
+authors = ["Khose-ie<khose-ie@outlook.com>"]
+description = "Simple Construction of Embedded Software - Console Service."
+
+[lib]
+name = "sces_svc_console"
+test = false
+bench = false
+
+[dependencies]
+sces = "0.1.0"
+sces-mcu = "0.1.0"
+sces-os = "0.1.0"
+sces-svc = "0.1.0"
+log = "0.4"

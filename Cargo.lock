@@ -23,14 +23,14 @@ version = "0.1.0"
 dependencies = [
  "cc",
  "log",
- "scems",
- "scems-mcu",
- "scems-mcu-stm32",
- "scems-os",
- "scems-os-cmsis",
- "scems-svc",
- "scems-svc-alive",
- "scems-svc-console",
+ "sces",
+ "sces-mcu",
+ "sces-mcu-stm32",
+ "sces-os",
+ "sces-os-cmsis",
+ "sces-svc",
+ "sces-svc-alive",
+ "sces-svc-console",
 ]
 
 [[package]]
@@ -52,11 +52,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "scems"
+name = "sces"
 version = "0.1.0"
 
 [[package]]
-name = "scems-derive"
+name = "sces-derive"
 version = "0.1.0"
 dependencies = [
  "proc-macro2",
@@ -65,67 +65,76 @@ dependencies = [
 ]
 
 [[package]]
-name = "scems-mcu"
+name = "sces-mcu"
 version = "0.1.0"
 dependencies = [
- "scems",
- "scems-derive",
+ "sces",
+ "sces-derive",
 ]
 
 [[package]]
-name = "scems-mcu-stm32"
+name = "sces-mcu-stm32"
 version = "0.1.0"
 dependencies = [
- "scems",
- "scems-derive",
- "scems-mcu",
+ "sces",
+ "sces-derive",
+ "sces-mcu",
 ]
 
 [[package]]
-name = "scems-os"
+name = "sces-os"
 version = "0.1.0"
 dependencies = [
- "scems",
+ "sces",
 ]
 
 [[package]]
-name = "scems-os-cmsis"
+name = "sces-os-cmsis"
 version = "0.1.0"
 dependencies = [
- "scems",
- "scems-derive",
- "scems-os",
+ "sces",
+ "sces-derive",
+ "sces-os",
 ]
 
 [[package]]
-name = "scems-svc"
+name = "sces-os-threadx"
+version = "0.1.0"
+dependencies = [
+ "sces",
+ "sces-derive",
+ "sces-os",
+]
+
+[[package]]
+name = "sces-svc"
 version = "0.1.0"
 dependencies = [
  "log",
- "scems",
- "scems-mcu",
- "scems-os",
+ "sces",
+ "sces-mcu",
+ "sces-os",
 ]
 
 [[package]]
-name = "scems-svc-alive"
+name = "sces-svc-alive"
 version = "0.1.0"
 dependencies = [
  "log",
- "scems",
- "scems-mcu",
- "scems-os",
+ "sces",
+ "sces-mcu",
+ "sces-os",
 ]
 
 [[package]]
-name = "scems-svc-console"
+name = "sces-svc-console"
 version = "0.1.0"
 dependencies = [
  "log",
- "scems",
- "scems-mcu",
- "scems-os",
- "scems-svc",
+ "sces",
+ "sces-mcu",
+ "sces-os",
+ "sces-svc",
 ]
 
 [[package]]

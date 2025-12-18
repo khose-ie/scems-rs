@@ -1,16 +1,16 @@
 use log::info;
 use log::LevelFilter;
-use scems::cell::StaticCell;
-use scems::value::RetValue;
-use scems_mcu_stm32::uart::{UART_HandleTypeDef, UartQueue};
-use scems_mcu_stm32::wd::{IWDG_HandleTypeDef, WatchDogQueue};
-use scems_os::mem::MemZone;
-use scems_os::task::{TaskPriority, TaskSample};
-use scems_os_cmsis::mem::initialize_mem_space;
-use scems_os_cmsis::task::Task;
-use scems_os_cmsis::CMSISOS;
-use scems_svc_alive::{AliveWatchService, NativeAliveWatch};
-use scems_svc_console::{ConsoleService, NativeConsole};
+use sces::cell::StaticCell;
+use sces::value::RetValue;
+use sces_mcu_stm32::uart::{UART_HandleTypeDef, UartQueue};
+use sces_mcu_stm32::wd::{IWDG_HandleTypeDef, WatchDogQueue};
+use sces_os::mem::MemZone;
+use sces_os::task::{TaskPriority, TaskSample};
+use sces_os_cmsis::mem::initialize_mem_space;
+use sces_os_cmsis::task::Task;
+use sces_os_cmsis::CMSISOS;
+use sces_svc_alive::{AliveWatchService, NativeAliveWatch};
+use sces_svc_console::{ConsoleService, NativeConsole};
 
 #[allow(improper_ctypes)]
 extern "C" {

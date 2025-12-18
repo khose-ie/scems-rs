@@ -1,0 +1,18 @@
+[package]
+name = "sces-mcu"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-2.0"
+authors = ["Khose-ie<khose-ie@outlook.com>"]
+description = "Simple Construction of Embedded Software - MCU Definitions"
+
+[lib]
+name = "sces_mcu"
+test = false
+bench = false
+
+[dependencies]
+sces = "0.1.0"
+sces-derive = "0.1.0"
+
+[features]
