@@ -5,13 +5,13 @@ members = [
     "sces/sces",
     "sces/sces-derive",
     "sces/sces-mcu",
-    "sces/sces-mcu-stm32",
     "sces/sces-os",
-    "sces/sces-os-cmsis",
-    "sces/sces-os-threadx",
     "sces-addons/sces-svc",
     "sces-addons/sces-svc-alive",
-    "sces-addons/sces-svc-console"
+    "sces-addons/sces-svc-console",
+    "sces-implements/sces-mcu-stm32",
+    "sces-implements/sces-os-cmsis",
+    "sces-implements/sces-os-threadx"
 ]
 
 [profile.dev]
@@ -22,10 +22,10 @@ debug = true
 sces = { path = "sces/sces" }
 sces-derive = { path = "sces/sces-derive" }
 sces-mcu = { path = "sces/sces-mcu" }
-sces-mcu-stm32 = { path = "sces/sces-mcu-stm32" }
 sces-os = { path = "sces/sces-os" }
-sces-os-cmsis = { path = "sces/sces-os-cmsis" }
-sces-os-threadx = { path = "sces/sces-os-threadx" }
 sces-svc = { path = "sces-addons/sces-svc" }
 sces-svc-alive = { path = "sces-addons/sces-svc-alive" }
 sces-svc-console = { path = "sces-addons/sces-svc-console" }
+sces-mcu-stm32 = { path = "sces-implements/sces-mcu-stm32" }
+sces-os-cmsis = { path = "sces-implements/sces-os-cmsis" }
+sces-os-threadx = { path = "sces-implements/sces-os-threadx" }
