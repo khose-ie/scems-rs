@@ -9,9 +9,10 @@ members = [
     "sces-addons/sces-svc",
     "sces-addons/sces-svc-alive",
     "sces-addons/sces-svc-console",
+    "sces-implements/sces-cmw",
     "sces-implements/sces-mcu-stm32",
     "sces-implements/sces-os-cmsis",
-    "sces-implements/sces-os-threadx"
+    "sces-implements/sces-os-threadx",
 ]
 
 [profile.dev]
@@ -26,6 +27,7 @@ sces-os = { path = "sces/sces-os" }
 sces-svc = { path = "sces-addons/sces-svc" }
 sces-svc-alive = { path = "sces-addons/sces-svc-alive" }
 sces-svc-console = { path = "sces-addons/sces-svc-console" }
+sces-cmw = { path = "sces-implements/sces-cmw" }
 sces-mcu-stm32 = { path = "sces-implements/sces-mcu-stm32" }
 sces-os-cmsis = { path = "sces-implements/sces-os-cmsis" }
 sces-os-threadx = { path = "sces-implements/sces-os-threadx" }

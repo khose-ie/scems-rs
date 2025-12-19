@@ -3,6 +3,7 @@
         {
             "name": "Linux",
             "includePath": [
+                "${workspaceFolder}/sces-implements/sces-cmw/src-cwraps/inc",
                 "${workspaceFolder}/**"
             ],
             "defines": [
@@ -25,6 +26,7 @@
         {
             "name": "Win32",
             "includePath": [
+                "${workspaceFolder}/sces-implements/sces-cmw/src-cwraps/inc",
                 "${workspaceFolder}/**"
             ],
             "defines": [
@@ -47,6 +49,7 @@
         {
             "name": "Mac",
             "includePath": [
+                "${workspaceFolder}/sces-implements/sces-cmw/src-cwraps/inc",
                 "${workspaceFolder}/**"
             ],
             "defines": [

@@ -56,6 +56,15 @@ name = "sces"
 version = "0.1.0"
 
 [[package]]
+name = "sces-cmw"
+version = "0.1.0"
+dependencies = [
+ "sces",
+ "sces-derive",
+ "sces-os",
+]
+
+[[package]]
 name = "sces-derive"
 version = "0.1.0"
 dependencies = [
