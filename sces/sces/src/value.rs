@@ -21,7 +21,7 @@ pub enum ErrValue
     Busy = 2,
 
     /// Some operations over the specfic waitting time, or official max time.
-    Overtime = 3,
+    Timeout = 3,
 
     /// The stack that you want to something into has reached its max limit count.
     StackOverflow = 4,
@@ -48,7 +48,7 @@ pub enum ErrValue
     InstanceInUse = 11,
 
     /// The feature includes this operation is not enabled in this distribution.
-    NotInclude = 12,
+    NotSupport = 12,
 
     /// Some must modules of this operation are not available.
     NotAvailable = 13,
@@ -57,7 +57,7 @@ pub enum ErrValue
     FormatFaliure = 14,
 
     /// Unknown reason errors.
-    Unknown = 15,
+    Unknown = 255,
 }
 
 impl From<BorrowMutError> for ErrValue

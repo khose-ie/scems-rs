@@ -55,7 +55,7 @@ impl From<HAL_StatusTypeDef> for RetValue<()>
             HAL_StatusTypeDef::HAL_OK => Ok(()),
             HAL_StatusTypeDef::HAL_ERROR => Err(ErrValue::Param),
             HAL_StatusTypeDef::HAL_BUSY => Err(ErrValue::Busy),
-            HAL_StatusTypeDef::HAL_TIMEOUT => Err(ErrValue::Overtime),
+            HAL_StatusTypeDef::HAL_TIMEOUT => Err(ErrValue::Timeout),
         }
     }
 }
@@ -69,7 +69,7 @@ impl From<HAL_StatusTypeDef> for ErrValue
             HAL_StatusTypeDef::HAL_OK => Self::None,
             HAL_StatusTypeDef::HAL_ERROR => Self::Param,
             HAL_StatusTypeDef::HAL_BUSY => Self::Busy,
-            HAL_StatusTypeDef::HAL_TIMEOUT => Self::Overtime,
+            HAL_StatusTypeDef::HAL_TIMEOUT => Self::Timeout,
         }
     }
 }

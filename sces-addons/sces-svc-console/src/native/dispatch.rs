@@ -53,7 +53,7 @@ where
     pub fn wait_and_dispatch(&self, serial_port: &UartDevice) -> RetValue<()>
     {
         serial_port.as_ref().async_receive(self.cache.borrow_mut().as_bytes_mut())?;
-        self.dispatch_event.receive(EVT_CMD_RX, OS::WAIT_MAX).or(Err(ErrValue::Overtime))?;
+        self.dispatch_event.receive(EVT_CMD_RX, OS::WAIT_MAX).or(Err(ErrValue::Timeout))?;
 
         let cache = self.cache.borrow();
         let mut commands = ConsoleCommands::new(cache.as_bytes());

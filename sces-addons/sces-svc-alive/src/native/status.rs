@@ -38,7 +38,7 @@ impl<'a> AliveStatus<'a>
 
         (past > max_time)
             .then_some(())
-            .ok_or(ErrValue::Overtime)
+            .ok_or(ErrValue::Timeout)
             .inspect_err(|_| error!("{AWS} {} is near death over {}", self.name, past))
     }
 }
