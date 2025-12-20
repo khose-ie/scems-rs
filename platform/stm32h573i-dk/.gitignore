@@ -1,0 +1,8 @@
+Drivers
+Middlewares
+Utilities
+
+.mxproject
+startup_stm32h573xx.s
+STM32H573xx_FLASH.ld
+STM32H573xx_RAM.ld

@@ -147,13 +147,6 @@ Objects/
 target/
 
 #
-# Common library files of STMicroelectronic
-#
-platform/**/.mxproject
-platform/**/Drivers
-platform/**/Middlewares
-
-#
 # Doxygen generated document files
 #
 docs/doxygen

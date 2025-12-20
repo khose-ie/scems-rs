@@ -6,7 +6,8 @@
             "type": "pickString",
             "description": "Please select a platform.",
             "options": [
-                "challen-v2-f429"
+                "challen-v2-f429",
+                "stm32h573i-dk"
             ]
         },
         {

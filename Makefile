@@ -42,7 +42,7 @@ ifeq ($(PROFILE),release)
 endif
 
 # Set the platform settings.
-PLATFORM      ?= challen-v2-f429
+PLATFORM      ?= 
 PLATFORM_PATH ?= platform/${PLATFORM}
 
 FEATURES ?=
