@@ -107,15 +107,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sces-os-threadx"
-version = "0.1.0"
-dependencies = [
- "sces",
- "sces-derive",
- "sces-os",
-]
-
-[[package]]
 name = "sces-svc"
 version = "0.1.0"
 dependencies = [
