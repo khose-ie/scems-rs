@@ -35,26 +35,32 @@ pub enum ErrValue
     /// Memory allocation failed during the operation.
     MemAllocFailure = 7,
 
+    /// Some low level operation failed during the operation.
+    LowLevelFailure = 8,
+
     /// Create some sub instance failed during the operation.
-    InstanceCreateFailure = 8,
+    InstanceCreateFailure = 9,
 
     /// The target instance could not be found during the operation.
-    InstanceNotFound = 9,
+    InstanceNotFound = 10,
 
     /// Attempt to crate an unique instance more than once.
-    InstanceDuplicate = 10,
+    InstanceDuplicate = 11,
 
     /// The instance is in use and could not borrow it.
-    InstanceInUse = 11,
+    InstanceInUse = 12,
+
+    /// The instance is invalid for the operation.
+    InstanceInvalid = 13,
 
     /// The feature includes this operation is not enabled in this distribution.
-    NotSupport = 12,
+    NotSupport = 14,
 
     /// Some must modules of this operation are not available.
-    NotAvailable = 13,
+    NotAvailable = 15,
 
     /// Get an error when try to format a string for a series bytes.
-    FormatFaliure = 14,
+    FormatFailure = 16,
 
     /// Unknown reason errors.
     Unknown = 255,

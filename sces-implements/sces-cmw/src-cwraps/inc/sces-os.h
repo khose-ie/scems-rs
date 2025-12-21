@@ -16,6 +16,9 @@
 #define SCES_OS_WAIT_NO      0
 #define SCES_OS_WAIT_FOREVER UINT32_MAX
 
+#define SCES_EVENT_NONE (0x00000000U)
+#define SCES_EVENT_ALL  (0xFFFFFFFFU)
+
 /// @brief Event handle type
 /// @details Opaque handle representing an event object
 typedef void* scesEventHandle_t;
@@ -44,6 +47,20 @@ typedef void* scesTaskHandle_t;
 /// @details Opaque handle representing a timer object
 typedef void* scesTimerHandle_t;
 
+/// @brief OS state enumeration
+/// @details Represents the various states the OS can be in
+typedef enum
+{
+    SCES_OS_STATE_RUNNING      = 0,
+    SCES_OS_STATE_INITIALIZING = 1,
+    SCES_OS_STATE_BLOCKED      = 2,
+    SCES_OS_STATE_SUSPENDED    = 3,
+    SCES_OS_STATE_LOCKED       = 4,
+    SCES_OS_STATE_TERMINATED   = 5,
+    SCES_OS_STATE_ERR_INIT_MEM = 6,
+    SCES_OS_STATE_UNKNOWN_ERR  = UINT32_MAX
+} scesOsState_t;
+
 /// @brief Task state enumeration
 /// @details Represents the various states a task can be in
 typedef enum
@@ -53,7 +70,8 @@ typedef enum
     SCES_TASK_STATE_RUNNING    = 2,
     SCES_TASK_STATE_BLOCKED    = 3,
     SCES_TASK_STATE_TERMINATED = 4,
-    SCES_TASK_STATE_ERROR      = 5
+    SCES_TASK_STATE_ERROR      = 5,
+    SCES_TASK_STATE_UNKNOWN    = UINT32_MAX
 } scesTaskState_t;
 
 /// @brief Task priority enumeration
@@ -79,8 +97,13 @@ typedef enum
     SCES_TIMER_STATE_ACTIVE  = 1,
     SCES_TIMER_STATE_EXPIRED = 2,
     SCES_TIMER_STATE_DELETED = 3,
-    SCES_TIMER_STATE_ERROR   = 4
+    SCES_TIMER_STATE_ERROR   = 4,
+    SCES_TIMER_STATE_UNKNOWN = UINT32_MAX
 } scesTimerState_t;
+
+/// @brief Get the current OS state
+/// @return Current OS state
+scesOsState_t sces_os_state(void);
 
 /// @brief Get the current system tick count
 /// @return Current system tick count in milliseconds
@@ -116,12 +139,16 @@ void sces_os_delay(uint32_t ticks);
 /// @brief  Delay the current task until a specified time
 /// @details This function delays the current task until the specified time increment has passed
 /// since the previous wake time.
-/// @param ticks     Time increment in system tticks
+/// @param ticks     Time increment in system ticks
 void sces_os_delay_until(uint32_t ticks);
 
 /// @brief  Exit the current task
 /// @details This function terminates the execution of the current task.
 void sces_os_exit_task(void);
+
+/// @brief  Exit the current task created with static stack allocation
+/// @details This function terminates the execution of the current task created with static stack
+void sces_os_exit_task_static(void);
 
 /// @brief  Create a new event object
 /// @details This function creates a new event object with the specified name.
@@ -140,42 +167,45 @@ void sces_event_delete(scesEventHandle_t event);
 /// @return Pointer to the event object's name string
 const char* sces_event_name(scesEventHandle_t event);
 
-/// @brief  Set event flags
-/// @details This function sets the specified flags in the event object.
+/// @brief  Get the current state of an event object
+/// @details This function retrieves the current state (flags) of the specified event object.
 /// @param event Handle to the event object
-/// @param flags Flags to be set
-/// @return SCES_RET_OK on success, error code otherwise
-scesRetVal_t sces_event_set(scesEventHandle_t event, uint32_t flags);
+/// @return Current state (flags) of the event object
+uint32_t sces_event_state(scesEventHandle_t event);
 
-/// @brief  Clear event flags
-/// @details This function clears the specified flags in the event object.
+/// @brief  Put event flags
+/// @details This function puts the specified flags in the event object.
 /// @param event Handle to the event object
-/// @param flags Flags to be cleared
+/// @param flags Flags to be putted
 /// @return SCES_RET_OK on success, error code otherwise
-scesRetVal_t sces_event_clear(scesEventHandle_t event, uint32_t flags);
+scesRetVal_t sces_event_put(scesEventHandle_t event, uint32_t flags);
 
 /// @brief  Wait for event flags
 /// @details This function waits for the specified flags to be set in the event object.
-/// @param event       Handle to the event object
-/// @param flags       Flags to wait for
-/// @param come_flags  Pointer to store the flags that caused the wakeup
-/// @param timeout     Timeout in milliseconds to wait (0 for no wait, SCES_OS_WAIT_FOREVER for
+/// @param event        Handle to the event object
+/// @param events_value Flags to wait for
+/// @param timeout      Timeout in milliseconds to wait (0 for no wait, SCES_OS_WAIT_FOREVER for
 /// infinite wait)
 /// @return SCES_RET_OK on success, error code otherwise
-scesRetVal_t sces_event_wait(scesEventHandle_t event, uint32_t flags, uint32_t* come_flags,
-                             uint32_t timeout);
+scesRetVal_t sces_event_wait(scesEventHandle_t event, uint32_t events_value, uint32_t timeout);
+
+/// @brief  Clear event flags
+/// @details This function clears the specified flags in the event object.
+/// @param events_value Handle to the event object
+/// @param flags Flags to be cleared
+void sces_event_clear(scesEventHandle_t event, uint32_t events_value);
 
 /// @brief  Wait for event flags and clear them
 /// @details This function waits for the specified flags to be set in the event object and clears
 /// them upon wakeup.
-/// @param event       Handle to the event object
-/// @param flags       Flags to wait for
-/// @param come_flags  Pointer to store the flags that caused the wakeup
-/// @param timeout     Timeout in milliseconds to wait (0 for no wait, SCES_OS_WAIT_FOREVER for
-/// infinite wait)
+/// @param event             Handle to the event object
+/// @param events_value      Flags to wait for
+/// @param out_events_value  Pointer to store the flags that caused the wakeup
+/// @param timeout           Timeout in milliseconds to wait (0 for no wait, SCES_OS_WAIT_FOREVER
+/// for infinite wait)
 /// @return SCES_RET_OK on success, error code otherwise
-scesRetVal_t sces_event_wait_and_clear(scesEventHandle_t event, uint32_t flags,
-                                       uint32_t* come_flags, uint32_t timeout);
+scesRetVal_t sces_event_wait_and_clear(scesEventHandle_t event, uint32_t events_value,
+                                       uint32_t* out_events_value, uint32_t timeout);
 
 /// @brief  Create a new message queue
 /// @details This function creates a new message queue with the specified parameters.
@@ -201,6 +231,11 @@ scesMessageQueueHandle_t sces_mq_create_static(const char* name, uint8_t* messag
 /// @details This function deletes the specified message queue and frees its resources.
 /// @param queue Handle to the message queue to be deleted
 void sces_mq_delete(scesMessageQueueHandle_t queue);
+
+/// @brief  Delete a message queue created with static buffer
+/// @details This function deletes the specified message queue created with a static buffer.
+/// @param queue Handle to the message queue to be deleted
+void sces_mq_delete_static(scesMessageQueueHandle_t queue);
 
 /// @brief  Get the name of a message queue
 /// @param queue Handle to the message queue
@@ -269,6 +304,11 @@ scesMemPoolHandle_t sces_mem_pool_create_static(const char* name, uint8_t* pool_
 /// @details This function deletes the specified memory pool and frees its resources.
 /// @param pool Handle to the memory pool to be deleted
 void sces_mem_pool_delete(scesMemPoolHandle_t pool);
+
+/// @brief  Delete a memory pool created with static buffer
+/// @details This function deletes the specified memory pool created with a static buffer.
+/// @param pool Handle to the memory pool to be deleted
+void sces_mem_pool_delete_static(scesMemPoolHandle_t pool);
 
 /// @brief  Get the name of a memory pool
 /// @param pool Handle to the memory pool
@@ -366,25 +406,20 @@ const char* sces_semaphore_name(scesSemaphoreHandle_t semaphore);
 /// @return Current count of the semaphore
 uint32_t sces_semaphore_count(scesSemaphoreHandle_t semaphore);
 
-/// @brief  Get the maximum count of a semaphore
-/// @param semaphore Handle to the semaphore
-/// @return Maximum count of the semaphore
-uint32_t sces_semaphore_max_count(scesSemaphoreHandle_t semaphore);
-
-/// @brief  Signal (increment) a semaphore
-/// @details This function signals (increments) the specified semaphore.
-/// @param semaphore Handle to the semaphore
-/// @return SCES_RET_OK on success, error code otherwise
-scesRetVal_t sces_semaphore_signal(scesSemaphoreHandle_t semaphore);
-
-/// @brief  Wait (decrement) a semaphore
-/// @details This function waits (decrements) the specified semaphore, blocking the calling task
+/// @brief  Take (decrement) a semaphore
+/// @details This function takes (decrements) the specified semaphore, blocking the calling task
 /// if necessary.
 /// @param semaphore Handle to the semaphore
 /// @param timeout   Timeout in milliseconds to wait for the semaphore (0 for no wait,
 /// SCES_OS_WAIT_FOREVER for infinite wait)
 /// @return SCES_RET_OK on success, error code otherwise
-scesRetVal_t sces_semaphore_wait(scesSemaphoreHandle_t semaphore, uint32_t timeout);
+scesRetVal_t sces_semaphore_take(scesSemaphoreHandle_t semaphore, uint32_t timeout);
+
+/// @brief  Release (increment) a semaphore
+/// @details This function releases (increments) the specified semaphore.
+/// @param semaphore Handle to the semaphore
+/// @return SCES_RET_OK on success, error code otherwise
+scesRetVal_t sces_semaphore_release(scesSemaphoreHandle_t semaphore);
 
 /// @brief  Create a new task
 /// @details This function creates a new task with the specified parameters.
@@ -417,6 +452,11 @@ scesTaskHandle_t sces_task_create_static(const char* name, void (*main)(void*), 
 /// @param task Handle to the task to be deleted
 void sces_task_delete(scesTaskHandle_t task);
 
+/// @brief  Delete a task created with static stack allocation
+/// @details This function deletes the specified task created with static stack allocation.
+/// @param task Handle to the task to be deleted
+void sces_task_delete_static(scesTaskHandle_t task);
+
 /// @brief  Get the name of a task
 /// @param task Handle to the task control block
 /// @return Pointer to the task's name string
@@ -440,7 +480,8 @@ scesTaskState_t sces_task_state(scesTaskHandle_t task);
 /// @brief  Set the priority of a task
 /// @param task     Handle to the task control block
 /// @param priority New priority to be set for the task
-void sces_task_set_priority(scesTaskHandle_t task, scesTaskPriority_t priority);
+/// @return SCES_RET_OK on success, error code otherwise
+scesRetVal_t sces_task_set_priority(scesTaskHandle_t task, scesTaskPriority_t priority);
 
 /// @brief  Suspend a task
 /// @param task Handle to the task control block to be suspended
@@ -450,17 +491,17 @@ void sces_task_suspend(scesTaskHandle_t task);
 /// @param task Handle to the task control block to be resumed
 void sces_task_resume(scesTaskHandle_t task);
 
-/// @brief  Join a task
-/// @details This function waits for the specified task to complete its execution.
-/// @param task Handle to the task to be joined
-/// @return SCES_RET_OK on success, error code otherwise
-scesRetVal_t sces_task_join(scesTaskHandle_t task);
+// /// @brief  Join a task
+// /// @details This function waits for the specified task to complete its execution.
+// /// @param task Handle to the task to be joined
+// /// @return SCES_RET_OK on success, error code otherwise
+// scesRetVal_t sces_task_join(scesTaskHandle_t task);
 
-/// @brief  Detach a task
-/// @details This function detaches the specified task, allowing it to run independently.
-/// @param task Handle to the task to be detached
-/// @return SCES_RET_OK on success, error code otherwise
-scesRetVal_t sces_task_detach(scesTaskHandle_t task);
+// /// @brief  Detach a task
+// /// @details This function detaches the specified task, allowing it to run independently.
+// /// @param task Handle to the task to be detached
+// /// @return SCES_RET_OK on success, error code otherwise
+// scesRetVal_t sces_task_detach(scesTaskHandle_t task);
 
 /// @brief  Create a new timer
 /// @details This function creates a new timer with the specified parameters.
