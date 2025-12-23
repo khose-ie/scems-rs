@@ -1,4 +1,4 @@
-use sces_os::RTOS;
+use sces::os::RTOS;
 
 mod events;
 mod message_queue;
@@ -24,7 +24,7 @@ impl RTOS for MWOS
 
     type Timer = timer::Timer;
 
-    fn state() -> sces_os::OSState
+    fn state() -> sces::os::OSState
     {
         unsafe { native::sces_os_state().into() }
     }

@@ -2,7 +2,7 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
-use sces_mcu::can::CanMessageHead;
+use sces::mcu::can::CanMessageHead;
 
 use super::{FunctionalState, HAL_StatusTypeDef};
 

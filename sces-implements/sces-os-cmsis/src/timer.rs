@@ -3,7 +3,7 @@ use core::ptr::null;
 
 use sces::value::ErrValue;
 use sces::value::RetValue;
-use sces_os::timer::{ITimer, ITimerEvent, TimerEventAgent, TimerMode};
+use sces::os::timer::{ITimer, ITimerEvent, TimerEventAgent, TimerMode};
 
 use crate::native::*;
 
@@ -62,15 +62,15 @@ impl ITimer for Timer
         self.mode
     }
 
-    fn state(&self) -> sces_os::timer::TimerState
+    fn state(&self) -> sces::os::timer::TimerState
     {
         if unsafe { osTimerIsRunning(self.handle) } == 0
         {
-            sces_os::timer::TimerState::Idle
+            sces::os::timer::TimerState::Idle
         }
         else
         {
-            sces_os::timer::TimerState::Active
+            sces::os::timer::TimerState::Active
         }
     }
 }

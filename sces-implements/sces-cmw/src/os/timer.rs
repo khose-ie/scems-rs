@@ -1,7 +1,7 @@
 use core::ptr::{null, null_mut};
 
 use sces::value::{ErrValue, RetValue};
-use sces_os::timer::{ITimer, ITimerEvent, TimerEventAgent, TimerMode, TimerState};
+use sces::os::timer::{ITimer, ITimerEvent, TimerEventAgent, TimerMode, TimerState};
 
 use crate::os::native::*;
 

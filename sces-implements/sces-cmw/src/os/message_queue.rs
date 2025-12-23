@@ -1,7 +1,7 @@
 use core::ptr::null;
 
 use sces::value::RetValue;
-use sces_os::message_queue::{IMessageQueue, MessageContent};
+use sces::os::message_queue::{IMessageQueue, MessageContent};
 
 use crate::os::native::*;
 

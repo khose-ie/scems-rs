@@ -17,7 +17,7 @@ use core::ffi::c_void;
 /// let message = MyMessageContent { data: [0; 128] };
 /// message_queue.launch(&message, 1000).unwrap();
 /// ```
-use sces::value::RetValue;
+use crate::value::RetValue;
 
 /// IMessageQueue Trait
 /// Defines the interface for message queue operations

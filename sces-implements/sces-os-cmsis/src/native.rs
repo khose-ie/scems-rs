@@ -5,8 +5,8 @@ use core::ptr::{null, null_mut};
 
 use sces::value::{ErrValue, RetValue};
 use sces_derive::EnumAsI32;
-use sces_os::task::TaskPriority;
-use sces_os::timer::TimerMode;
+use sces::os::task::TaskPriority;
+use sces::os::timer::TimerMode;
 
 /// Timeout value.
 ///< Wait forever timeout value.

@@ -2,7 +2,7 @@ use core::ffi::{c_void, CStr};
 use core::ptr::null;
 
 use sces::value::{ErrValue, RetValue};
-use sces_os::task::{ITask, ITaskMain, TaskPriority};
+use sces::os::task::{ITask, ITaskMain, TaskPriority};
 
 use crate::native::*;
 
@@ -86,7 +86,7 @@ impl ITask for Task
         todo!()
     }
 
-    fn state(&self) -> sces_os::task::TaskState
+    fn state(&self) -> sces::os::task::TaskState
     {
         todo!()
     }

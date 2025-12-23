@@ -4,7 +4,7 @@ use core::ops::Not;
 use core::ptr::{null, null_mut};
 
 use sces::value::{ErrValue, RetValue};
-use sces_os::mem::IMemZone;
+use sces::os::mem::IMemZone;
 
 use crate::native::*;
 

@@ -1,8 +1,8 @@
 use core::ptr::NonNull;
 
 use sces::value::{ErrValue, RetValue};
-use sces_mcu::spi::{SpiCtrl, SpiCtrlEvent};
-use sces_mcu::EventLaunch;
+use sces::mcu::spi::{SpiCtrl, SpiCtrlEvent};
+use sces::mcu::EventLaunch;
 
 use crate::device::Handle;
 use crate::native::spi::*;

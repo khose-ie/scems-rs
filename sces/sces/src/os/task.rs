@@ -7,7 +7,7 @@ use core::cell::RefCell;
 use core::ffi::c_void;
 use core::ops::{Deref, DerefMut};
 
-use sces::value::RetValue;
+use crate::value::RetValue;
 
 /// Task States
 /// Defines various states that a task can be in within the RTOS

@@ -3,8 +3,8 @@
 use core::ptr::NonNull;
 
 use sces::value::{ErrValue, RetValue};
-use sces_mcu::uart::{UartCtrl, UartCtrlEvent};
-use sces_mcu::EventLaunch;
+use sces::mcu::uart::{UartCtrl, UartCtrlEvent};
+use sces::mcu::EventLaunch;
 
 use crate::device::Handle;
 use crate::native::uart::*;

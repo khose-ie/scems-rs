@@ -1,7 +1,7 @@
 use core::ptr::NonNull;
 
 use sces::value::{ErrValue, RetValue};
-use sces_mcu::wd::WatchDogCtrl;
+use sces::mcu::wd::WatchDogCtrl;
 
 use crate::{Handle, IWDG_COUNT, native::iwdg::*, sample_queue::SampleQueue};
 

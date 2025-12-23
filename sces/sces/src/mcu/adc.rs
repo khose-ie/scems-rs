@@ -1,8 +1,7 @@
 //! Provide a common trait to operate the Analog-Digital Converter (ADC).
 
-use sces::value::RetValue;
-
 use super::EventLaunch;
+use crate::value::RetValue;
 
 /// `AdcCtrl` is the common trait for ADC peripheral, provides the interface functions to operate the
 /// ADC.

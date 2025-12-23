@@ -1,8 +1,8 @@
 use core::{ops::Not, ptr::null};
 
 use sces::value::{ErrValue, RetValue};
-use sces_os::sxmutex::ISxMutex;
-use sces_os::RTOS;
+use sces::os::sxmutex::ISxMutex;
+use sces::os::RTOS;
 
 use crate::native::*;
 use crate::CMSISOS;

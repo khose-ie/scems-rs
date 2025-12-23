@@ -1,7 +1,7 @@
 use core::ptr::null;
 
 use sces::value::{ErrValue, RetValue};
-use sces_os::events::IEvents;
+use sces::os::events::IEvents;
 
 use crate::os::native::*;
 

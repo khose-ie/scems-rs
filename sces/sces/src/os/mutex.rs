@@ -24,9 +24,8 @@ use core::cell::{RefCell, RefMut};
 /// with different RTOS backends.
 use core::ops::{Deref, DerefMut};
 
-use sces::value::RetValue;
-
-use crate::RTOS;
+use crate::os::RTOS;
+use crate::value::RetValue;
 
 /// Mutex Interface
 /// Implement this trait to define mutex handling mechanisms

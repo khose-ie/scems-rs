@@ -24,9 +24,7 @@ dependencies = [
  "cc",
  "log",
  "sces",
- "sces-mcu",
  "sces-mcu-stm32",
- "sces-os",
  "sces-os-cmsis",
  "sces-svc",
  "sces-svc-alive",
@@ -54,6 +52,9 @@ dependencies = [
 [[package]]
 name = "sces"
 version = "0.1.0"
+dependencies = [
+ "sces-derive",
+]
 
 [[package]]
 name = "sces-cmw"
@@ -61,7 +62,6 @@ version = "0.1.0"
 dependencies = [
  "sces",
  "sces-derive",
- "sces-os",
 ]
 
 [[package]]
@@ -74,27 +74,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "sces-mcu"
-version = "0.1.0"
-dependencies = [
- "sces",
- "sces-derive",
-]
-
-[[package]]
 name = "sces-mcu-stm32"
 version = "0.1.0"
 dependencies = [
  "sces",
  "sces-derive",
- "sces-mcu",
-]
-
-[[package]]
-name = "sces-os"
-version = "0.1.0"
-dependencies = [
- "sces",
 ]
 
 [[package]]
@@ -103,7 +87,6 @@ version = "0.1.0"
 dependencies = [
  "sces",
  "sces-derive",
- "sces-os",
 ]
 
 [[package]]
@@ -112,8 +95,6 @@ version = "0.1.0"
 dependencies = [
  "log",
  "sces",
- "sces-mcu",
- "sces-os",
 ]
 
 [[package]]
@@ -122,8 +103,6 @@ version = "0.1.0"
 dependencies = [
  "log",
  "sces",
- "sces-mcu",
- "sces-os",
 ]
 
 [[package]]
@@ -132,8 +111,6 @@ version = "0.1.0"
 dependencies = [
  "log",
  "sces",
- "sces-mcu",
- "sces-os",
  "sces-svc",
 ]
 

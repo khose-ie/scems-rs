@@ -1,4 +1,4 @@
-use sces_mcu::io::{IoCtrl, IoDevice, IoState};
+use sces::mcu::io::{IoCtrl, IoDevice, IoState};
 use sces_mcu_stm32::io::{GPIO_Pin, GPIO_TypeDef, IoQueue};
 
 pub const GPIOC: *mut GPIO_TypeDef = ((0x40000000 + 0x00020000) + 0x0800) as *mut GPIO_TypeDef;

@@ -14,7 +14,7 @@ use core::ffi::c_void;
 /// let mut timer = MyTimer::new(TimerMode::Periodic, MyTimerEvent);
 /// timer.start(1000).unwrap(); // Start timer for 1000 milliseconds
 /// ```
-use sces::value::RetValue;
+use crate::value::RetValue;
 
 /// TimerMode Enum
 /// Defines the operating modes for the timer

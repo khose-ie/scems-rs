@@ -4,7 +4,7 @@
 /// and receiving events.
 /// The IEvents trait can be implemented for different RTOS backends
 /// to provide a consistent API for event management across various platforms.
-use sces::value::RetValue;
+use crate::value::RetValue;
 
 /// Events Interface
 /// Implement this trait to define event handling mechanisms

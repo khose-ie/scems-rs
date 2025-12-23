@@ -2,8 +2,8 @@ use core::ops::{Index, IndexMut};
 
 use alloc::vec::Vec;
 use sces::value::{ErrValue, RetValue};
-use sces_os::mem::SafeVec;
-use sces_os::RTOS;
+use sces::os::mem::SafeVec;
+use sces::os::RTOS;
 
 use crate::native::status::AliveStatus;
 use crate::AliveWatchHandle;

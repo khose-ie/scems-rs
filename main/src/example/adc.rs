@@ -1,9 +1,9 @@
 use core::fmt::{self, Write};
 use core::ptr::NonNull;
 
-use sces_mcu::adc::{AdcCtrl, AdcCtrlEvent, AdcDevice};
-use sces_mcu::uart::UartDevice;
-use sces_mcu::EventLaunch;
+use sces::mcu::adc::{AdcCtrl, AdcCtrlEvent, AdcDevice};
+use sces::mcu::uart::UartDevice;
+use sces::mcu::EventLaunch;
 use sces_mcu_stm32::adc::{ADC_HandleTypeDef, Adc, AdcQueue};
 use sces_mcu_stm32::uart::{UART_HandleTypeDef, UartQueue};
 use sces_mcu_stm32::Handle;

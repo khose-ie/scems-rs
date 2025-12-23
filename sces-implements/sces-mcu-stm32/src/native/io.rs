@@ -2,7 +2,7 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
-use sces_mcu::io::IoState;
+use sces::mcu::io::IoState;
 
 use super::HAL_StatusTypeDef;
 

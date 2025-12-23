@@ -1,8 +1,8 @@
 use core::fmt::Write;
 
 use sces::value::{ErrValue, RetValue};
-use sces_mcu::uart::UartDevice;
-use sces_os::{mutex::MutexSample, RTOS};
+use sces::mcu::uart::UartDevice;
+use sces::os::{mutex::MutexSample, RTOS};
 
 use crate::native::cache::ConsoleCache;
 

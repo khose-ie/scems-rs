@@ -1,10 +1,10 @@
 use core::ptr::NonNull;
 
 use sces::value::{ErrValue, RetValue};
-use sces_mcu::i2c::{I2cMasterCtrl, I2cMasterCtrlEvent};
-use sces_mcu::i2c::{I2cMemCtrl, I2cMemCtrlEvent, I2cMemWide};
-use sces_mcu::i2c::{I2cSlaveCtrl, I2cSlaveCtrlEvent};
-use sces_mcu::EventLaunch;
+use sces::mcu::i2c::{I2cMasterCtrl, I2cMasterCtrlEvent};
+use sces::mcu::i2c::{I2cMemCtrl, I2cMemCtrlEvent, I2cMemWide};
+use sces::mcu::i2c::{I2cSlaveCtrl, I2cSlaveCtrlEvent};
+use sces::mcu::EventLaunch;
 
 use crate::device::Handle;
 use crate::native::i2c::*;

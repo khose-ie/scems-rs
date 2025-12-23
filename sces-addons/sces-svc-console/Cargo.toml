@@ -13,7 +13,5 @@ bench = false
 
 [dependencies]
 sces = "0.1.0"
-sces-mcu = "0.1.0"
-sces-os = "0.1.0"
 sces-svc = "0.1.0"
 log = "0.4"

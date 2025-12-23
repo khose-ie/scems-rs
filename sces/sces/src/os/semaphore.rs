@@ -7,7 +7,7 @@
 /// // Critical section code here
 /// semaphore.back();                             // Release the semaphore
 /// ```
-use sces::value::RetValue;
+use crate::value::RetValue;
 
 /// ISemaphore Trait
 /// Defines the interface for semaphore operations

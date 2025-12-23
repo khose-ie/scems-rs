@@ -1,8 +1,8 @@
 use core::ptr::NonNull;
 
 use sces::value::{ErrValue, RetValue};
-use sces_mcu::adc::{AdcCtrl, AdcCtrlEvent};
-use sces_mcu::EventLaunch;
+use sces::mcu::adc::{AdcCtrl, AdcCtrlEvent};
+use sces::mcu::EventLaunch;
 
 use crate::device::Handle;
 use crate::native::adc::*;

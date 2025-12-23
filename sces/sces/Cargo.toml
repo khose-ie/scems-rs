@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 license = "GPL-2.0"
 authors = ["Khose-ie<khose-ie@outlook.com>"]
-description = "Simple Construction of Embedded Software - Common Definitions"
+description = "Simple Construction of Embedded Software"
 
 [lib]
 name = "sces"
@@ -12,5 +12,6 @@ test = false
 bench = false
 
 [dependencies]
+sces-derive = "0.1.0"
 
 [features]

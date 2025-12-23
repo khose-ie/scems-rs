@@ -2,7 +2,7 @@ use core::ops::Not;
 use core::ptr::null;
 
 use sces::value::{ErrValue, RetValue};
-use sces_os::semaphore::ISemaphore;
+use sces::os::semaphore::ISemaphore;
 
 use crate::native::*;
 

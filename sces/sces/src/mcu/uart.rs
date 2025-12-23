@@ -1,7 +1,7 @@
 //! Provide a common trait to operate the Universal Asynchronous Receiver Transmitter (UART).
 
 use super::EventLaunch;
-use sces::value::RetValue;
+use crate::value::RetValue;
 
 /// A common trait to control UART peripheral, with functions to let the UART to do
 /// some basic actions.

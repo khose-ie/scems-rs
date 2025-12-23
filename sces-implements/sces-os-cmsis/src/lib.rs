@@ -15,7 +15,7 @@ pub mod task;
 pub mod timer;
 
 use crate::native::*;
-use sces_os::RTOS;
+use sces::os::RTOS;
 
 pub const COMMON_TASK_TICK: u32 = 500;
 
@@ -53,7 +53,7 @@ impl RTOS for CMSISOS
         unsafe { osKernelGetTickCount() }
     }
     
-    fn state() -> sces_os::OSState {
+    fn state() -> sces::os::OSState {
         todo!()
     }
     

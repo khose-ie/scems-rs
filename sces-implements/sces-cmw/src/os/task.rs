@@ -1,7 +1,7 @@
 use core::{ffi::CStr, ptr::{null_mut}};
 
 use sces::value::{ErrValue, RetValue};
-use sces_os::task::{ITask, ITaskMain, TaskMainAgent, TaskPriority, TaskState};
+use sces::os::task::{ITask, ITaskMain, TaskMainAgent, TaskPriority, TaskState};
 
 use crate::os::native::*;
 

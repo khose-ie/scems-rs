@@ -1,4 +1,4 @@
-use sces::value::RetValue;
+use crate::value::RetValue;
 use sces_derive::{EnumAsU16, EnumAsU8};
 
 use super::EventLaunch;

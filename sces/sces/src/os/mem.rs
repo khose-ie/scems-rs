@@ -5,7 +5,7 @@
 use core::usize;
 
 use alloc::vec::Vec;
-use sces::value::{ErrValue, RetValue};
+use crate::value::{ErrValue, RetValue};
 
 /// The trait to specific the standard method of an OS memory zone.
 /// Should be implemented by the real OS interfaces.

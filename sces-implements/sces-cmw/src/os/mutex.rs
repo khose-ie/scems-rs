@@ -1,7 +1,7 @@
 use core::ptr::null;
 
 use sces::value::{ErrValue, RetValue};
-use sces_os::mutex::IMutex;
+use sces::os::mutex::IMutex;
 
 use crate::os::native::*;
 

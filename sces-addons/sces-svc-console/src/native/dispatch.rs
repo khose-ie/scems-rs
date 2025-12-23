@@ -3,11 +3,11 @@ use core::cell::RefCell;
 use alloc::vec::Vec;
 use log::warn;
 use sces::value::{ErrValue, RetValue};
-use sces_mcu::uart::UartDevice;
-use sces_os::events::IEvents;
-use sces_os::mem::SafeVec;
-use sces_os::mutex::MutexSample;
-use sces_os::RTOS;
+use sces::mcu::uart::UartDevice;
+use sces::os::events::IEvents;
+use sces::os::mem::SafeVec;
+use sces::os::mutex::MutexSample;
+use sces::os::RTOS;
 
 use crate::native::cache::ConsoleCache;
 use crate::svc::CS;

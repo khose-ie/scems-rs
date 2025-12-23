@@ -2,8 +2,8 @@ use core::ptr::NonNull;
 
 use sces::value::{ErrValue, RetValue};
 use sces_derive::{EnumAsU16, EnumCount};
-use sces_mcu::io::{IoCtrl, IoCtrlEvent, IoState};
-use sces_mcu::EventLaunch;
+use sces::mcu::io::{IoCtrl, IoCtrlEvent, IoState};
+use sces::mcu::EventLaunch;
 
 use crate::device::Handle;
 use crate::native::io::*;

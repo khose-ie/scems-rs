@@ -1,8 +1,8 @@
 use log::Log;
 use sces::value::RetValue;
-use sces_mcu::uart::{UartCtrl, UartCtrlEvent, UartDevice};
-use sces_os::task::ITaskMain;
-use sces_os::RTOS;
+use sces::mcu::uart::{UartCtrl, UartCtrlEvent, UartDevice};
+use sces::os::task::ITaskMain;
+use sces::os::RTOS;
 
 use crate::native::dispatch::ConsoleDispatchCore;
 use crate::native::print::ConsolePrintCore;

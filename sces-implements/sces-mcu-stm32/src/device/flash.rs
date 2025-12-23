@@ -1,5 +1,5 @@
 use sces::value::RetValue;
-use sces_mcu::flash::FlashCtrl;
+use sces::mcu::flash::FlashCtrl;
 
 use crate::native::flash::*;
 

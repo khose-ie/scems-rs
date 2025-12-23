@@ -1,4 +1,4 @@
-use sces::value::RetValue;
+use crate::value::RetValue;
 
 pub type FlashDevice = &'static mut dyn FlashCtrl;
 

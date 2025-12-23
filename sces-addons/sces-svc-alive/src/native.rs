@@ -5,10 +5,10 @@ use core::marker::PhantomData;
 
 use log::error;
 use sces::value::RetValue;
-use sces_mcu::wd::WatchDogDevice;
-use sces_os::mutex::MutexSample;
-use sces_os::task::ITaskMain;
-use sces_os::RTOS;
+use sces::mcu::wd::WatchDogDevice;
+use sces::os::mutex::MutexSample;
+use sces::os::task::ITaskMain;
+use sces::os::RTOS;
 
 use crate::alive::{AliveWatch, AliveWatchHandle};
 use crate::native::queue::AliveWatchQueue;

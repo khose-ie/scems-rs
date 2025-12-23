@@ -1,7 +1,7 @@
 use core::{ffi::c_char, ptr::null_mut};
 
 use sces::value::RetValue;
-use sces_os::task::{ITask, ITaskMain, TaskPriority};
+use sces::os::task::{ITask, ITaskMain, TaskPriority};
 
 use crate::native::*;
 

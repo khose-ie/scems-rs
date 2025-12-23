@@ -1,4 +1,4 @@
-use sces_mcu::uart::UartDevice;
+use sces::mcu::uart::UartDevice;
 use sces_mcu_stm32::uart::{UART_HandleTypeDef, UartQueue};
 
 #[allow(improper_ctypes)]

@@ -4,7 +4,7 @@ mod device;
 mod native;
 mod sample_queue;
 
-use sces_mcu::MCU;
+use sces::mcu::MCU;
 
 pub use device::*;
 

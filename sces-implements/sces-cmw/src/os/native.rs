@@ -8,7 +8,7 @@
 
 use core::ffi::{c_uchar, c_void};
 
-use sces_os::{
+use sces::os::{
     task::{TaskPriority, TaskState},
     timer::TimerState,
     OSState,
