@@ -1,5 +1,3 @@
-#![no_std]
-
 pub mod adc;
 pub mod can;
 pub mod flash;

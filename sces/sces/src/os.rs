@@ -1,5 +1,3 @@
-#![no_std]
-
 /// sces OS Library
 /// This library provides abstractions and implementations for various RTOS functionalities.
 /// It includes modules for events, memory management, message queues, mutexes,
