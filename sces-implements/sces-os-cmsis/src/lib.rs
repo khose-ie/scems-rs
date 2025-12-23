@@ -48,8 +48,28 @@ impl RTOS for CMSISOS
     }
 
     #[inline]
-    fn ostick() -> u32
+    fn ticks() -> u32
     {
         unsafe { osKernelGetTickCount() }
+    }
+    
+    fn state() -> sces_os::OSState {
+        todo!()
+    }
+    
+    fn task_count() -> u32 {
+        todo!()
+    }
+    
+    fn current_task() -> Self::Task {
+        todo!()
+    }
+    
+    fn switch_next_task() {
+        todo!()
+    }
+    
+    fn exit_current_task() {
+        todo!()
     }
 }

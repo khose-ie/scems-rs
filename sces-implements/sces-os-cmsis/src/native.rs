@@ -62,9 +62,9 @@ pub type osMemoryPoolId_t = *const c_void;
 
 pub type osMessageQueueId_t = *const c_void;
 
-pub type osThreadFunc_t = unsafe fn(*mut c_void);
+pub type osThreadFunc_t = unsafe extern "C" fn(*mut c_void);
 
-pub type osTimerFunc_t = unsafe fn(*mut c_void);
+pub type osTimerFunc_t = unsafe extern "C" fn(*mut c_void);
 
 pub type TZ_ModuleId_t = u32;
 

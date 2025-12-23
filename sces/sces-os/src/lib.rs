@@ -8,7 +8,6 @@
 /// with different RTOS backends.
 /// The core trait `RTOS` defines the interface for RTOS functionalities,
 /// enabling consistent API usage across various platforms and architectures.
-
 extern crate alloc;
 
 pub mod events;
@@ -19,6 +18,20 @@ pub mod semaphore;
 pub mod sxmutex;
 pub mod task;
 pub mod timer;
+
+#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum OSState
+{
+    Running = 0,
+    Initializing = 1,
+    Blocked = 2,
+    Suspended = 3,
+    Locked = 4,
+    Terminated = 5,
+    ErrInitMem = 6,
+    UnknownErr = u32::MAX,
+}
 
 /// Real-Time Operating System (RTOS) Trait
 /// Defines the interface for RTOS functionalities
@@ -83,6 +96,33 @@ pub trait RTOS
     /// Defines the timer mechanism
     type Timer: timer::ITimer;
 
+    /// Get the current OS state
+    /// # Returns
+    /// * `OSState` - The current state of the OS
+    fn state() -> OSState;
+
+    /// Get the current OS tick count
+    /// # Returns
+    /// * `u32` - The current OS tick count in milliseconds
+    fn ticks() -> u32;
+
+    /// Get the current number of tasks
+    /// # Returns
+    /// * `u32` - The current number of tasks in the OS
+    fn task_count() -> u32;
+
+    /// Get the handle of the currently running task
+    /// # Returns
+    /// * `Self::Task` - The handle of the currently running task
+    fn current_task() -> Self::Task;
+
+    /// Switch the execution to the next task
+    fn switch_next_task();
+
+    /// Exit the currently running task
+    /// This function does not return
+    fn exit_current_task();
+
     /// Create a delay for the specified time in milliseconds
     /// # Arguments
     /// * `time: u32` - The delay duration in milliseconds
@@ -93,8 +133,4 @@ pub trait RTOS
     /// * `time: u32` - The target time in milliseconds
     fn delay_interval(time: u32);
 
-    /// Get the current OS tick count
-    /// # Returns
-    /// * `u32` - The current OS tick count in milliseconds
-    fn ostick() -> u32;
 }

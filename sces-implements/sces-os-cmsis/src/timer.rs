@@ -1,12 +1,9 @@
-use core::ffi::c_void;
-use core::mem::transmute;
 use core::ops::Not;
 use core::ptr::null;
 
 use sces::value::ErrValue;
 use sces::value::RetValue;
-use sces_os::timer::TimerEvent;
-use sces_os::timer::{ITimer, TimerMode};
+use sces_os::timer::{ITimer, ITimerEvent, TimerEventAgent, TimerMode};
 
 use crate::native::*;
 
@@ -14,31 +11,7 @@ pub struct Timer
 {
     handle: osEventFlagsId_t,
     mode: TimerMode,
-    event_agent_handle: TimerEventHandle,
-}
-
-impl Timer
-{
-    pub const fn new(mode: TimerMode, event_agent: &dyn TimerEvent) -> Self
-    {
-        Timer {
-            handle: null(),
-            mode,
-            event_agent_handle: TimerEventHandle::from(unsafe { transmute(event_agent) }),
-        }
-    }
-
-    #[allow(static_mut_refs)]
-    pub unsafe fn func(argument: *mut c_void)
-    {
-        if let Some(event_agent) = (argument as *mut TimerEventHandle).as_mut()
-        {
-            if let Some(event_agent) = event_agent.event_agent()
-            {
-                (*event_agent).on_time_over();
-            }
-        }
-    }
+    agent: TimerEventAgent,
 }
 
 impl Drop for Timer
@@ -51,17 +24,20 @@ impl Drop for Timer
 
 impl ITimer for Timer
 {
-    fn start(&mut self, times: u32) -> RetValue<()>
+    fn new(mode: TimerMode) -> RetValue<Self>
+    where
+        Self: Sized,
+    {
+        Ok(Timer { handle: null(), mode, agent: TimerEventAgent::new() })
+    }
+
+    fn active(&mut self, times: u32, event: &dyn ITimerEvent) -> RetValue<()>
     {
         if self.handle.is_null()
         {
+            self.agent.set_event(event);
             self.handle = unsafe {
-                osTimerNew(
-                    Timer::func,
-                    self.mode.into(),
-                    self.event_agent_handle.as_void_ptr(),
-                    null(),
-                )
+                osTimerNew(Timer::on_time_over, self.mode.into(), self.agent.as_ptr(), null())
             };
         }
 
@@ -73,7 +49,7 @@ impl ITimer for Timer
         unsafe { osTimerStart(self.handle, times).into() }
     }
 
-    fn stop(&mut self)
+    fn terminate(&mut self)
     {
         if self.handle.is_null().not()
         {
@@ -81,43 +57,20 @@ impl ITimer for Timer
         }
     }
 
-    fn actived(&self) -> bool
+    fn mode(&self) -> TimerMode
     {
-        if self.handle.is_null()
-        {
-            return false;
-        }
-
-        unsafe { osTimerIsRunning(self.handle) != 0 }
-    }
-}
-
-struct TimerEventHandle
-{
-    event_agent: *mut dyn TimerEvent,
-}
-
-impl TimerEventHandle
-{
-    pub const fn from(event_agent: &dyn TimerEvent) -> Self
-    {
-        Self { event_agent: unsafe { transmute(event_agent) } }
+        self.mode
     }
 
-    pub const fn event_agent(&self) -> Option<*const dyn TimerEvent>
+    fn state(&self) -> sces_os::timer::TimerState
     {
-        if self.event_agent.is_null()
+        if unsafe { osTimerIsRunning(self.handle) } == 0
         {
-            None
+            sces_os::timer::TimerState::Idle
         }
         else
         {
-            Some(self.event_agent)
+            sces_os::timer::TimerState::Active
         }
-    }
-
-    pub const fn as_void_ptr(&self) -> *mut c_void
-    {
-        self as *const TimerEventHandle as *mut c_void
     }
 }

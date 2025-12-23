@@ -46,15 +46,15 @@ pub trait IMutex
     /// Lock the mutex
     fn lock(&self);
 
-    /// Unlock the mutex
-    fn unlock(&self);
-
     /// Attempt to lock the mutex with a timeout
     /// # Arguments
     /// * `time: u32` - The timeout duration in milliseconds
     /// # Returns
     /// * `RetValue<()>` - Result indicating success or failure
     fn attempt_lock(&self, time: u32) -> RetValue<()>;
+
+    /// Unlock the mutex
+    fn unlock(&self);
 }
 
 /// Mutex Guided Accessor

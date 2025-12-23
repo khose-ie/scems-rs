@@ -18,18 +18,18 @@ pub trait IEvents
     where
         Self: Sized;
 
-    /// Launch events
+    /// Put events
     /// # Arguments
-    /// * `events: u32` - The events to be launched
+    /// * `events: u32` - The events to be put
     /// # Returns
     /// * `RetValue<()>` - Result indicating success or failure
-    fn launch(&self, events: u32) -> RetValue<()>;
+    fn put(&self, events: u32) -> RetValue<()>;
 
-    /// Receive events
+    /// Wait events
     /// # Arguments
-    /// * `events: u32` - The events to be received
+    /// * `events: u32` - The events to be waited for
     /// * `timeout: u32` - The timeout duration in milliseconds
     /// # Returns
     /// * `RetValue<u32>` - Result containing the received events or an error
-    fn receive(&self, events: u32, timeout: u32) -> RetValue<u32>;
+    fn wait(&self, events: u32, timeout: u32) -> RetValue<u32>;
 }

@@ -1,3 +1,5 @@
+use core::ffi::c_void;
+
 /// IMessageQueue Trait and MessageContent Trait
 /// Defines the interface for message queue operations
 /// and the content structure for messages.
@@ -24,21 +26,21 @@ pub trait IMessageQueue
 {
     /// Create a new Message Queue instance
     /// # Arguments
-    /// * `message_count: u32` - The maximum number of messages in the queue
     /// * `message_size: u32` - The size of each message in bytes
+    /// * `message_count: u32` - The maximum number of messages in the queue
     /// # Returns
     /// * `RetValue<Self>` - Result containing the new message queue instance or an error
-    fn new(message_count: u32, message_size: u32) -> RetValue<Self>
+    fn new(message_size: u32, message_count: u32) -> RetValue<Self>
     where
         Self: Sized;
 
-    /// Launch a message into the queue
+    /// Send a message into the queue
     /// # Arguments
     /// * `content: &dyn MessageContent` - The message content to be sent
     /// * `timeout: u32` - The timeout duration in milliseconds
     /// # Returns
     /// * `RetValue<()>` - Result indicating success or failure
-    fn launch(&self, content: &dyn MessageContent, timeout: u32) -> RetValue<()>;
+    fn send(&self, content: &dyn MessageContent, timeout: u32) -> RetValue<()>;
 
     /// Receive a message from the queue
     /// # Arguments
@@ -57,5 +59,10 @@ pub trait MessageContent
     /// Get a pointer to the message content data
     /// # Returns
     /// * `*const u8` - Pointer to the message content data
-    fn as_ptr(&self) -> *const u8;
+    fn as_ptr(&self) -> *const c_void;
+
+    /// Get a mutable pointer to the message content data
+    /// # Returns
+    /// * `*mut c_void` - Mutable pointer to the message content data
+    fn as_mut_ptr(&mut self) -> *mut c_void;
 }

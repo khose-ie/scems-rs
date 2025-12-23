@@ -1,4 +1,5 @@
-use core::{ops::Not, ptr::null};
+use core::ops::Not;
+use core::ptr::null;
 
 use sces::value::{ErrValue, RetValue};
 use sces_os::semaphore::ISemaphore;
@@ -32,13 +33,13 @@ impl ISemaphore for Semaphore
         unsafe { osSemaphoreAcquire(self.handle, osWaitForever) };
     }
 
-    fn back(&self)
-    {
-        unsafe { osSemaphoreRelease(self.handle) };
-    }
-
     fn attempt_take(&self, timeout: u32) -> RetValue<()>
     {
         unsafe { osSemaphoreAcquire(self.handle, timeout).into() }
+    }
+
+    fn release(&self)
+    {
+        unsafe { osSemaphoreRelease(self.handle) };
     }
 }

@@ -25,9 +25,6 @@ pub trait ISemaphore
     /// Take the semaphore
     fn take(&self);
 
-    /// Release the semaphore
-    fn back(&self);
-
     /// Attempt to take the semaphore with error handling
     /// # Arguments
     /// * `timeout: u32` - The timeout duration in milliseconds
@@ -36,4 +33,7 @@ pub trait ISemaphore
     /// # Errors
     /// * `ErrValue` - If the semaphore could not be taken within the timeout period
     fn attempt_take(&self, timeout: u32) -> RetValue<()>;
+
+    /// Release the semaphore
+    fn release(&self);
 }

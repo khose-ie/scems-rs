@@ -27,7 +27,7 @@ impl IEvents for Events
         Ok(Events { handle })
     }
 
-    fn launch(&self, events: u32) -> RetValue<()>
+    fn put(&self, events: u32) -> RetValue<()>
     {
         if events & osFlagsError != 0
         {
@@ -44,7 +44,7 @@ impl IEvents for Events
         Ok(())
     }
 
-    fn receive(&self, events: u32, timeout: u32) -> RetValue<u32>
+    fn wait(&self, events: u32, timeout: u32) -> RetValue<u32>
     {
         let event_state = unsafe { osEventFlagsWait(self.handle, events, osFlagsWaitAny, timeout) };
 

@@ -3,11 +3,38 @@
 /// This module provides abstractions for creating, managing, and controlling tasks.
 /// It includes traits for task main functions and task management blocks,
 /// as well as a sample implementation to facilitate task handling.
-
 use core::cell::RefCell;
+use core::ffi::c_void;
 use core::ops::{Deref, DerefMut};
 
 use sces::value::RetValue;
+
+/// Task States
+/// Defines various states that a task can be in within the RTOS
+#[repr(C)]
+pub enum TaskState
+{
+    /// Task is inactive
+    Inactive,
+
+    /// Task is ready to run
+    Ready,
+
+    /// Task is currently running
+    Running,
+
+    /// Task is blocked/waiting/suspended
+    Blocked,
+
+    /// Task is terminated
+    Terminated,
+
+    /// Task is in an error state
+    Error,
+
+    /// Task state is unknown
+    Unknown,
+}
 
 /// Task Priorities
 /// Defines various priority levels for tasks in the RTOS
@@ -56,35 +83,24 @@ pub enum TaskPriority
     RealTime,
 }
 
-/// Task Main Interface
-/// Implement this trait to define the main function of a task
-pub trait ITaskMain
-{
-    /// The entrypoint function of the task
-    /// This function will be executed when the task is activated
-    /// Implement the task's behavior within this method
-    fn main(&mut self);
-}
-
 /// Task Interface
 /// Implement this trait to define task management blocks
 pub trait ITask
 {
+    #[allow(static_mut_refs)]
+    extern "C" fn main(argument: *mut c_void)
+    {
+        if let Some(task) = TaskMainAgent::from(argument).main()
+        {
+            task.main();
+        }
+    }
+
     /// Create a new task management block
     /// Returns a RetValue containing the new task instance
     fn new() -> RetValue<Self>
     where
         Self: Sized;
-
-    /// Terminate the task
-    /// This function should be called to cleanly exit the task
-    /// It performs necessary cleanup operations
-    fn exit();
-
-    /// Perform a context switch to the next ready task
-    /// This function yields the CPU to allow other tasks to run
-    /// It is typically called in cooperative multitasking scenarios
-    fn switch_to_next();
 
     /// Create the task instance and activate it
     /// # Arguments
@@ -98,20 +114,28 @@ pub trait ITask
         &mut self, name: &str, stack: u32, priority: TaskPriority, main: &dyn ITaskMain,
     ) -> RetValue<()>;
 
+    /// Get the task name
+    /// Returns the name of the task
+    fn name(&self) -> &str;
+
+    /// Get the stack size
+    /// Returns the stack size allocated for the task
+    fn stack_size(&self) -> u32;
+
     /// Get the task priority
     /// Returns the current priority level of the task
     fn priority(&self) -> TaskPriority;
+
+    /// Get the task state
+    /// Returns the current state of the task
+    fn state(&self) -> TaskState;
 
     /// Set task priorities
     /// # Arguments
     /// * `priority: TaskPriority` - The new priority level to be set for the task
     /// # Returns
-    /// * `RetValue<&mut Self>` - Result containing a mutable reference to the task instance or an error
-    fn set_priority(&mut self, priority: TaskPriority) -> RetValue<&mut Self>;
-
-    /// Get the task name
-    /// Returns the name of the task
-    fn name(&self) -> &str;
+    /// * `RetValue<()>` - Result containing a mutable reference to the task instance or an error
+    fn set_priority(&mut self, priority: TaskPriority) -> RetValue<()>;
 
     /// Suspend the task
     /// Returns a RetValue indicating success or failure
@@ -120,6 +144,79 @@ pub trait ITask
     /// Resume the task
     /// Returns a RetValue indicating success or failure
     fn resume(&self) -> RetValue<()>;
+}
+
+/// Task Main Interface
+/// Implement this trait to define the main function of a task
+pub trait ITaskMain
+{
+    /// The entrypoint function of the task
+    /// This function will be executed when the task is activated
+    /// Implement the task's behavior within this method
+    fn main(&mut self);
+}
+
+/// Create a agent class to pack the pointer of `dyn ITaskMain`.
+/// Because the fat pointer `dyn ITaskMain` can be set to C function as thin pointer.
+pub struct TaskMainAgent
+{
+    main: Option<*mut dyn ITaskMain>,
+}
+
+impl TaskMainAgent
+{
+    /// Create a new TaskMainAgent instance
+    /// # Returns
+    /// * `Self` - A new instance of TaskMainAgent
+    pub const fn new() -> Self
+    {
+        TaskMainAgent { main: None }
+    }
+
+    /// Convert a raw pointer to a TaskMainAgent reference
+    /// # Arguments
+    /// * `main: *mut c_void` - The raw pointer to be converted
+    /// # Returns
+    /// * `&'static mut Self` - A mutable reference to the TaskMainAgent instance
+    pub fn from(main: *mut c_void) -> &'static mut Self
+    {
+        unsafe { &mut *(main as *mut TaskMainAgent) }
+    }
+
+    /// Get the main function implementation
+    /// # Returns
+    /// * `Option<&mut dyn ITaskMain>` - An optional mutable reference to the task main implementation
+    pub fn main(&mut self) -> Option<&mut dyn ITaskMain>
+    {
+        self.main.map(|main| unsafe { &mut *main })
+    }
+
+    /// Set the main function implementation
+    /// # Arguments
+    /// * `main: &dyn ITaskMain` - The task main implementation to be set
+    /// # Returns
+    /// * `&Self` - A reference to the TaskMainAgent instance
+    pub fn set_main(&mut self, main: &dyn ITaskMain) -> &Self
+    {
+        self.main = Some(main as *const dyn ITaskMain as *mut dyn ITaskMain);
+        self
+    }
+
+    /// Get a pointer to the TaskMainAgent instance
+    /// # Returns
+    /// * `*mut c_void` - A raw pointer to the TaskMainAgent instance
+    pub fn as_ptr(&self) -> *mut c_void
+    {
+        self as *const TaskMainAgent as *mut c_void
+    }
+
+    pub fn inspect(&self, f: impl Fn(&Self))
+    {
+        if !self.main.is_none()
+        {
+            f(self);
+        }
+    }
 }
 
 /// Task Sample

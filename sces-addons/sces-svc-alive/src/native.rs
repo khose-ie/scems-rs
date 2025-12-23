@@ -68,7 +68,7 @@ where
 
     fn update_alive_state(&self, handle: AliveWatchHandle)
     {
-        self.watch_queue.lock()[handle].update_tick(OS::ostick());
+        self.watch_queue.lock()[handle].update_tick(OS::ticks());
     }
 }
 
@@ -79,7 +79,7 @@ where
     fn main(&mut self)
     {
         #[allow(unused_must_use)]
-        self.watch_queue.lock().update_all_ticks(OS::ostick());
+        self.watch_queue.lock().update_all_ticks(OS::ticks());
         self.device.refresh();
 
         loop
@@ -88,7 +88,7 @@ where
 
             #[allow(unused_must_use)]
             self.watch_queue
-                .attempt_lock_then(|x| x.check_alive_time(OS::ostick(), self.cycle_time))
+                .attempt_lock_then(|x| x.check_alive_time(OS::ticks(), self.cycle_time))
                 .inspect(|()| self.device.refresh())
                 .inspect_err(|_| error!("{AWS} Some tasks near death, don't refresh Watch Dog."));
         }

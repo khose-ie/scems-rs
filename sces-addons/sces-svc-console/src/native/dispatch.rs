@@ -53,11 +53,11 @@ where
     pub fn wait_and_dispatch(&self, serial_port: &UartDevice) -> RetValue<()>
     {
         serial_port.as_ref().async_receive(self.cache.borrow_mut().as_bytes_mut())?;
-        self.dispatch_event.receive(EVT_CMD_RX, OS::WAIT_MAX).or(Err(ErrValue::Timeout))?;
+        self.dispatch_event.wait(EVT_CMD_RX, OS::WAIT_MAX).or(Err(ErrValue::Timeout))?;
 
         let cache = self.cache.borrow();
         let mut commands = ConsoleCommands::new(cache.as_bytes());
-        let exe_name = commands.next().ok_or(ErrValue::FormatFaliure)?;
+        let exe_name = commands.next().ok_or(ErrValue::FormatFailure)?;
 
         self.exe_queue
             .attempt_lock_then(|x| Self::search_exe(x, exe_name).ok_or(ErrValue::InstanceNotFound))
@@ -74,7 +74,7 @@ where
                 cache.set_length(len);
 
                 #[allow(unused_must_use)]
-                self.dispatch_event.launch(EVT_CMD_RX);
+                self.dispatch_event.put(EVT_CMD_RX);
             }
         }
     }

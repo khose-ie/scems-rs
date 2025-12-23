@@ -30,7 +30,7 @@ where
 
             #[allow(unused_must_use)]
             writeln!(x, "[{:>5}] {}", record.level(), record.args())
-                .map_err(|_| ErrValue::FormatFaliure)
+                .map_err(|_| ErrValue::FormatFailure)
                 .and_then(|()| serial_port.as_ref().transmit(x.as_bytes(), 100));
         }
 

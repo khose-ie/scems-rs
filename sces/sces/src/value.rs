@@ -80,3 +80,19 @@ impl From<BorrowMutError> for ErrValue
 /// It is a packed type of RUST `Result<T, E>` type, but specificed the E with ErrValue,
 /// which is also the common error code definition of sces.
 pub type RetValue<T> = core::result::Result<T, ErrValue>;
+
+impl From<ErrValue> for RetValue<()>
+{
+    /// Convert an `ErrValue` into a `RetValue<()>`.
+    ///
+    /// If the `ErrValue` is `ErrValue::None`, it will return `Ok(())`,
+    /// otherwise it will return `Err(err)`.
+    fn from(err: ErrValue) -> Self
+    {
+        match err
+        {
+            ErrValue::None => Ok(()),
+            _ => Err(err),
+        }
+    }
+}

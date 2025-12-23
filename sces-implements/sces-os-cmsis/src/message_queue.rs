@@ -1,5 +1,5 @@
+use core::ops::Not;
 use core::ptr::null;
-use core::{ffi::c_void, ops::Not};
 
 use sces::value::{ErrValue, RetValue};
 use sces_os::message_queue::{IMessageQueue, MessageContent};
@@ -21,25 +21,21 @@ impl Drop for MessageQueue
 
 impl IMessageQueue for MessageQueue
 {
-    fn new(message_count: u32, message_size: u32) -> RetValue<Self>
+    fn new(message_size: u32, message_count: u32) -> RetValue<Self>
     {
         let handle = unsafe { osMessageQueueNew(message_count, message_size, null()) };
         handle.is_null().not().then_some(handle).ok_or(ErrValue::InstanceCreateFailure)?;
         Ok(MessageQueue { handle })
     }
 
-    fn launch(&self, content: &dyn MessageContent, timeout: u32) -> RetValue<()>
+    fn send(&self, content: &dyn MessageContent, timeout: u32) -> RetValue<()>
     {
-        unsafe {
-            osMessageQueuePut(self.handle, content.as_ptr() as *mut c_void, 0, timeout).into()
-        }
+        unsafe { osMessageQueuePut(self.handle, content.as_ptr(), 0, timeout).into() }
     }
 
     fn receive(&self, cache: &mut dyn MessageContent, timeout: u32) -> RetValue<()>
     {
         let mut prio: u8 = 0;
-        unsafe {
-            osMessageQueueGet(self.handle, cache.as_ptr() as *mut c_void, &mut prio, timeout).into()
-        }
+        unsafe { osMessageQueueGet(self.handle, cache.as_mut_ptr(), &mut prio, timeout).into() }
     }
 }

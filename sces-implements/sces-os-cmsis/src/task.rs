@@ -15,7 +15,7 @@ pub struct Task
 impl Task
 {
     #[allow(static_mut_refs)]
-    pub unsafe fn main(argument: *mut c_void)
+    pub unsafe extern "C" fn main(argument: *mut c_void)
     {
         if let Some(task_main) = (*(argument as *mut TaskMainAgent)).task_main
         {
@@ -41,16 +41,6 @@ impl ITask for Task
         Ok(Task { handle: null(), main_agent: TaskMainAgent::new() })
     }
 
-    fn exit()
-    {
-        unsafe { osThreadExit() };
-    }
-
-    fn switch_to_next()
-    {
-        unsafe { osThreadYield() };
-    }
-
     fn active(
         &mut self, name: &str, stack: u32, pritories: TaskPriority, main: &dyn ITaskMain,
     ) -> RetValue<()>
@@ -71,10 +61,9 @@ impl ITask for Task
         todo!()
     }
 
-    fn set_priority(&mut self, pritories: TaskPriority) -> RetValue<&mut Self>
+    fn set_priority(&mut self, pritories: TaskPriority) -> RetValue<()>
     {
-        RetValue::from(unsafe { osThreadSetPriority(self.handle, pritories.into()).into() })?;
-        Ok(self)
+        unsafe { osThreadSetPriority(self.handle, pritories.into()).into() }
     }
 
     fn name(&self) -> &str
@@ -90,6 +79,16 @@ impl ITask for Task
     fn resume(&self) -> RetValue<()>
     {
         unsafe { osThreadResume(self.handle).into() }
+    }
+
+    fn stack_size(&self) -> u32
+    {
+        todo!()
+    }
+
+    fn state(&self) -> sces_os::task::TaskState
+    {
+        todo!()
     }
 }
 
