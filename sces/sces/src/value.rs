@@ -33,34 +33,34 @@ pub enum ErrValue
     NullReference = 6,
 
     /// Memory allocation failed during the operation.
-    MemAllocFailure = 7,
-
-    /// Some low level operation failed during the operation.
-    LowLevelFailure = 8,
-
-    /// Create some sub instance failed during the operation.
-    InstanceCreateFailure = 9,
-
-    /// The target instance could not be found during the operation.
-    InstanceNotFound = 10,
-
-    /// Attempt to crate an unique instance more than once.
-    InstanceDuplicate = 11,
-
-    /// The instance is in use and could not borrow it.
-    InstanceInUse = 12,
-
-    /// The instance is invalid for the operation.
-    InstanceInvalid = 13,
-
-    /// The feature includes this operation is not enabled in this distribution.
-    NotSupport = 14,
-
-    /// Some must modules of this operation are not available.
-    NotAvailable = 15,
+    MemAllocFailure = 16,
 
     /// Get an error when try to format a string for a series bytes.
-    FormatFailure = 16,
+    FormatFailure = 17,
+
+    /// Some low level operation failed during the operation.
+    LowLevelFailure = 18,
+
+    /// Create some sub instance failed during the operation.
+    InstanceCreateFailure = 32,
+
+    /// The target instance could not be found during the operation.
+    InstanceNotFound = 33,
+
+    /// Attempt to crate an unique instance more than once.
+    InstanceDuplicate = 34,
+
+    /// The instance is in use and could not borrow it.
+    InstanceInUse = 35,
+
+    /// The instance is invalid for the operation.
+    InstanceInvalid = 36,
+
+    /// The feature includes this operation is not enabled in this distribution.
+    NotSupport = 48,
+
+    /// Some must modules of this operation are not available.
+    NotAvailable = 49,
 
     /// Unknown reason errors.
     Unknown = 255,
