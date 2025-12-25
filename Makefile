@@ -32,10 +32,6 @@ CMAKE = cmake
 APP      ?= main
 APP_PATH ?= .
 
-RUST_BUILD      ?= target
-RUST_BUILD_TYPE ?= 
-RUST_LIB_PATH   ?= $(BASE)/$(APP_PATH)/$(RUST_BUILD)/$(ARCH)/$(PROFILE)/lib$(APP).a
-
 # RUST Cargo build profile parameter.
 ifeq ($(PROFILE),release)
   RUST_BUILD_TYPE = --release
@@ -69,7 +65,7 @@ clean-app:
 # Build the C based platform code and generate the embedded image.
 platform:
 	@$(ECHO) "----------------------------- Compile Platform -----------------------------"
-	$(CMAKE) -S $(PLATFORM_PATH) -B $(CMAKE_BUILD) --preset $(CMAKE_BUILD_TYPE)
+	@$(CMAKE) -S $(PLATFORM_PATH) -B $(CMAKE_BUILD) --preset $(CMAKE_BUILD_TYPE)
 	@$(CMAKE) --build $(CMAKE_BUILD)
 
 # Build the C based platform with RUST based app code and generate the embedded image.
@@ -77,7 +73,8 @@ platform_with_app: app
 	@$(ECHO) ""
 
 	@$(ECHO) "----------------------------- Compile Platform -----------------------------"
-	@$(CMAKE) -S $(PLATFORM_PATH) -B $(CMAKE_BUILD) --preset $(CMAKE_BUILD_TYPE) -DAPP=$(RUST_LIB_PATH)
+	$(CMAKE) -S $(PLATFORM_PATH) -B $(CMAKE_BUILD) --preset $(CMAKE_BUILD_TYPE) \
+		-DARCH=$(ARCH) -DPROFILE=$(PROFILE) -DBASE=$(BASE) -DAPP=$(APP) -DAPP_PATH=$(APP_PATH) -C app.cmake
 	@$(CMAKE) --build $(CMAKE_BUILD)
 
 # Clena the platform generated target.

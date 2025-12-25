@@ -24,6 +24,7 @@ dependencies = [
  "cc",
  "log",
  "sces",
+ "sces-cmw",
  "sces-mcu-stm32",
  "sces-os-cmsis",
  "sces-svc",

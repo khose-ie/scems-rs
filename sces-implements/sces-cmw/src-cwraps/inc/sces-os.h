@@ -101,6 +101,12 @@ typedef enum
     SCES_TIMER_STATE_UNKNOWN = UINT32_MAX
 } scesTimerState_t;
 
+/// @brief Initialize the OS abstraction layer
+/// @details This function initializes the OS abstraction layer by creating
+///          the OS stack byte pool and setting the initial OS state.
+/// @return SCES_RET_OK on success, error code otherwise
+scesRetVal_t sces_os_initialize(void);
+
 /// @brief Get the current OS state
 /// @return Current OS state
 scesOsState_t sces_os_state(void);

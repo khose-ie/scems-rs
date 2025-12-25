@@ -7,6 +7,7 @@ use core::cell::RefCell;
 use core::ffi::c_void;
 use core::ops::{Deref, DerefMut};
 
+use crate::os::RTOS;
 use crate::value::RetValue;
 
 /// Task States
@@ -236,16 +237,16 @@ impl TaskMainAgent
 /// task_sample.active("MyTask", 1024, TaskPriority::Normal).unwrap();
 /// ```
 ///
-pub struct TaskSample<T, S>
+pub struct TaskSample<OS, S>
 where
-    T: Sized + ITask,
+    OS: Sized + RTOS,
     S: Sized + ITaskMain,
 {
-    task: RefCell<T>,
+    task: RefCell<OS::Task>,
     sample: S,
 }
 
-impl<T: ITask, S: ITaskMain> TaskSample<T, S>
+impl<OS: RTOS, S: ITaskMain> TaskSample<OS, S>
 {
     /// Create a new TaskSample instance
     /// # Arguments
@@ -254,7 +255,7 @@ impl<T: ITask, S: ITaskMain> TaskSample<T, S>
     /// * `RetValue<Self>` - Result containing the new TaskSample instance or an error
     pub fn new(sample: S) -> RetValue<Self>
     {
-        Ok(Self { task: RefCell::new(T::new()?), sample })
+        Ok(Self { task: RefCell::new(OS::Task::new()?), sample })
     }
 
     /// Activate the task with the given parameters
@@ -292,7 +293,7 @@ impl<T: ITask, S: ITaskMain> TaskSample<T, S>
     }
 }
 
-impl<T: ITask, S: ITaskMain> Deref for TaskSample<T, S>
+impl<OS: RTOS, S: ITaskMain> Deref for TaskSample<OS, S>
 {
     type Target = S;
 
@@ -303,7 +304,7 @@ impl<T: ITask, S: ITaskMain> Deref for TaskSample<T, S>
     }
 }
 
-impl<T: ITask, S: ITaskMain> DerefMut for TaskSample<T, S>
+impl<OS: RTOS, S: ITaskMain> DerefMut for TaskSample<OS, S>
 {
     /// Get a mutable reference to the task main implementation
     fn deref_mut(&mut self) -> &mut Self::Target
@@ -312,7 +313,7 @@ impl<T: ITask, S: ITaskMain> DerefMut for TaskSample<T, S>
     }
 }
 
-impl<T: ITask, S: ITaskMain> AsRef<S> for TaskSample<T, S>
+impl<OS: RTOS, S: ITaskMain> AsRef<S> for TaskSample<OS, S>
 {
     /// Get a reference to the task main implementation
     fn as_ref(&self) -> &S
@@ -321,7 +322,7 @@ impl<T: ITask, S: ITaskMain> AsRef<S> for TaskSample<T, S>
     }
 }
 
-impl<T: ITask, S: ITaskMain> AsMut<S> for TaskSample<T, S>
+impl<OS: RTOS, S: ITaskMain> AsMut<S> for TaskSample<OS, S>
 {
     /// Get a mutable reference to the task main implementation
     fn as_mut(&mut self) -> &mut S

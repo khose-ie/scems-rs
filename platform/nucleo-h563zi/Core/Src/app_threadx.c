@@ -48,7 +48,12 @@
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
-
+#ifdef APP
+extern void app_main(void);
+#define APP_MAIN() app_main()
+#else // APP
+#define APP_MAIN()
+#endif // APP
 /* USER CODE END PFP */
 
 /**
@@ -76,7 +81,7 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
 void MX_ThreadX_Init(void)
 {
   /* USER CODE BEGIN Before_Kernel_Start */
-
+  APP_MAIN();
   /* USER CODE END Before_Kernel_Start */
 
   tx_kernel_enter();

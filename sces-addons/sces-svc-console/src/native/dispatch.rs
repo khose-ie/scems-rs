@@ -5,7 +5,7 @@ use log::warn;
 use sces::value::{ErrValue, RetValue};
 use sces::mcu::uart::UartDevice;
 use sces::os::events::IEvents;
-use sces::os::mem::SafeVec;
+use sces::vec::SafeVec;
 use sces::os::mutex::MutexSample;
 use sces::os::RTOS;
 

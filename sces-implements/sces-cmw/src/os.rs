@@ -1,6 +1,8 @@
 use sces::os::RTOS;
+use sces::value::RetValue;
 
 mod events;
+mod mem;
 mod message_queue;
 mod mutex;
 mod native;
@@ -14,6 +16,8 @@ impl RTOS for MWOS
 {
     type Events = events::Events;
 
+    type MemPool = mem::MemPool;
+
     type MessageQueue = message_queue::MessageQueue;
 
     type Mutex = mutex::Mutex;
@@ -23,6 +27,11 @@ impl RTOS for MWOS
     type Task = task::Task;
 
     type Timer = timer::Timer;
+
+    fn initialize() -> RetValue<()>
+    {
+        unsafe { native::sces_os_initialize().into() }
+    }
 
     fn state() -> sces::os::OSState
     {

@@ -15,7 +15,7 @@ pub mod task;
 pub mod timer;
 
 use crate::native::*;
-use sces::os::RTOS;
+use sces::{os::RTOS, value::RetValue};
 
 pub const COMMON_TASK_TICK: u32 = 500;
 
@@ -24,6 +24,8 @@ pub struct CMSISOS;
 impl RTOS for CMSISOS
 {
     type Events = events::Events;
+
+    type MemPool = mem::MemPool;
 
     type MessageQueue = message_queue::MessageQueue;
 
@@ -34,6 +36,11 @@ impl RTOS for CMSISOS
     type Task = task::Task;
 
     type Timer = timer::Timer;
+
+    fn initialize() -> RetValue<()>
+    {
+        unsafe { osKernelInitialize().into() }
+    }
 
     #[inline]
     fn delay(time: u32)
@@ -52,24 +59,29 @@ impl RTOS for CMSISOS
     {
         unsafe { osKernelGetTickCount() }
     }
-    
-    fn state() -> sces::os::OSState {
+
+    fn state() -> sces::os::OSState
+    {
         todo!()
     }
-    
-    fn task_count() -> u32 {
+
+    fn task_count() -> u32
+    {
         todo!()
     }
-    
-    fn current_task() -> Self::Task {
+
+    fn current_task() -> Self::Task
+    {
         todo!()
     }
-    
-    fn switch_next_task() {
+
+    fn switch_next_task()
+    {
         todo!()
     }
-    
-    fn exit_current_task() {
+
+    fn exit_current_task()
+    {
         todo!()
     }
 }

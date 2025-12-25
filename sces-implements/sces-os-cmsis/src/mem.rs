@@ -1,101 +1,63 @@
-use core::alloc::{GlobalAlloc, Layout};
-use core::ffi::c_void;
-use core::ops::Not;
-use core::ptr::{null, null_mut};
+use core::ffi::{c_void, CStr};
 
+use sces::os::mem::IMemPool;
+use sces::os::RTOS;
 use sces::value::{ErrValue, RetValue};
-use sces::os::mem::IMemZone;
 
 use crate::native::*;
+use crate::CMSISOS;
 
-const MEM_POOL_NUM: usize = 4;
-
-#[derive(Clone, Copy)]
-struct MemBlock
+pub struct MemPool
 {
     handle: osMemoryPoolId_t,
-    block_count: u32,
-    block_size: u32,
 }
 
-impl MemBlock
+impl IMemPool for MemPool
 {
-    pub const fn new() -> Self
-    {
-        Self { handle: null(), block_count: 0, block_size: 0 }
-    }
-
-    pub fn create_pool(&mut self, count: u32, size: u32, address: &'static [u8]) -> RetValue<()>
+    fn new(
+        name: &str, buf: &'static mut [u8], block_size: u32, max_block_count: u32,
+    ) -> RetValue<Self>
+    where
+        Self: Sized,
     {
         let mut attribute = osMemoryPoolAttr_t::default();
 
-        attribute.mp_mem = address.as_ptr() as *mut c_void;
-        attribute.mp_size = count * size;
+        attribute.name = name.as_ptr() as *const i8;
+        attribute.mp_mem = buf.as_mut_ptr() as *mut c_void;
+        attribute.mp_size = block_size * max_block_count;
 
-        self.block_count = count;
-        self.block_size = size;
+        let handle = unsafe { osMemoryPoolNew(max_block_count, block_size, &attribute) };
 
-        self.handle = unsafe { osMemoryPoolNew(count, size, &attribute) };
-        self.handle.is_null().not().then_some(()).ok_or(ErrValue::MemAllocFailure)
+        (!handle.is_null()).then_some(Self { handle }).ok_or(ErrValue::LowLevelFailure)
     }
-}
 
-struct MemSpace
-{
-    mem: [MemBlock; MEM_POOL_NUM],
-}
-
-impl MemSpace
-{
-    pub const fn new() -> Self
+    fn name(&self) -> &str
     {
-        Self { mem: [MemBlock::new(); MEM_POOL_NUM] }
+        unsafe { CStr::from_ptr(osMemoryPoolGetName(self.handle)).to_str().unwrap_or("") }
     }
 
-    pub fn initialize(&mut self, mem: [&dyn IMemZone; MEM_POOL_NUM]) -> RetValue<()>
+    fn block_size(&self) -> u32
     {
-        for (i, zone) in mem.iter().enumerate()
-        {
-            if zone.block_count() != 0 && zone.block_size() != 0
-            {
-                self.mem[i].create_pool(zone.block_count(), zone.block_size(), zone.address())?;
-            }
-        }
-
-        Ok(())
+        unsafe { osMemoryPoolGetBlockSize(self.handle) }
     }
-}
 
-unsafe impl GlobalAlloc for MemSpace
-{
-    unsafe fn alloc(&self, layout: Layout) -> *mut u8
+    fn block_count(&self) -> u32
     {
-        self.mem
-            .iter()
-            .find(|mem| mem.block_count != 0 && layout.size() <= mem.block_size as usize)
-            .map(|mem| unsafe { osMemoryPoolAlloc(mem.handle, 100) as *mut u8 })
-            .unwrap_or(null_mut())
+        unsafe { osMemoryPoolGetCount(self.handle) }
     }
 
-    /// Deallocate the memory block pointed to by `ptr` with the given `layout`.
-    unsafe fn dealloc(&self, ptr: *mut u8, layout: core::alloc::Layout)
+    fn max_block_count(&self) -> u32
     {
-        self.mem
-            .iter()
-            .find(|mem| mem.block_count != 0 && layout.size() <= mem.block_size as usize)
-            .map(|mem| unsafe { osMemoryPoolFree(mem.handle, ptr as *mut c_void) });
+        unsafe { osMemoryPoolGetCapacity(self.handle) }
     }
-}
 
-#[global_allocator]
-static mut MEM_SPACE: MemSpace = MemSpace::new();
+    fn alloc(&self) -> *mut u8
+    {
+        unsafe { osMemoryPoolAlloc(self.handle, CMSISOS::WAIT_200) as *mut u8 }
+    }
 
-/// The public function to initialize the global mem space for alloc feature.
-/// It can register max 4 mem zones as the mem pool with different block size.
-pub fn initialize_mem_space(mem: [&dyn IMemZone; MEM_POOL_NUM]) -> RetValue<()>
-{
-    #[allow(static_mut_refs)]
-    unsafe {
-        MEM_SPACE.initialize(mem)
+    fn free(&self, mem: *mut u8)
+    {
+        unsafe { osMemoryPoolFree(self.handle, mem as *mut c_void) };
     }
 }

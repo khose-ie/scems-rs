@@ -213,6 +213,8 @@ extern "C" {
     // OS Functions
     // ------------------------------------------------------------------------
 
+    pub fn sces_os_initialize() -> ScesRetVal;
+
     /// Get the current OS state
     pub fn sces_os_state() -> ScesOsState;
 

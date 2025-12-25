@@ -1,150 +1,176 @@
-/// Memory Zone Interface
-/// Implement this trait to define memory zones
-/// for your RTOS backend.
+use core::alloc::{GlobalAlloc, Layout};
+use core::ptr::null_mut;
+use core::slice::from_raw_parts_mut;
 
-use core::usize;
+use crate::os::RTOS;
+use crate::value::RetValue;
 
-use alloc::vec::Vec;
-use crate::value::{ErrValue, RetValue};
-
-/// The trait to specific the standard method of an OS memory zone.
-/// Should be implemented by the real OS interfaces.
-pub trait IMemZone
+pub trait IMemPool
 {
-    /// Get the block size of the memory zone in bytes
-    /// Returns the size of each block in bytes
-    /// # Returns
-    /// * `u32` - Size of each block in bytes
-    fn block_size(&self) -> u32;
-
-    /// Get the total number of blocks in the memory zone
-    /// Returns the total number of blocks available in the memory zone
-    /// # Returns
-    /// * `u32` - Total number of blocks
-    fn block_count(&self) -> u32;
-
-    /// Get the starting address of the memory zone
-    /// Returns a slice representing the memory zone
-    /// # Returns
-    /// * `&'static [u8]` - Slice of the memory zone
-    fn address(&self) -> &'static [u8];
-}
-
-/// Memory Zone Implementation
-/// A generic memory zone implementation with fixed block size and count.
-/// SN: Size of each block in bytes
-/// CN: Number of blocks in the memory zone
-pub struct MemZone<const SN: usize, const CN: usize>
-{
-    block_size: u32,
-    block_count: u32,
-    address: [[u8; SN]; CN],
-}
-
-impl<const SN: usize, const CN: usize> MemZone<SN, CN>
-{
-    /// Create a new MemZone instance
-    pub const fn new() -> Self
-    {
-        Self { block_size: SN as u32, block_count: CN as u32, address: [[0; SN]; CN] }
-    }
-}
-
-impl<const SN: usize, const CN: usize> IMemZone for MemZone<SN, CN>
-{
-    /// Get the block size of the memory zone in bytes
-    /// Returns the size of each block in bytes
-    /// # Returns
-    /// * `u32` - Size of each block in bytes
-    fn block_size(&self) -> u32
-    {
-        self.block_size
-    }
-
-    /// Get the total number of blocks in the memory zone
-    /// Returns the total number of blocks available in the memory zone
-    /// # Returns
-    /// * `u32` - Total number of blocks
-    fn block_count(&self) -> u32
-    {
-        self.block_count
-    }
-
-    /// Get the starting address of the memory zone
-    /// Returns a slice representing the memory zone
-    /// # Returns
-    /// * `&'static [u8]` - Slice of the memory zone
-    fn address(&self) -> &'static [u8]
-    {
-        unsafe {
-            core::slice::from_raw_parts(
-                self.address.as_ptr() as *const u8,
-                (self.block_size as usize) * (self.block_count as usize),
-            )
-        }
-    }
-}
-
-/// Safe Vector Extension Trait
-/// Provides methods to create and manipulate vectors with error handling
-/// to prevent stack overflow.
-pub trait SafeVec<T>
-{
-    /// Create a new vector with initial capacity
-    /// # Returns
-    /// * `RetValue<Self>` - Result containing the new vector or an error
-    /// if memory allocation fails
-    /// # Errors
-    /// * `ErrValue::StackOverflow` - If memory allocation fails while creating the vector
-    fn attempt_new() -> RetValue<Self>
+    fn new(
+        name: &str, buf: &'static mut [u8], block_size: u32, max_block_count: u32,
+    ) -> RetValue<Self>
     where
         Self: Sized;
 
-    /// Attempt to push a value into the vector
-    /// # Arguments
-    /// * `value: T` - The value to be pushed into the vector
-    /// # Returns
-    /// * `RetValue<()>` - Result indicating success or failure
-    /// # Errors
-    /// * `ErrValue::StackOverflow` - If memory allocation fails while pushing the value
-    fn attempt_push(&mut self, value: T) -> RetValue<()>;
+    fn name(&self) -> &str;
+    fn block_size(&self) -> u32;
+    fn block_count(&self) -> u32;
+    fn max_block_count(&self) -> u32;
+    fn alloc(&self) -> *mut u8;
+    fn free(&self, mem: *mut u8);
 }
 
-/// Implement SafeVec for Vec<T>
-/// Provides safe methods to create and manipulate vectors
-/// with error handling to prevent stack overflow.
-impl<T> SafeVec<T> for Vec<T>
+struct MemPoolSpce<OS, const BKSZ: usize, const BKCT: usize>
+where
+    OS: RTOS,
 {
-    /// Create a new vector with initial capacity
-    /// # Returns
-    /// * `RetValue<Self>` - Result containing the new vector or an error
-    /// if memory allocation fails
-    /// # Errors
-    /// * `ErrValue::StackOverflow` - If memory allocation fails while creating the vector
-    fn attempt_new() -> RetValue<Self>
+    handle: Option<OS::MemPool>,
+    mem_space: [[u8; BKSZ]; BKCT],
+}
+
+impl<OS, const BKSZ: usize, const BKCT: usize> MemPoolSpce<OS, BKSZ, BKCT>
+where
+    OS: RTOS,
+{
+    pub const fn new() -> Self
     {
-        let mut vec = Vec::new();
-        vec.try_reserve(4).or(Err(ErrValue::StackOverflow))?;
-        Ok(vec)
+        Self { handle: None, mem_space: [[0; BKSZ]; BKCT] }
     }
 
-    /// Attempt to push a value into the vector
-    /// # Arguments
-    /// * `value: T` - The value to be pushed into the vector
-    /// # Returns
-    /// * `RetValue<()>` - Result indicating success or failure
-    /// # Errors
-    /// * `ErrValue::StackOverflow` - If memory allocation fails while pushing the value
-    fn attempt_push(&mut self, value: T) -> RetValue<()>
+    pub fn initialize(&'static mut self, name: &str) -> RetValue<()>
     {
-        if self.try_reserve(1).is_ok()
+        let a = OS::MemPool::new(
+            name,
+            unsafe { from_raw_parts_mut(&mut self.mem_space as *mut _ as *mut u8, BKSZ * BKCT) },
+            BKSZ as u32,
+            BKCT as u32,
+        )?;
+
+        self.handle = Some(a);
+        Ok(())
+    }
+
+    pub fn alloc(&self) -> *mut u8
+    {
+        self.handle.as_ref().map_or(null_mut(), |x| x.alloc())
+    }
+
+    pub fn free(&self, mem: *mut u8)
+    {
+        #[allow(unused_must_use)]
+        self.handle.as_ref().map_or((), |x| x.free(mem));
+    }
+}
+
+pub struct MemorySpace<
+    OS,
+    const BK1SZ: usize,
+    const BK1CT: usize,
+    const BK2SZ: usize,
+    const BK2CT: usize,
+    const BK3SZ: usize,
+    const BK3CT: usize,
+    const BK4SZ: usize,
+    const BK4CT: usize,
+> where
+    OS: RTOS,
+{
+    space1: MemPoolSpce<OS, BK1SZ, BK1CT>,
+    space2: MemPoolSpce<OS, BK2SZ, BK2CT>,
+    space3: MemPoolSpce<OS, BK3SZ, BK3CT>,
+    space4: MemPoolSpce<OS, BK4SZ, BK4CT>,
+}
+
+impl<
+        OS,
+        const BK1SZ: usize,
+        const BK1CT: usize,
+        const BK2SZ: usize,
+        const BK2CT: usize,
+        const BK3SZ: usize,
+        const BK3CT: usize,
+        const BK4SZ: usize,
+        const BK4CT: usize,
+    > MemorySpace<OS, BK1SZ, BK1CT, BK2SZ, BK2CT, BK3SZ, BK3CT, BK4SZ, BK4CT>
+where
+    OS: RTOS,
+{
+    pub const fn new() -> Self
+    {
+        Self {
+            space1: MemPoolSpce::new(),
+            space2: MemPoolSpce::new(),
+            space3: MemPoolSpce::new(),
+            space4: MemPoolSpce::new(),
+        }
+    }
+
+    pub fn initialize(&'static mut self) -> RetValue<()>
+    {
+        self.space1.initialize("MemorySpace1")?;
+        self.space2.initialize("MemorySpace2")?;
+        self.space3.initialize("MemorySpace3")?;
+        self.space4.initialize("MemorySpace4")?;
+        Ok(())
+    }
+}
+
+unsafe impl<
+        OS,
+        const BK1SZ: usize,
+        const BK1CT: usize,
+        const BK2SZ: usize,
+        const BK2CT: usize,
+        const BK3SZ: usize,
+        const BK3CT: usize,
+        const BK4SZ: usize,
+        const BK4CT: usize,
+    > GlobalAlloc for MemorySpace<OS, BK1SZ, BK1CT, BK2SZ, BK2CT, BK3SZ, BK3CT, BK4SZ, BK4CT>
+where
+    OS: RTOS,
+{
+    unsafe fn alloc(&self, layout: Layout) -> *mut u8
+    {
+        if layout.size() <= BK1SZ as usize
         {
-            self.push(value);
-            Ok(())
+            self.space1.alloc()
+        }
+        else if layout.size() <= BK2SZ as usize
+        {
+            self.space2.alloc()
+        }
+        else if layout.size() <= BK3SZ as usize
+        {
+            self.space3.alloc()
+        }
+        else if layout.size() <= BK4SZ as usize
+        {
+            self.space4.alloc()
         }
         else
         {
-            Err(ErrValue::StackOverflow)
+            null_mut()
+        }
+    }
+
+    unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout)
+    {
+        if layout.size() <= BK1SZ as usize
+        {
+            self.space1.free(ptr);
+        }
+        else if layout.size() <= BK2SZ as usize
+        {
+            self.space2.free(ptr);
+        }
+        else if layout.size() <= BK3SZ as usize
+        {
+            self.space3.free(ptr);
+        }
+        else if layout.size() <= BK4SZ as usize
+        {
+            self.space4.free(ptr);
         }
     }
 }

@@ -6,7 +6,7 @@
         "+nightly"
     ],
     "rust-analyzer.cargo.features": [
-        "challen-v2-f429"
+        "nucleo-h563zi"
     ],
     "rust-analyzer.cargo.target": "thumbv7em-none-eabihf",
     "cmake.sourceDirectory": "${workspaceFolder}/platform/stm32h573i-dk",

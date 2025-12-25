@@ -15,6 +15,7 @@ bench = false
 [dependencies]
 log = "0.4"
 sces = "0.1.0"
+sces-cmw = "0.1.0"
 sces-mcu-stm32 = "0.1.0"
 sces-os-cmsis = "0.1.0"
 sces-svc = "0.1.0"

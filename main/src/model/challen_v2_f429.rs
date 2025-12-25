@@ -1,11 +1,11 @@
 use log::info;
 use log::LevelFilter;
 use sces::cell::StaticCell;
+use sces::os::mem::MemZone;
+use sces::os::task::{TaskPriority, TaskSample};
 use sces::value::RetValue;
 use sces_mcu_stm32::uart::{UART_HandleTypeDef, UartQueue};
 use sces_mcu_stm32::wd::{IWDG_HandleTypeDef, WatchDogQueue};
-use sces::os::mem::MemZone;
-use sces::os::task::{TaskPriority, TaskSample};
 use sces_os_cmsis::mem::initialize_mem_space;
 use sces_os_cmsis::task::Task;
 use sces_os_cmsis::CMSISOS;
@@ -18,18 +18,17 @@ extern "C" {
     static mut hwdt1: IWDG_HandleTypeDef;
 }
 
-static mut MEM0: MemZone<128, 256> = MemZone::new();
-static mut MEM1: MemZone<512, 64> = MemZone::new();
-static mut MEM2: MemZone<1024, 32> = MemZone::new();
-static mut MEM3: MemZone<2048, 16> = MemZone::new();
+#[global_allocator]
+static mut MEM: MemorySpace<CMSISOS, 256, 10, 512, 10, 1024, 10, 2048, 2> = MemorySpace::new();
 
-static mut SVC_CONSOLE: StaticCell<TaskSample<Task, NativeConsole<CMSISOS>>> = StaticCell::new();
-static mut SVC_ALIVE: StaticCell<TaskSample<Task, NativeAliveWatch<CMSISOS>>> = StaticCell::new();
+static mut SVC_CONSOLE: StaticCell<TaskSample<CMSISOS, NativeConsole<CMSISOS>>> = StaticCell::new();
+static mut SVC_ALIVE: StaticCell<TaskSample<CMSISOS, NativeAliveWatch<CMSISOS>>> = StaticCell::new();
 
 #[allow(static_mut_refs)]
 pub unsafe fn app_main() -> RetValue<()>
 {
-    initialize_mem_space([&MEM0, &MEM1, &MEM2, &MEM3])?;
+    MEM.initialize()?;
+    CMSISOS::initialize()?;
 
     SVC_ALIVE
         .set(TaskSample::new(NativeAliveWatch::new(WatchDogQueue::alloc(&mut hwdt1)?, 300)?)?)

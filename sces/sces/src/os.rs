@@ -1,3 +1,5 @@
+use crate::value::RetValue;
+
 /// sces OS Library
 /// This library provides abstractions and implementations for various RTOS functionalities.
 /// It includes modules for events, memory management, message queues, mutexes,
@@ -69,10 +71,30 @@ pub trait RTOS
     /// Default wait time
     const WAIT_DEF: u32 = Self::WAIT_200;
 
+    /// Stack size constant for tasks
+    /// 1 Kilobyte stack size
+    const TASK_STACK_1K: u32 = 1024;
+
+    /// Stack size constant for tasks
+    /// 2 Kilobytes stack size
+    const TASK_STACK_2K: u32 = 2048;
+
+    /// Stack size constant for tasks
+    /// 4 Kilobytes stack size
+    const TASK_STACK_4K: u32 = 4096;
+
+    /// Stack size constant for tasks
+    /// 8 Kilobytes stack size
+    const TASK_STACK_8K: u32 = 8192;
+
     /// Associated Types for RTOS Components
     /// Events type
     /// Defines the event handling mechanism
     type Events: events::IEvents;
+
+    /// Memory Pool type
+    /// Defines the memory pool management mechanism
+    type MemPool: mem::IMemPool;
 
     /// Message Queue type
     /// Defines the message queue mechanism
@@ -93,6 +115,11 @@ pub trait RTOS
     /// Timer type
     /// Defines the timer mechanism
     type Timer: timer::ITimer;
+
+    /// Initialize the RTOS
+    /// # Returns
+    /// * `RetValue<()>` - Result of the initialization
+    fn initialize() -> RetValue<()>;
 
     /// Get the current OS state
     /// # Returns
@@ -130,5 +157,4 @@ pub trait RTOS
     /// # Arguments
     /// * `time: u32` - The target time in milliseconds
     fn delay_interval(time: u32);
-
 }
