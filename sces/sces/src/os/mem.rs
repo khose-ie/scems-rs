@@ -40,14 +40,13 @@ where
 
     pub fn initialize(&'static mut self, name: &str) -> RetValue<()>
     {
-        let a = OS::MemPool::new(
+        self.handle = Some(OS::MemPool::new(
             name,
             unsafe { from_raw_parts_mut(&mut self.mem_space as *mut _ as *mut u8, BKSZ * BKCT) },
             BKSZ as u32,
             BKCT as u32,
-        )?;
+        )?);
 
-        self.handle = Some(a);
         Ok(())
     }
 
