@@ -82,7 +82,7 @@ impl ITimer for Timer
             }
 
             (!self.handle.is_null()).then_some(()).ok_or(ErrValue::InstanceCreateFailure)?;
-            return unsafe { sces_timer_start(self.handle, times).into() };
+            return unsafe { sces_timer_start(self.handle, times).map(()) };
         }
     }
 

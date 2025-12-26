@@ -33,7 +33,7 @@ impl ISemaphore for Semaphore
 
     fn attempt_take(&self, timeout: u32) -> RetValue<()>
     {
-        unsafe { sces_semaphore_take(self.handle, timeout).into() }
+        unsafe { sces_semaphore_take(self.handle, timeout).map(()) }
     }
 
     fn release(&self)

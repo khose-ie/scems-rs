@@ -33,7 +33,7 @@ impl IMutex for Mutex
 
     fn attempt_lock(&self, time: u32) -> RetValue<()>
     {
-        unsafe { sces_mutex_lock(self.handle, time).into() }
+        unsafe { sces_mutex_lock(self.handle, time).map(()) }
     }
 
     fn unlock(&self)

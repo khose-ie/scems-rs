@@ -32,11 +32,11 @@ impl IMessageQueue for MessageQueue
 
     fn send(&self, content: &dyn MessageContent, timeout: u32) -> RetValue<()>
     {
-        unsafe { sces_mq_send(self.handle, content.as_ptr(), timeout).into() }
+        unsafe { sces_mq_send(self.handle, content.as_ptr(), timeout).map(()) }
     }
 
     fn receive(&self, cache: &mut dyn MessageContent, timeout: u32) -> RetValue<()>
     {
-        unsafe { sces_mq_receive(self.handle, cache.as_mut_ptr(), timeout).into() }
+        unsafe { sces_mq_receive(self.handle, cache.as_mut_ptr(), timeout).map(()) }
     }
 }

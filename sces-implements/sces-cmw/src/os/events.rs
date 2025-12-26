@@ -28,7 +28,7 @@ impl IEvents for Events
 
     fn put(&self, events: u32) -> RetValue<()>
     {
-        unsafe { sces_event_put(self.handle, events).into() }
+        unsafe { sces_event_put(self.handle, events).map(()) }
     }
 
     fn wait(&self, events: u32, timeout: u32) -> RetValue<u32>

@@ -83,30 +83,6 @@ impl From<ErrValue> for ScesRetVal
     }
 }
 
-impl From<ScesRetVal> for RetValue<()>
-{
-    fn from(value: ScesRetVal) -> Self
-    {
-        match value
-        {
-            ScesRetVal::Ok => Ok(()),
-            _ => Err(value.into()),
-        }
-    }
-}
-
-impl<T> From<RetValue<T>> for ScesRetVal
-{
-    fn from(ret: RetValue<T>) -> Self
-    {
-        match ret
-        {
-            Ok(_) => ScesRetVal::Ok,
-            Err(err) => err.into(),
-        }
-    }
-}
-
 impl ScesRetVal
 {
     pub fn map<T>(&self, value: T) -> RetValue<T>

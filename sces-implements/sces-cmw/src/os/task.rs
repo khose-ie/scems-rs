@@ -72,16 +72,16 @@ impl ITask for Task
 
     fn set_priority(&mut self, priority: TaskPriority) -> RetValue<()>
     {
-        unsafe { sces_task_set_priority(self.handle, priority.into()).into() }
+        unsafe { sces_task_set_priority(self.handle, priority.into()).map(()) }
     }
 
     fn suspend(&self) -> RetValue<()>
     {
-        unsafe { sces_task_suspend(self.handle).into() }
+        unsafe { sces_task_suspend(self.handle).map(()) }
     }
 
     fn resume(&self) -> RetValue<()>
     {
-        unsafe { sces_task_resume(self.handle).into() }
+        unsafe { sces_task_resume(self.handle).map(()) }
     }
 }
