@@ -213,7 +213,11 @@ extern "C" {
     // OS Functions
     // ------------------------------------------------------------------------
 
+    /// Initialize the OS
     pub fn sces_os_initialize() -> ScesRetVal;
+
+    /// Initialize the OS memory pool
+    pub fn sces_os_initialize_mem_pool() -> ScesRetVal;
 
     /// Get the current OS state
     pub fn sces_os_state() -> ScesOsState;
@@ -248,6 +252,12 @@ extern "C" {
 
     /// Exit the current task created with static stack allocation
     pub fn sces_os_exit_task_static();
+
+    /// Allocate memory from the OS memory pool
+    pub fn sces_os_malloc(size: u32) -> *mut c_void;
+
+    /// Free memory back to the OS memory pool
+    pub fn sces_os_free(ptr: *mut c_void, size: u32);
 
     // ------------------------------------------------------------------------
     // Event Functions

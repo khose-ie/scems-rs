@@ -1,10 +1,29 @@
+use core::alloc::GlobalAlloc;
 use core::ffi::{c_void, CStr};
 
-use sces::os::RTOS;
 use sces::os::mem::IMemPool;
+use sces::os::RTOS;
 use sces::value::{ErrValue, RetValue};
 
-use crate::os::{MWOS, native::*};
+use crate::os::{native::*, MWOS};
+
+#[global_allocator]
+static MEM_POOL_AGENT: MemPoolAgent = MemPoolAgent;
+
+struct MemPoolAgent;
+
+unsafe impl GlobalAlloc for MemPoolAgent
+{
+    unsafe fn alloc(&self, layout: core::alloc::Layout) -> *mut u8
+    {
+        unsafe { sces_os_malloc(layout.size() as u32) as *mut u8 }
+    }
+
+    unsafe fn dealloc(&self, ptr: *mut u8, layout: core::alloc::Layout)
+    {
+        unsafe { sces_os_free(ptr as *mut c_void, layout.size() as u32) };
+    }
+}
 
 pub struct MemPool
 {

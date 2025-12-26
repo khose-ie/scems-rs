@@ -107,6 +107,12 @@ typedef enum
 /// @return SCES_RET_OK on success, error code otherwise
 scesRetVal_t sces_os_initialize(void);
 
+/// @brief Initialize the OS memory pool
+/// @details This function initializes the OS memory pool used for dynamic
+///          memory allocations within the OS abstraction layer.
+/// @return SCES_RET_OK on success, error code otherwise
+scesRetVal_t sces_os_initialize_mem_pool(void);
+
 /// @brief Get the current OS state
 /// @return Current OS state
 scesOsState_t sces_os_state(void);
@@ -155,6 +161,20 @@ void sces_os_exit_task(void);
 /// @brief  Exit the current task created with static stack allocation
 /// @details This function terminates the execution of the current task created with static stack
 void sces_os_exit_task_static(void);
+
+/// @brief  Allocate memory from the OS memory pool
+/// @details This function allocates a block of memory of the specified size from the OS memory
+///          pool.
+///.         The os implementation will choice the best fit memory block from the pool.
+/// @param size Size of memory want to allocate in bytes
+/// @return Pointer to the allocated memory block, or NULL on failure
+void* sces_os_malloc(uint32_t size);
+
+/// @brief  Free memory back to the OS memory pool
+/// @details This function frees a previously allocated block of memory back to the OS memory pool.
+/// @param ptr Pointer to the memory block to free
+/// @param size Size of the memory to free in bytes
+void sces_os_free(void* ptr, uint32_t size);
 
 /// @brief  Create a new event object
 /// @details This function creates a new event object with the specified name.

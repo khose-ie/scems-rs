@@ -1,7 +1,6 @@
 use log::info;
 use log::LevelFilter;
 use sces::cell::StaticCell;
-use sces::os::mem::MemorySpace;
 use sces::os::task::{TaskPriority, TaskSample};
 use sces::os::RTOS;
 use sces::value::RetValue;
@@ -17,16 +16,12 @@ extern "C" {
     // static mut hwdt1: IWDG_HandleTypeDef;
 }
 
-#[global_allocator]
-static mut MEM: MemorySpace<MWOS, 256, 10, 512, 10, 1024, 10, 2048, 2> = MemorySpace::new();
-
 static mut SVC_CONSOLE: StaticCell<TaskSample<MWOS, NativeConsole<MWOS>>> = StaticCell::new();
 // static mut SVC_ALIVE: StaticCell<TaskSample<MWOS, NativeAliveWatch<MWOS>>> = StaticCell::new();
 
 #[allow(static_mut_refs)]
 pub unsafe fn app_main() -> RetValue<()>
 {
-    MEM.initialize()?;
     MWOS::initialize()?;
 
     // SVC_ALIVE

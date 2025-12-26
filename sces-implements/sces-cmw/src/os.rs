@@ -30,7 +30,9 @@ impl RTOS for MWOS
 
     fn initialize() -> RetValue<()>
     {
-        unsafe { native::sces_os_initialize().into() }
+        unsafe { native::sces_os_initialize().map(()) }?;
+        unsafe { native::sces_os_initialize_mem_pool().map(()) }?;
+        Ok(())
     }
 
     fn state() -> sces::os::OSState
