@@ -1,7 +1,7 @@
 
 set(APP_INCS
     ${BASE}/sces-implements/sces-cmw/src-cwraps/inc 
-    ${BASE}/sces-wraps/sces-wrap-threadx/inc 
+    ${BASE}/platform/${PLATFORM}/cmw
     CACHE STRING ""
 )
 

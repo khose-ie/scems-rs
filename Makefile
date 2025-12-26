@@ -51,6 +51,8 @@ ifeq ($(PROFILE),release)
   CMAKE_BUILD_TYPE = Release
 endif
 
+APP_CMAKE ?= $(PLATFORM_PATH)/app.cmake
+
 all: platform_with_app
 
 # Build the RUST based app code and generate a static library.
@@ -73,8 +75,9 @@ platform_with_app: app
 	@$(ECHO) ""
 
 	@$(ECHO) "----------------------------- Compile Platform -----------------------------"
-	$(CMAKE) -S $(PLATFORM_PATH) -B $(CMAKE_BUILD) --preset $(CMAKE_BUILD_TYPE) \
-		-DARCH=$(ARCH) -DPROFILE=$(PROFILE) -DBASE=$(BASE) -DAPP=$(APP) -DAPP_PATH=$(APP_PATH) -C app.cmake
+	@$(CMAKE) -S $(PLATFORM_PATH) -B $(CMAKE_BUILD) --preset $(CMAKE_BUILD_TYPE) \
+		-DARCH=$(ARCH) -DPROFILE=$(PROFILE) -DBASE=$(BASE) \
+		-DAPP=$(APP) -DAPP_PATH=$(APP_PATH) -DPLATFORM=$(PLATFORM) -C $(APP_CMAKE)
 	@$(CMAKE) --build $(CMAKE_BUILD)
 
 # Clena the platform generated target.
